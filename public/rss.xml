@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>bhayden.at notes</title>
+    <link>https://bhayden.at/notes</link>
+    <description>Essays, project updates, campaign reflections, and reading notes.</description>
+    <language>en</language>
+    <lastBuildDate>Wed, 15 Apr 2026 00:00:00 GMT</lastBuildDate>
+
+    <item>
+      <title>Building everycal: A federated calendar for collective action</title>
+      <link>https://bhayden.at/notes/building-everycal</link>
+      <guid>https://bhayden.at/notes/building-everycal</guid>
+      <pubDate>Wed, 15 Apr 2026 00:00:00 GMT</pubDate>
+      <description>Why I&apos;m building a federated calendar system on ActivityPub, and what it means for public-interest organising.</description>
+    </item>
+
+    <item>
+      <title>What safer streets in Vienna actually look like</title>
+      <link>https://bhayden.at/notes/safer-streets-vienna</link>
+      <guid>https://bhayden.at/notes/safer-streets-vienna</guid>
+      <pubDate>Sun, 22 Mar 2026 00:00:00 GMT</pubDate>
+      <description>A reflection on two years of campaigning for urban mobility reform in Vienna - what worked, what did not, and what comes next.</description>
+    </item>
+
+    <item>
+      <title>Free knowledge as infrastructure</title>
+      <link>https://bhayden.at/notes/free-knowledge-infrastructure</link>
+      <guid>https://bhayden.at/notes/free-knowledge-infrastructure</guid>
+      <pubDate>Tue, 10 Feb 2026 00:00:00 GMT</pubDate>
+      <description>Thinking about Wikimedia, open access, and why free knowledge is a public infrastructure question, not just a tech question.</description>
+    </item>
+
+    <item>
+      <title>Reading notes: Distributed systems and urban planning</title>
+      <link>https://bhayden.at/notes/reading-distributed-systems</link>
+      <guid>https://bhayden.at/notes/reading-distributed-systems</guid>
+      <pubDate>Wed, 28 Jan 2026 00:00:00 GMT</pubDate>
+      <description>Notes on the surprising overlaps between distributed systems theory and the politics of urban space.</description>
+    </item>
+
+    <item>
+      <title>What the EU copyright fights taught me about digital rights organising</title>
+      <link>https://bhayden.at/notes/copyright-retrospective</link>
+      <guid>https://bhayden.at/notes/copyright-retrospective</guid>
+      <pubDate>Fri, 15 Nov 2024 00:00:00 GMT</pubDate>
+      <description>A retrospective on years of copyright reform work in Brussels and Vienna - the wins, the losses, and the lessons.</description>
+    </item>
+  </channel>
+</rss>
