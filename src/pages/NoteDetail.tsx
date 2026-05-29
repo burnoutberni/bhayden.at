@@ -7,8 +7,6 @@ import type {
   OlHTMLAttributes,
 } from 'react';
 import { Link, useParams } from 'react-router';
-import { evaluate } from '@mdx-js/mdx';
-import * as jsxRuntime from 'react/jsx-runtime';
 import { getNoteBySlug } from '@/data/notes';
 import NewsletterSignup from '@/components/NewsletterSignup';
 
@@ -45,6 +43,11 @@ export default function NoteDetail() {
       }
 
       try {
+        const [{ evaluate }, jsxRuntime] = await Promise.all([
+          import('@mdx-js/mdx'),
+          import('react/jsx-runtime'),
+        ]);
+
         const evaluated = await evaluate(content, {
           ...jsxRuntime,
           development: false,

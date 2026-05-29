@@ -1,16 +1,17 @@
-import { useEffect } from 'react';
+import { Suspense, lazy, useEffect } from 'react';
 import { Routes, Route, useLocation } from 'react-router';
 import { ThemeProvider } from '@/hooks/useTheme';
 import { LanguageProvider } from '@/hooks/useLanguage';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
-import Home from '@/pages/Home';
-import Work from '@/pages/Work';
-import Archive from '@/pages/Archive';
-import Notes from '@/pages/Notes';
-import NoteDetail from '@/pages/NoteDetail';
-import About from '@/pages/About';
-import Contact from '@/pages/Contact';
+
+const Home = lazy(() => import('@/pages/Home'));
+const Work = lazy(() => import('@/pages/Work'));
+const Archive = lazy(() => import('@/pages/Archive'));
+const Notes = lazy(() => import('@/pages/Notes'));
+const NoteDetail = lazy(() => import('@/pages/NoteDetail'));
+const About = lazy(() => import('@/pages/About'));
+const Contact = lazy(() => import('@/pages/Contact'));
 
 function ScrollToTop() {
   const { pathname, hash } = useLocation();
@@ -51,15 +52,25 @@ export default function App() {
           <ScrollToTop />
           <Navigation />
           <main>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/work" element={<Work />} />
-              <Route path="/archive" element={<Archive />} />
-              <Route path="/notes" element={<Notes />} />
-              <Route path="/notes/:slug" element={<NoteDetail />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/contact" element={<Contact />} />
-            </Routes>
+            <Suspense
+              fallback={
+                <div className="px-6 py-16">
+                  <div className="max-w-[800px] mx-auto font-grotesk text-sm-custom" style={{ color: 'var(--color-ink-muted)' }}>
+                    Loading...
+                  </div>
+                </div>
+              }
+            >
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/work" element={<Work />} />
+                <Route path="/archive" element={<Archive />} />
+                <Route path="/notes" element={<Notes />} />
+                <Route path="/notes/:slug" element={<NoteDetail />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/contact" element={<Contact />} />
+              </Routes>
+            </Suspense>
           </main>
           <Footer />
         </div>
