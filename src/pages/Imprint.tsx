@@ -43,7 +43,7 @@ export default function Imprint() {
               {t.imprint.contact}
             </h2>
             <p className="font-grotesk text-base-custom" style={{ color: 'var(--color-ink)' }}>
-              Email:{' '}
+              {t.imprint.emailLabel}{' '}
               <a
                 href={mailto}
                 className="transition-colors hover:underline"

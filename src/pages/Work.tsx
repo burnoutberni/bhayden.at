@@ -234,12 +234,14 @@ export default function Work() {
 
         {filtered.length === 0 && (
           <p className="text-center font-grotesk text-base-custom py-16" style={{ color: 'var(--color-ink-muted)' }}>
-            No projects match these filters.
+            {lang === 'de' ? 'Keine Projekte entsprechen diesen Filtern.' : 'No projects match these filters.'}
           </p>
         )}
 
         <p className="text-center font-mono text-xs-custom mt-12" style={{ color: 'var(--color-ink-muted)' }}>
-          {filtered.length} {filtered.length === 1 ? 'project' : 'projects'}
+          {filtered.length} {filtered.length === 1
+            ? (lang === 'de' ? 'Projekt' : 'project')
+            : (lang === 'de' ? 'Projekte' : 'projects')}
         </p>
       </section>
       <NewsletterSignup />

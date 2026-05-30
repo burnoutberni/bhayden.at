@@ -34,7 +34,7 @@ export default function About() {
             >
               <img
                 src="/portrait.jpg"
-                alt="Portrait of Bernhard Hayden"
+                alt={t.about.press.portraitAlt}
                 className="w-full h-full object-cover"
               />
             </div>
@@ -170,7 +170,7 @@ export default function About() {
                 className="transition-colors hover:underline"
                 style={{ color: 'var(--color-page-accent)', textUnderlineOffset: '3px' }}
               >
-                {lang === 'de' ? 'Portrait herunterladen' : 'Download portrait'}
+                {t.about.press.downloadPortrait}
               </a>
             </p>
             <p className="font-grotesk text-sm-custom" style={{ color: 'var(--color-ink)' }}>

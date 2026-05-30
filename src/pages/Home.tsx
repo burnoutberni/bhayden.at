@@ -30,6 +30,16 @@ type EverycalResponse = {
   events: EverycalEvent[];
 };
 
+const typeLabels: Record<string, { en: string; de: string }> = {
+  project: { en: 'Project', de: 'Projekt' },
+  campaign: { en: 'Campaign', de: 'Kampagne' },
+  organisation: { en: 'Organisation', de: 'Organisation' },
+  tool: { en: 'Tool', de: 'Tool' },
+  website: { en: 'Website', de: 'Website' },
+  community: { en: 'Community', de: 'Community' },
+  education: { en: 'Education', de: 'Bildung' },
+};
+
 const statusPriority: Record<string, number> = {
   work_in_progress: 0,
   current: 1,
@@ -240,7 +250,7 @@ export default function Home() {
         </div>
 
         <p className="absolute bottom-4 right-4 font-mono text-[10px] md:text-xs max-w-[70vw] text-right" style={{ color: 'rgba(245, 241, 232, 0.86)' }}>
-          Photo: Richard Sekerak (WMCZ),
+          {lang === 'de' ? 'Foto' : 'Photo'}: Richard Sekerak (WMCZ),
           {' '}
           <a
             href="https://commons.wikimedia.org/wiki/File:WMEU_Prague_GA_2026_29.jpg"
@@ -318,7 +328,7 @@ export default function Home() {
                   yearLabel={yearLabel}
                   statusLabel={statusLabel}
                   statusKey={project.status}
-                  typeLabel={project.type.replace('_', ' ')}
+                  typeLabel={typeLabels[project.type]?.[lang] || project.type.replace('_', ' ')}
                   topicLabels={displayTags}
                   links={project.links}
                   colors={colors}
@@ -492,7 +502,7 @@ export default function Home() {
             className="font-grotesk text-sm-custom inline-flex items-center gap-1 mt-6 transition-colors hover:underline"
             style={{ color: 'var(--color-accent-cyan)', textUnderlineOffset: '4px' }}
           >
-            {lang === 'de' ? 'In EveryCal oeffnen' : 'Open in EveryCal'}
+            {lang === 'de' ? 'In EveryCal öffnen' : 'Open in EveryCal'}
             <span>{' \u2197'}</span>
           </a>
         </div>

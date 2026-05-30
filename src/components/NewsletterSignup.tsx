@@ -49,7 +49,7 @@ export default function NewsletterSignup({ borderedTop = true }: NewsletterSignu
         </form>
 
         <p className="font-mono text-xs-custom mt-2" style={{ color: 'var(--color-ink-muted)' }}>
-          Newsletter signup is temporarily disabled.
+          {t.notesPage.disabled}
         </p>
 
         <p className="font-mono text-xs-custom mt-3" style={{ color: 'var(--color-ink-muted)' }}>

@@ -9,6 +9,7 @@ import type {
 import { Link, useParams } from 'react-router';
 import { getNoteBySlug } from '@/data/notes';
 import NewsletterSignup from '@/components/NewsletterSignup';
+import { useLanguage } from '@/hooks/useLanguage';
 
 const mdxComponents = {
   h1: (props: HTMLAttributes<HTMLHeadingElement>) => <h1 className="font-serif text-3xl-custom mb-4 mt-8" style={{ color: 'var(--color-ink)' }} {...props} />,
@@ -25,6 +26,7 @@ const mdxComponents = {
 };
 
 export default function NoteDetail() {
+  const { t } = useLanguage();
   const { slug } = useParams();
   const note = slug ? getNoteBySlug(slug) : undefined;
   const [MdxContent, setMdxContent] = useState<ComponentType<{ components?: typeof mdxComponents }> | null>(null);
@@ -75,10 +77,10 @@ export default function NoteDetail() {
     return (
       <div className="pt-20 px-6 py-16">
         <div className="max-w-[800px] mx-auto">
-          <h1 className="font-serif text-3xl-custom mb-4" style={{ color: 'var(--color-ink)' }}>Note not found</h1>
+          <h1 className="font-serif text-3xl-custom mb-4" style={{ color: 'var(--color-ink)' }}>{t.noteDetail.notFound}</h1>
           <Link to="/notes" className="font-grotesk text-sm-custom inline-flex items-center link-with-arrow" style={{ color: 'var(--color-page-accent)', textUnderlineOffset: '4px' }}>
             <span className="link-arrow link-arrow-left" aria-hidden="true">←</span>
-            <span className="link-label">Back to the other notes</span>
+            <span className="link-label">{t.noteDetail.backToAll}</span>
           </Link>
         </div>
       </div>
@@ -91,7 +93,7 @@ export default function NoteDetail() {
         <div className="max-w-[800px] mx-auto">
           <Link to="/notes" className="font-mono text-xs-custom uppercase inline-flex items-center link-with-arrow" style={{ color: 'var(--color-page-accent)', textUnderlineOffset: '4px' }}>
             <span className="link-arrow link-arrow-left" aria-hidden="true">←</span>
-            <span className="link-label">Back to notes</span>
+            <span className="link-label">{t.noteDetail.backToAll}</span>
           </Link>
           <p className="font-mono text-xs-custom mt-4 mb-2" style={{ color: 'var(--color-ink-muted)' }}>{note.date}</p>
           <h1 className="font-serif text-4xl-custom mb-3" style={{ color: 'var(--color-ink)' }}>{note.title}</h1>
@@ -121,7 +123,7 @@ export default function NoteDetail() {
             <MdxContent components={mdxComponents} />
           ) : (
             <p className="font-grotesk text-sm-custom" style={{ color: 'var(--color-ink-muted)' }}>
-              Loading note...
+              {t.noteDetail.loading}
             </p>
           )}
         </article>

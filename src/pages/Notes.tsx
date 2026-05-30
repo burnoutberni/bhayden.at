@@ -65,7 +65,7 @@ export default function Notes() {
             activeKey: languageFilter,
             onSelect: (key) => setLanguageFilter(key as 'all' | 'en' | 'de'),
             options: [
-              { key: 'all', label: 'all languages' },
+              { key: 'all', label: t.notesPage.allLanguages },
               { key: 'en', label: 'en' },
               { key: 'de', label: 'de' },
             ],
@@ -148,7 +148,7 @@ export default function Notes() {
 
           {filteredByLanguage.length === 0 && (
             <p className="text-center font-grotesk text-base-custom py-16" style={{ color: 'var(--color-ink-muted)' }}>
-              No notes match this topic.
+              {t.notesPage.noMatches}
             </p>
           )}
         </div>

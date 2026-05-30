@@ -96,7 +96,7 @@ export default function Navigation() {
           <button
             onClick={toggleTheme}
             className="ml-3 p-2 rounded-full transition-all duration-200 hover:opacity-70"
-            aria-label="Toggle theme"
+            aria-label={lang === 'de' ? 'Theme umschalten' : 'Toggle theme'}
             style={{ color: navTextColor }}
           >
             {theme === 'dark' ? (
@@ -123,7 +123,7 @@ export default function Navigation() {
         <button
           className="md:hidden p-2"
           onClick={() => setMobileOpen(!mobileOpen)}
-          aria-label="Toggle menu"
+          aria-label={lang === 'de' ? 'Menü umschalten' : 'Toggle menu'}
         >
           <div className="w-5 h-0.5 mb-1.5 transition-all" style={{ backgroundColor: navTextColor }} />
           <div className="w-5 h-0.5 mb-1.5 transition-all" style={{ backgroundColor: navTextColor }} />
@@ -156,7 +156,7 @@ export default function Navigation() {
               <span className="font-mono text-xs opacity-50">|</span>
               <button onClick={() => setLang('de')} className="font-mono text-xs" style={{ fontWeight: lang === 'de' ? 700 : 400, color: 'var(--color-ink)' }}>DE</button>
             </div>
-            <button onClick={toggleTheme} className="font-mono text-xs uppercase" style={{ color: 'var(--color-ink)' }}>{theme === 'dark' ? 'Light' : 'Dark'}</button>
+            <button onClick={toggleTheme} className="font-mono text-xs uppercase" style={{ color: 'var(--color-ink)' }}>{theme === 'dark' ? t.common.light : t.common.dark}</button>
           </div>
         </div>
       )}
