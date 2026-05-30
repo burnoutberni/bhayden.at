@@ -180,10 +180,6 @@ export default function Home() {
     return endTime ? `${dateText} - ${startTime} - ${endTime}` : `${dateText} - ${startTime}`;
   };
 
-  const openInNewTab = (url: string) => {
-    window.open(url, '_blank', 'noopener,noreferrer');
-  };
-
   return (
     <div>
       {/* Hero Section */}
@@ -412,15 +408,6 @@ export default function Home() {
                     <article
                       key={event.id}
                       className="events-card"
-                      role="link"
-                      tabIndex={0}
-                      onClick={() => openInNewTab(eventHref)}
-                      onKeyDown={(eventKey) => {
-                        if (eventKey.key === 'Enter' || eventKey.key === ' ') {
-                          eventKey.preventDefault();
-                          openInNewTab(eventHref);
-                        }
-                      }}
                     >
                       {event.image_url && (
                         <div className="events-card-image-wrap">
@@ -604,9 +591,18 @@ export default function Home() {
                       <span
                         key={tag}
                         className="pill-badge pill-badge-contextual home-notes-topic-pill"
+                        role="button"
+                        tabIndex={0}
+                        aria-label={`${lang === 'de' ? 'Nach Thema filtern' : 'Filter by topic'}: ${tag}`}
                         onClick={(e) => {
                           e.preventDefault();
                           navigateToNotes(`topic=${encodeURIComponent(tag)}`);
+                        }}
+                        onKeyDown={(eventKey) => {
+                          if (eventKey.key === 'Enter' || eventKey.key === ' ') {
+                            eventKey.preventDefault();
+                            navigateToNotes(`topic=${encodeURIComponent(tag)}`);
+                          }
                         }}
                         style={{
                           cursor: 'pointer',

@@ -40,6 +40,13 @@ function ScrollToTop() {
     }
 
     window.scrollTo({ top: 0, behavior: 'auto' });
+
+    requestAnimationFrame(() => {
+      const main = document.getElementById('main-content');
+      if (main) {
+        main.focus();
+      }
+    });
   }, [pathname, hash]);
 
   return null;
@@ -76,8 +83,14 @@ export default function App() {
           }}
         >
           <ScrollToTop />
+          <a
+            href="#main-content"
+            className="skip-link"
+          >
+            Skip to main content
+          </a>
           <Navigation />
-          <main>
+          <main id="main-content" tabIndex={-1}>
             <Suspense
               fallback={
                 <div className="px-6 py-16">

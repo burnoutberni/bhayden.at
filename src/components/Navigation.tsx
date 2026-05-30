@@ -40,7 +40,7 @@ export default function Navigation() {
         borderBottom: scrolled ? '2px solid var(--color-border-brutalist)' : '2px solid transparent',
       }}
     >
-      <nav className="flex items-center justify-between px-6 py-3 max-w-[1400px] mx-auto">
+      <nav className="flex items-center justify-between px-6 py-3 max-w-[1400px] mx-auto" aria-label="Primary">
         {/* Logo */}
         <Link
           to="/"
@@ -56,6 +56,7 @@ export default function Navigation() {
             <Link
               key={link.path}
               to={link.path}
+              aria-current={isActive(link.path) ? 'page' : undefined}
               className="px-3 py-1.5 font-grotesk text-xs-custom uppercase tracking-widest transition-all duration-200"
               style={{
                 color: isActive(link.path) ? navTextColor : navMutedColor,
@@ -76,16 +77,20 @@ export default function Navigation() {
             }}
           >
             <button
+              type="button"
               onClick={() => setLang('en')}
               className="px-2 py-0.5 transition-opacity"
+              aria-pressed={lang === 'en'}
               style={{ fontWeight: lang === 'en' ? 700 : 400, opacity: lang === 'en' ? 1 : 0.6 }}
             >
               EN
             </button>
             <span className="opacity-50">|</span>
             <button
+              type="button"
               onClick={() => setLang('de')}
               className="px-2 py-0.5 transition-opacity"
+              aria-pressed={lang === 'de'}
               style={{ fontWeight: lang === 'de' ? 700 : 400, opacity: lang === 'de' ? 1 : 0.6 }}
             >
               DE
@@ -94,6 +99,7 @@ export default function Navigation() {
 
           {/* Theme Toggle */}
           <button
+            type="button"
             onClick={toggleTheme}
             className="ml-3 p-2 rounded-full transition-all duration-200 hover:opacity-70"
             aria-label={lang === 'de' ? 'Theme umschalten' : 'Toggle theme'}
@@ -122,18 +128,22 @@ export default function Navigation() {
         {/* Mobile Menu Button */}
         <button
           className="md:hidden p-2"
+          type="button"
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label={lang === 'de' ? 'Menü umschalten' : 'Toggle menu'}
+          aria-expanded={mobileOpen}
+          aria-controls="mobile-navigation"
         >
-          <div className="w-5 h-0.5 mb-1.5 transition-all" style={{ backgroundColor: navTextColor }} />
-          <div className="w-5 h-0.5 mb-1.5 transition-all" style={{ backgroundColor: navTextColor }} />
-          <div className="w-5 h-0.5 transition-all" style={{ backgroundColor: navTextColor }} />
+          <div className="w-5 h-0.5 mb-1.5 transition-all" style={{ backgroundColor: navTextColor }} aria-hidden="true" />
+          <div className="w-5 h-0.5 mb-1.5 transition-all" style={{ backgroundColor: navTextColor }} aria-hidden="true" />
+          <div className="w-5 h-0.5 transition-all" style={{ backgroundColor: navTextColor }} aria-hidden="true" />
         </button>
       </nav>
 
       {/* Mobile Menu */}
       {mobileOpen && (
         <div
+          id="mobile-navigation"
           className="md:hidden absolute top-full left-0 right-0 border-b-2 px-6 py-4 flex flex-col gap-2"
           style={{
             backgroundColor: 'var(--color-cream)',
@@ -144,6 +154,7 @@ export default function Navigation() {
             <Link
               key={link.path}
               to={link.path}
+              aria-current={isActive(link.path) ? 'page' : undefined}
               className="py-2 font-grotesk text-sm uppercase tracking-widest"
               style={{ color: 'var(--color-ink)' }}
             >
@@ -152,11 +163,11 @@ export default function Navigation() {
           ))}
           <div className="flex items-center gap-4 pt-2 border-t" style={{ borderColor: 'var(--color-border-brutalist)' }}>
             <div className="flex items-center gap-2">
-              <button onClick={() => setLang('en')} className="font-mono text-xs" style={{ fontWeight: lang === 'en' ? 700 : 400, color: 'var(--color-ink)' }}>EN</button>
+              <button type="button" onClick={() => setLang('en')} className="font-mono text-xs" aria-pressed={lang === 'en'} style={{ fontWeight: lang === 'en' ? 700 : 400, color: 'var(--color-ink)' }}>EN</button>
               <span className="font-mono text-xs opacity-50">|</span>
-              <button onClick={() => setLang('de')} className="font-mono text-xs" style={{ fontWeight: lang === 'de' ? 700 : 400, color: 'var(--color-ink)' }}>DE</button>
+              <button type="button" onClick={() => setLang('de')} className="font-mono text-xs" aria-pressed={lang === 'de'} style={{ fontWeight: lang === 'de' ? 700 : 400, color: 'var(--color-ink)' }}>DE</button>
             </div>
-            <button onClick={toggleTheme} className="font-mono text-xs uppercase" style={{ color: 'var(--color-ink)' }}>{theme === 'dark' ? t.common.light : t.common.dark}</button>
+            <button type="button" onClick={toggleTheme} className="font-mono text-xs uppercase" style={{ color: 'var(--color-ink)' }}>{theme === 'dark' ? t.common.light : t.common.dark}</button>
           </div>
         </div>
       )}
