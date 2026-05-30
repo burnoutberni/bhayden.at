@@ -306,6 +306,24 @@
     transition: background-color 180ms ease, color 180ms ease;
   }
 
+  .footer-page-link {
+    transition: color 180ms ease, background-color 180ms ease;
+    padding: 0;
+    color: var(--footer-link-base-color, var(--color-ink));
+  }
+
+  .footer-page-link:hover,
+  .footer-page-link:focus-visible {
+    color: var(--footer-link-hover-fg, var(--footer-link-accent, var(--color-page-accent)));
+    background-color: var(--footer-link-hover-bg, transparent);
+  }
+
+  html[data-theme="dark"] .footer-page-link:hover,
+  html[data-theme="dark"] .footer-page-link:focus-visible {
+    color: var(--footer-link-accent, var(--color-page-accent));
+    background-color: transparent;
+  }
+
   html:not([data-theme="dark"]) .highlight-invert-group:hover .highlight-invert-icon,
   html:not([data-theme="dark"]) .highlight-invert-group:focus-within .highlight-invert-icon {
     background-color: var(--highlight-invert-hover-bg, transparent) !important;

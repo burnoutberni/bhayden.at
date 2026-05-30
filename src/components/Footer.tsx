@@ -20,11 +20,11 @@ export default function Footer() {
   ];
 
   const navLinks = [
-    { label: t.nav.work, path: '/work' },
-    { label: t.nav.notes, path: '/notes' },
-    { label: t.nav.about, path: '/about' },
-    { label: t.nav.archive, path: '/archive' },
-    { label: t.nav.contact, path: '/contact' },
+    { label: t.nav.work, path: '/work', accent: 'var(--color-accent-lime)' },
+    { label: t.nav.notes, path: '/notes', accent: 'var(--color-accent-coral)' },
+    { label: t.nav.about, path: '/about', accent: 'var(--color-accent-cyan)' },
+    { label: t.nav.archive, path: '/archive', accent: 'var(--color-accent-cyan)' },
+    { label: t.nav.contact, path: '/contact', accent: 'var(--color-accent-cyan)' },
   ];
 
   return (
@@ -80,8 +80,13 @@ export default function Footer() {
               <span key={link.path} className="flex items-center">
                 <Link
                   to={link.path}
-                  className="font-grotesk text-xs-custom uppercase tracking-widest transition-opacity hover:opacity-60"
-                  style={{ color: 'var(--color-ink)' }}
+                  className="footer-page-link font-grotesk text-xs-custom uppercase tracking-widest"
+                  style={{
+                    ['--footer-link-base-color' as string]: 'var(--color-ink)',
+                    ['--footer-link-accent' as string]: link.accent,
+                    ['--footer-link-hover-bg' as string]: link.accent === 'var(--color-accent-lime)' ? 'var(--color-accent-lime)' : 'transparent',
+                    ['--footer-link-hover-fg' as string]: link.accent === 'var(--color-accent-lime)' ? 'var(--color-dark-void)' : link.accent,
+                  }}
                 >
                   {link.label}
                 </Link>
