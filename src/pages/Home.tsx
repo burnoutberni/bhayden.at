@@ -483,11 +483,11 @@ export default function Home() {
             href="https://events.bhayden.at/@nini"
             target="_blank"
             rel="noopener noreferrer"
-            className="font-grotesk text-sm-custom inline-flex items-center gap-1 mt-6 transition-colors hover:underline"
+            className="events-follow-link font-grotesk text-sm-custom inline-flex items-center gap-1 mt-6 transition-colors"
             style={{ color: 'var(--color-accent-cyan)', textUnderlineOffset: '4px' }}
           >
-            {lang === 'de' ? 'Folge mir auf EveryCal' : 'Follow me on EveryCal'}
-            <span>{' \u2197'}</span>
+            <span className="events-follow-link-label">{lang === 'de' ? 'Folge mir auf EveryCal' : 'Follow me on EveryCal'}</span>
+            <span className="events-follow-link-arrow">{' \u2197'}</span>
           </a>
         </div>
       </section>

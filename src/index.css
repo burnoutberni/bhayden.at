@@ -637,6 +637,16 @@
     animation: events-skeleton-shimmer 1.7s ease infinite;
   }
 
+  .events-follow-link:hover .events-follow-link-label,
+  .events-follow-link:focus-visible .events-follow-link-label {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  .events-follow-link-arrow {
+    text-decoration: none;
+  }
+
   .events-error-state {
     min-height: 200px;
     display: flex;
