@@ -78,7 +78,7 @@ export default function NoteDetail() {
           <h1 className="font-serif text-3xl-custom mb-4" style={{ color: 'var(--color-ink)' }}>Note not found</h1>
           <Link to="/notes" className="font-grotesk text-sm-custom inline-flex items-center link-with-arrow" style={{ color: 'var(--color-page-accent)', textUnderlineOffset: '4px' }}>
             <span className="link-arrow link-arrow-left" aria-hidden="true">←</span>
-            <span className="link-label">Back to notes</span>
+            <span className="link-label">Back to the other notes</span>
           </Link>
         </div>
       </div>
