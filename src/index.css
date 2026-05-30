@@ -376,10 +376,15 @@
     color: var(--highlight-invert-hover-fg, var(--accent-highlight-fg, var(--color-page-accent))) !important;
   }
 
-  .project-card-selection:hover:not(:has(.pill-badge:hover)) .project-card-secondary-link,
-  .project-card-selection:focus-within:not(:has(.pill-badge:focus)) .project-card-secondary-link {
+  .project-card-selection:hover:not(:has(.pill-badge:hover)) .project-card-secondary-link:not(:hover):not(:focus-visible),
+  .project-card-selection:focus-within:not(:has(.pill-badge:focus)) .project-card-secondary-link:not(:hover):not(:focus-visible) {
     color: var(--color-ink-muted) !important;
     opacity: 0.72;
+  }
+
+  html:not([data-theme="dark"]) .project-card-theme-dark:hover:not(:has(.pill-badge:hover)) .project-card-secondary-link:not(:hover):not(:focus-visible),
+  html:not([data-theme="dark"]) .project-card-theme-dark:focus-within:not(:has(.pill-badge:focus)) .project-card-secondary-link:not(:hover):not(:focus-visible) {
+    color: var(--color-ink-muted-inverse) !important;
   }
 
   .project-card-selection:hover:not(:has(.project-card-secondary-link:hover)):not(:has(.pill-badge:hover)) .project-card-primary-link,
@@ -402,6 +407,10 @@
   .project-card-links:has(.project-card-link:hover) .project-card-link:not(:hover) {
     color: var(--color-ink-muted) !important;
     opacity: 0.72;
+  }
+
+  html:not([data-theme="dark"]) .project-card-theme-dark .project-card-links:has(.project-card-link:hover) .project-card-link:not(:hover) {
+    color: var(--color-ink-muted-inverse) !important;
   }
 
   .project-card-links:has(.project-card-link:hover) .project-card-link:hover {
