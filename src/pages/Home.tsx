@@ -559,7 +559,7 @@ export default function Home() {
                   style={{ textUnderlineOffset: '3px' }}
                 >
                   <span className="archive-preview-link-year font-mono text-xs-custom mr-2">{period}</span>
-                  {title}
+                  <span className="font-serif">{title}</span>
                   <span style={{ color: 'var(--color-ink-muted)' }}> - {role}</span>
                 </Link>
               </li>
