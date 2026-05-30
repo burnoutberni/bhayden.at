@@ -55,7 +55,7 @@ export default function ProjectCard({
   const isDark = variant === 'dark';
   const cardTextColor = isDark ? '#F5F1E8' : 'var(--color-ink)';
   const mutedColor = isDark ? 'rgba(245, 241, 232, 0.82)' : 'var(--color-ink-muted)';
-  const usesLimeHighlight = !isDark && colors.text === 'var(--color-dark-void)';
+  const usesLimeHighlight = colors.text === 'var(--color-dark-void)';
   const statusPillColor = statusKey === 'archived' && !isDark ? 'var(--color-ink)' : colors.badge;
   const statusPillTextColor = statusKey === 'archived' && !isDark ? 'var(--color-cream)' : '#111111';
   const cardProps = handleCardActivate
@@ -75,7 +75,7 @@ export default function ProjectCard({
   return (
     <article
       id={projectId}
-      className={`project-card-selection group p-6 h-full flex flex-col transition-all duration-300 hover:-translate-y-1 ${handleCardActivate ? 'cursor-pointer' : ''}`}
+      className={`project-card-selection ${isDark ? 'project-card-theme-dark' : ''} group p-6 h-full flex flex-col transition-all duration-300 hover:-translate-y-1 ${handleCardActivate ? 'cursor-pointer' : ''}`}
       style={{
         backgroundColor: isDark ? '#1a1a1a' : 'var(--color-editor-bg)',
         border: `2px solid ${colors.border}`,

@@ -225,7 +225,19 @@
     padding: 0;
   }
 
+  .project-card-theme-dark .accent-highlight {
+    color: var(--color-page-accent);
+    background-color: transparent;
+    padding: 0;
+  }
+
   html[data-theme="dark"] .accent-highlight-icon {
+    color: var(--color-page-accent);
+    background-color: transparent;
+    padding: 0;
+  }
+
+  .project-card-theme-dark .accent-highlight-icon {
     color: var(--color-page-accent);
     background-color: transparent;
     padding: 0;
@@ -234,6 +246,14 @@
   html[data-theme="dark"] .project-card-lime-pill,
   html[data-theme="dark"] .project-card-lime-pill:hover,
   html[data-theme="dark"] .project-card-lime-pill:focus-visible {
+    color: var(--color-accent-lime) !important;
+    background-color: transparent !important;
+    border-color: var(--color-accent-lime) !important;
+  }
+
+  .project-card-theme-dark .project-card-lime-pill,
+  .project-card-theme-dark .project-card-lime-pill:hover,
+  .project-card-theme-dark .project-card-lime-pill:focus-visible {
     color: var(--color-accent-lime) !important;
     background-color: transparent !important;
     border-color: var(--color-accent-lime) !important;
@@ -251,6 +271,12 @@
   html:not([data-theme="dark"]) .highlight-invert:hover,
   html:not([data-theme="dark"]) .highlight-invert:focus-visible {
     background-color: var(--color-dark-void) !important;
+    color: var(--color-accent-lime) !important;
+  }
+
+  .project-card-theme-dark .highlight-invert:hover,
+  .project-card-theme-dark .highlight-invert:focus-visible {
+    background-color: transparent !important;
     color: var(--color-accent-lime) !important;
   }
 
@@ -282,6 +308,12 @@
   html:not([data-theme="dark"]) .project-card-selection:hover:not(:has(.project-card-secondary-link:hover)) .project-card-primary-link.highlight-invert,
   html:not([data-theme="dark"]) .project-card-selection:focus-within:not(:has(.project-card-secondary-link:focus-visible)) .project-card-primary-link.highlight-invert {
     background-color: var(--color-dark-void) !important;
+    color: var(--color-accent-lime) !important;
+  }
+
+  .project-card-theme-dark:hover:not(:has(.project-card-secondary-link:hover)) .project-card-primary-link.highlight-invert,
+  .project-card-theme-dark:focus-within:not(:has(.project-card-secondary-link:focus-visible)) .project-card-primary-link.highlight-invert {
+    background-color: transparent !important;
     color: var(--color-accent-lime) !important;
   }
 
