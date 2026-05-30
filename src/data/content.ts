@@ -50,7 +50,7 @@ export const projects: Project[] = [
     summaryDe: 'Kampagne für sicherere Straßen und bessere Infrastruktur in Wien. Kommunikation, Strategie und Aktivismus auf Straßenebene.',
     status: 'current',
     type: 'community',
-    startYear: 2022,
+    startYear: 2023,
     location: 'Vienna',
     role: 'Communication & Politics',
     roleDe: 'Kommunikation & Politik',
