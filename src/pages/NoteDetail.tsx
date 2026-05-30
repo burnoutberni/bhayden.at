@@ -100,7 +100,6 @@ export default function NoteDetail() {
                 key={topic}
                 to={`/notes?topic=${encodeURIComponent(topic)}`}
                 className="pill-badge"
-                style={{ fontSize: '9px', padding: '2px 8px' }}
               >
                 {topic}
               </Link>

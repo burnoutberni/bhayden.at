@@ -70,7 +70,7 @@ export default function Navigation() {
           <div
             className="flex items-center ml-4 px-2 py-1 rounded-full font-mono text-xs-custom"
             style={{
-              backgroundColor: onHero ? 'rgba(245, 241, 232, 0.92)' : 'var(--color-accent-lime)',
+              backgroundColor: onHero ? 'rgba(245, 241, 232, 0.92)' : 'var(--color-page-accent)',
               color: '#111111',
               border: '1px solid rgba(17, 17, 17, 0.24)',
             }}

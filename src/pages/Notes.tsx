@@ -43,6 +43,7 @@ export default function Notes() {
           <h1 className="font-serif text-4xl-custom mb-3" style={{ color: 'var(--color-ink)' }}>
             {t.notesPage.title}
           </h1>
+          <div className="w-16 h-0.5 mb-4" style={{ backgroundColor: 'var(--color-page-accent)' }} />
           <p className="font-grotesk text-base-custom" style={{ color: 'var(--color-ink-muted)' }}>
             {t.notesPage.subtitle}
           </p>
@@ -53,6 +54,7 @@ export default function Notes() {
       <FilterToolbar
         filtersRef={filtersRef}
         containerClassName="max-w-[800px] mx-auto"
+        accentColor="var(--color-page-accent)"
         groups={[
           {
             activeKey: topicFilter,
@@ -87,14 +89,14 @@ export default function Notes() {
                   </p>
                   <span
                     className="pill-badge"
-                    style={{ fontSize: '9px', padding: '2px 6px' }}
+                    style={{ borderColor: 'var(--color-page-accent)', color: 'var(--color-ink)' }}
                   >
                     {note.language.toUpperCase()}
                   </span>
                 </div>
                 <Link to={`/notes/${note.slug}`}>
                   <h3
-                    className="font-grotesk text-xl-custom font-medium mb-2 transition-colors group-hover:text-[var(--color-accent-cyan)]"
+                    className="font-grotesk text-xl-custom font-medium mb-2 transition-colors group-hover:text-[var(--color-page-accent)]"
                     style={{ color: 'var(--color-ink)' }}
                   >
                     {note.title}
@@ -107,9 +109,15 @@ export default function Notes() {
                   {note.topics.map((topic) => (
                     <span
                       key={topic}
-                      className="pill-badge"
+                      className="pill-badge pill-badge-contextual"
                       onClick={() => setTopicFilter((prev) => (prev === topic ? 'all' : topic))}
-                      style={{ fontSize: '9px', padding: '2px 8px', cursor: 'pointer' }}
+                      style={{
+                        cursor: 'pointer',
+                        ['--badge-base-border' as string]: 'var(--color-page-accent)',
+                        ['--badge-base-fg' as string]: 'var(--color-ink)',
+                        ['--badge-hover-bg' as string]: 'var(--color-page-accent)',
+                        ['--badge-hover-fg' as string]: '#111111',
+                      }}
                     >
                       {topic}
                     </span>

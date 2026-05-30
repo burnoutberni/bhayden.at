@@ -45,10 +45,26 @@ function ScrollToTop() {
 }
 
 export default function App() {
+  const { pathname } = useLocation();
+  const pageAccent = pathname.startsWith('/notes')
+    ? 'var(--color-accent-coral)'
+    : pathname.startsWith('/work')
+      ? 'var(--color-accent-lime)'
+      : pathname.startsWith('/about')
+        ? 'var(--color-accent-cyan)'
+      : 'var(--color-accent-lime)';
+
   return (
     <ThemeProvider>
       <LanguageProvider>
-        <div className="min-h-screen" style={{ backgroundColor: 'var(--color-cream)', color: 'var(--color-ink)' }}>
+        <div
+          className="min-h-screen"
+          style={{
+            backgroundColor: 'var(--color-cream)',
+            color: 'var(--color-ink)',
+            ['--color-page-accent' as string]: pageAccent,
+          }}
+        >
           <ScrollToTop />
           <Navigation />
           <main>

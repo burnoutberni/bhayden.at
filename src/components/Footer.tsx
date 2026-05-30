@@ -42,7 +42,7 @@ export default function Footer() {
               href={mailto}
               className="font-mono text-xl-custom md:text-2xl-custom inline-block mb-6 transition-all duration-200 hover:underline"
               style={{
-                color: 'var(--color-accent-cyan)',
+                color: 'var(--color-page-accent-text)',
                 textUnderlineOffset: '6px',
                 textDecorationThickness: '2px',
               }}

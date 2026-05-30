@@ -150,7 +150,10 @@ export default function About() {
                 <Link
                   key={topic}
                   to={`/work?topic=${encodeURIComponent(topic)}`}
-                  className="pill-badge"
+                  className="pill-badge pill-badge-contextual"
+                  style={{
+                    ['--badge-hover-bg' as string]: 'var(--color-page-accent)',
+                  }}
                 >
                   {topic}
                 </Link>
@@ -165,7 +168,7 @@ export default function About() {
                 href="/portrait.jpg"
                 download="bernhard-hayden-portrait.jpg"
                 className="transition-colors hover:underline"
-                style={{ color: 'var(--color-accent-cyan)', textUnderlineOffset: '3px' }}
+                style={{ color: 'var(--color-page-accent)', textUnderlineOffset: '3px' }}
               >
                 {lang === 'de' ? 'Portrait herunterladen' : 'Download portrait'}
               </a>
@@ -175,7 +178,7 @@ export default function About() {
               <a
                 href={mailto}
                 className="transition-colors hover:underline"
-                style={{ color: 'var(--color-accent-cyan)', textUnderlineOffset: '3px' }}
+                style={{ color: 'var(--color-page-accent)', textUnderlineOffset: '3px' }}
               >
                 {email}
               </a>

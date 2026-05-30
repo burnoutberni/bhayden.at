@@ -34,7 +34,16 @@ export default function NewsletterSignup({ borderedTop = true }: NewsletterSignu
             }}
             disabled
           />
-          <button type="submit" className="pill-button pill-button-filled" disabled>
+          <button
+            type="submit"
+            className="pill-button pill-button-filled"
+            style={{
+              backgroundColor: 'var(--color-page-accent)',
+              borderColor: 'var(--color-page-accent)',
+              color: '#111111',
+            }}
+            disabled
+          >
             {t.notesPage.subscribe}
           </button>
         </form>
@@ -48,7 +57,7 @@ export default function NewsletterSignup({ borderedTop = true }: NewsletterSignu
         </p>
 
         <div className="flex items-center justify-center gap-2 mt-6">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-accent-orange)' }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-page-accent-text)' }}>
             <path d="M4 11a9 9 0 0 1 9 9" />
             <path d="M4 4a16 16 0 0 1 16 16" />
             <circle cx="5" cy="19" r="1" />
@@ -56,7 +65,7 @@ export default function NewsletterSignup({ borderedTop = true }: NewsletterSignu
           <a
             href="/rss.xml"
             className="font-grotesk text-sm-custom transition-colors hover:underline"
-            style={{ color: 'var(--color-accent-cyan)', textUnderlineOffset: '3px' }}
+            style={{ color: 'var(--color-page-accent-text)', textUnderlineOffset: '3px' }}
           >
             {t.notesPage.rss}
           </a>

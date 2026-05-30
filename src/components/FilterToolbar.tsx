@@ -17,12 +17,19 @@ interface FilterToolbarProps {
   containerClassName?: string;
   filtersRef?: React.RefObject<HTMLElement | null>;
   leading?: ReactNode;
+  accentColor?: string;
 }
 
 const MOBILE_BREAKPOINT = 768;
 const COLLAPSE_SCROLL_DISTANCE = 24;
 
-export default function FilterToolbar({ groups, containerClassName, filtersRef, leading }: FilterToolbarProps) {
+export default function FilterToolbar({
+  groups,
+  containerClassName,
+  filtersRef,
+  leading,
+  accentColor = 'var(--color-page-accent)',
+}: FilterToolbarProps) {
   const optionsId = useId();
   const [isMobile, setIsMobile] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -129,7 +136,7 @@ export default function FilterToolbar({ groups, containerClassName, filtersRef, 
                   key={`${label}-${index}`}
                   className="truncate rounded-full border px-2 py-0.5 font-mono text-xs-custom uppercase"
                   style={{
-                    borderColor: 'var(--color-accent-lime)',
+                    borderColor: accentColor,
                     color: 'var(--color-ink)',
                   }}
                 >
@@ -171,9 +178,9 @@ export default function FilterToolbar({ groups, containerClassName, filtersRef, 
                     onClick={() => handleSelect(group, option.key)}
                     className="pill-badge transition-all duration-200"
                     style={{
-                      backgroundColor: group.activeKey === option.key ? 'var(--color-accent-lime)' : 'transparent',
+                      backgroundColor: group.activeKey === option.key ? accentColor : 'transparent',
                       color: group.activeKey === option.key ? 'var(--color-dark-void)' : 'var(--color-ink)',
-                      borderColor: group.activeKey === option.key ? 'var(--color-accent-lime)' : 'var(--color-border-brutalist)',
+                      borderColor: group.activeKey === option.key ? accentColor : 'var(--color-border-brutalist)',
                     }}
                   >
                     {option.label}
