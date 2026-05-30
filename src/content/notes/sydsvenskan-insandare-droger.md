@@ -3,6 +3,7 @@ id: sydsvenskan-insandare-droger
 title: "Svenskar har en absurd inställning till droger - något måste förändras"
 date: 2021-07-07
 summary: "Opinion piece published in Sydsvenskan challenging Sweden's punitive drug policy and arguing for a health-first approach."
+summaryDe: "In Sydsvenskan veröffentlichter Leserbrief, der Schwedens repressive Drogenpolitik kritisiert und für einen gesundheitsorientierten Ansatz plädiert."
 topics: ["opinion", "drugs"]
 language: sv
 slug: sydsvenskan-drogpolitik

@@ -26,7 +26,7 @@ const mdxComponents = {
 };
 
 export default function NoteDetail() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const { slug } = useParams();
   const note = slug ? getNoteBySlug(slug) : undefined;
   const [MdxContent, setMdxContent] = useState<ComponentType<{ components?: typeof mdxComponents }> | null>(null);
@@ -97,7 +97,9 @@ export default function NoteDetail() {
           </Link>
           <p className="font-mono text-xs-custom mt-4 mb-2" style={{ color: 'var(--color-ink-muted)' }}>{note.date}</p>
           <h1 className="font-serif text-4xl-custom mb-3" style={{ color: 'var(--color-ink)' }}>{note.title}</h1>
-          <p className="font-grotesk text-base-custom" style={{ color: 'var(--color-ink-muted)' }}>{note.summary}</p>
+          <p className="font-grotesk text-base-custom" style={{ color: 'var(--color-ink-muted)' }}>
+            {lang === 'de' && note.summaryDe ? note.summaryDe : note.summary}
+          </p>
           <div className="flex flex-wrap gap-1.5 mt-4">
             {note.topics.map((topic) => (
               <Link

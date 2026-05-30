@@ -3,6 +3,7 @@ export interface Note {
   title: string;
   date: string;
   summary: string;
+  summaryDe?: string;
   topics: string[];
   language: 'en' | 'de' | 'sv';
   slug: string;
@@ -63,6 +64,7 @@ function toNote(filePath: string, raw: string): Note {
   const title = stripWrappingQuotes(frontmatter.title || '');
   const date = stripWrappingQuotes(frontmatter.date || '');
   const summary = stripWrappingQuotes(frontmatter.summary || '');
+  const summaryDe = stripWrappingQuotes(frontmatter.summaryDe || '');
   const slug = stripWrappingQuotes(frontmatter.slug || '');
   const language = stripWrappingQuotes(frontmatter.language || '') as Note['language'];
 
@@ -75,6 +77,7 @@ function toNote(filePath: string, raw: string): Note {
     title,
     date,
     summary,
+    summaryDe: summaryDe || undefined,
     topics: parseArray(frontmatter.topics || '[]'),
     language,
     slug,

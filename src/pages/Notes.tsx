@@ -6,7 +6,7 @@ import FilterToolbar from '@/components/FilterToolbar';
 import NewsletterSignup from '@/components/NewsletterSignup';
 
 export default function Notes() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [searchParams] = useSearchParams();
   const filtersRef = useRef<HTMLElement | null>(null);
   const [topicFilter, setTopicFilter] = useState('all');
@@ -119,9 +119,9 @@ export default function Notes() {
                     {note.title}
                   </h3>
                 </Link>
-                <p className="font-grotesk text-sm-custom line-clamp-3 mb-3" style={{ color: 'var(--color-ink-muted)' }}>
-                  {note.summary}
-                </p>
+                  <p className="font-grotesk text-sm-custom line-clamp-3 mb-3" style={{ color: 'var(--color-ink-muted)' }}>
+                    {lang === 'de' && note.summaryDe ? note.summaryDe : note.summary}
+                  </p>
                 <div className="flex flex-wrap gap-1.5">
                   {note.topics.map((topic) => (
                     <span
