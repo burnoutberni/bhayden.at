@@ -291,7 +291,7 @@ export default function Home() {
       <section className="py-20 md:py-28 px-6" style={{ backgroundColor: 'var(--color-dark-void)', borderBottom: '2px solid var(--color-border-brutalist)' }}>
         <div className="max-w-[1200px] mx-auto">
           <h2
-            className="font-serif text-3xl-custom mb-2"
+            className="font-grotesk text-3xl-custom mb-2"
             style={{ color: '#F5F1E8' }}
           >
             {t.currentWork.title}
@@ -368,7 +368,7 @@ export default function Home() {
         <div className="events-glow events-glow-right" aria-hidden="true" />
         <div className="max-w-[1200px] mx-auto relative z-10">
           <div className="mb-12">
-            <h2 className="font-serif text-3xl-custom mb-2" style={{ color: 'var(--color-ink)' }}>
+            <h2 className="font-grotesk text-3xl-custom mb-2" style={{ color: 'var(--color-ink)' }}>
               {lang === 'de' ? 'Triff mich hier' : 'Meet me here'}
             </h2>
             <div className="w-16 h-0.5 mb-4" style={{ backgroundColor: 'var(--color-accent-cyan)' }} />
@@ -522,7 +522,7 @@ export default function Home() {
           }}
         >
           <div className="flex items-center gap-3 mb-6">
-            <h2 className="font-serif text-3xl-custom" style={{ color: 'var(--color-ink)' }}>
+            <h2 className="font-grotesk text-3xl-custom" style={{ color: 'var(--color-ink)' }}>
               {t.archive.title}
             </h2>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-ink)' }}>
@@ -586,7 +586,7 @@ export default function Home() {
         }}
       >
         <div className="max-w-[1200px] mx-auto">
-          <h2 className="font-serif text-3xl-custom mb-2" style={{ color: 'var(--color-ink)' }}>
+          <h2 className="font-grotesk text-3xl-custom mb-2" style={{ color: 'var(--color-ink)' }}>
             {t.notes.title}
           </h2>
           <div className="w-16 h-0.5 mb-4" style={{ backgroundColor: 'var(--color-accent-coral)' }} />
