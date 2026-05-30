@@ -77,6 +77,7 @@ export default function Notes() {
       <section className="px-6 py-12">
         <div className="max-w-[800px] mx-auto">
           {filteredByLanguage.map((note) => {
+            const isLanguageActive = languageFilter !== 'all' && languageFilter === note.language;
             return (
               <article
                 key={note.id}
@@ -101,6 +102,9 @@ export default function Notes() {
                       ['--badge-base-fg' as string]: 'var(--color-page-accent)',
                       ['--badge-hover-bg' as string]: 'var(--color-page-accent)',
                       ['--badge-hover-fg' as string]: '#111111',
+                      backgroundColor: isLanguageActive ? 'var(--color-page-accent)' : 'transparent',
+                      color: isLanguageActive ? '#111111' : 'var(--color-page-accent)',
+                      borderColor: isLanguageActive ? 'var(--color-page-accent)' : 'var(--color-page-accent)',
                     }}
                   >
                     {note.language.toUpperCase()}
@@ -129,6 +133,9 @@ export default function Notes() {
                         ['--badge-base-fg' as string]: 'var(--color-page-accent)',
                         ['--badge-hover-bg' as string]: 'var(--color-page-accent)',
                         ['--badge-hover-fg' as string]: '#111111',
+                        backgroundColor: topicFilter !== 'all' && topicFilter === topic ? 'var(--color-page-accent)' : 'transparent',
+                        color: topicFilter !== 'all' && topicFilter === topic ? '#111111' : 'var(--color-page-accent)',
+                        borderColor: 'var(--color-page-accent)',
                       }}
                     >
                       {topic}

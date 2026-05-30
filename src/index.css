@@ -259,6 +259,21 @@
     border-color: var(--color-accent-lime) !important;
   }
 
+  html:not([data-theme="dark"]) .project-card-lime-pill-active,
+  html:not([data-theme="dark"]) .project-card-lime-pill-active:hover,
+  html:not([data-theme="dark"]) .project-card-lime-pill-active:focus-visible {
+    background-color: var(--color-dark-void) !important;
+    color: var(--color-accent-lime) !important;
+    border-color: var(--color-dark-void) !important;
+  }
+
+  html:not([data-theme="dark"]) .highlight-invert.project-card-lime-pill:hover,
+  html:not([data-theme="dark"]) .highlight-invert.project-card-lime-pill:focus-visible {
+    background-color: var(--color-accent-lime) !important;
+    color: var(--color-dark-void) !important;
+    border-color: var(--color-accent-lime) !important;
+  }
+
   .project-card-role-highlight::selection {
     background-color: var(--color-dark-void);
     color: var(--color-accent-lime);

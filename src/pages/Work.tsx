@@ -212,7 +212,9 @@ export default function Work() {
                 statusLabel={statusLabel}
                 statusKey={project.status}
                 typeLabel={typeLabel || undefined}
+                typeKey={project.type || undefined}
                 topicLabels={topics.map((tag) => consolidatedTopicLabels[tag]?.[lang] || tag)}
+                topicKeys={topics}
                 links={project.links}
                 colors={cardColors}
                 variant="light"
@@ -222,6 +224,9 @@ export default function Work() {
                   const topic = topics[index];
                   if (topic) toggleTopicFilter(topic);
                 }}
+                activeStatusKey={statusFilter}
+                activeType={typeFilter}
+                activeTopic={topicFilter}
               />
             );
           })}

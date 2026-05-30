@@ -17,7 +17,9 @@ type ProjectCardProps = {
   statusLabel: string;
   statusKey: Project['status'] | string;
   typeLabel?: string;
+  typeKey?: string;
   topicLabels: string[];
+  topicKeys?: string[];
   links?: { label: string; url: string }[];
   colors: CardColors;
   variant: 'light' | 'dark';
@@ -25,6 +27,9 @@ type ProjectCardProps = {
   onStatusClick?: (status: string) => void;
   onTypeClick?: () => void;
   onTopicClick?: (index: number) => void;
+  activeStatusKey?: string;
+  activeType?: string;
+  activeTopic?: string;
 };
 
 export default function ProjectCard({
@@ -36,7 +41,9 @@ export default function ProjectCard({
   statusLabel,
   statusKey,
   typeLabel,
+  typeKey,
   topicLabels,
+  topicKeys,
   links,
   colors,
   variant,
@@ -44,6 +51,9 @@ export default function ProjectCard({
   onStatusClick,
   onTypeClick,
   onTopicClick,
+  activeStatusKey,
+  activeType,
+  activeTopic,
 }: ProjectCardProps) {
   const primaryLink = links && links.length > 0 ? links[0] : null;
   const secondaryLinks = links && links.length > 1 ? links.slice(1) : [];
@@ -58,6 +68,8 @@ export default function ProjectCard({
   const usesLimeHighlight = colors.text === 'var(--color-dark-void)';
   const statusPillColor = statusKey === 'archived' && !isDark ? 'var(--color-ink)' : colors.badge;
   const statusPillTextColor = statusKey === 'archived' && !isDark ? 'var(--color-cream)' : '#111111';
+  const isStatusActive = activeStatusKey !== undefined && activeStatusKey !== 'all' && activeStatusKey === statusKey;
+  const isTypeActive = activeType !== undefined && activeType !== 'all' && activeType === typeKey;
   const cardProps = handleCardActivate
     ? {
         role: 'link' as const,
@@ -94,9 +106,9 @@ export default function ProjectCard({
             onStatusClick?.(statusKey);
           }}
           style={{
-            backgroundColor: statusPillColor,
-            color: statusPillTextColor,
-            borderColor: statusPillColor,
+            backgroundColor: isStatusActive ? colors.border : statusPillColor,
+            color: isStatusActive ? 'var(--color-dark-void)' : statusPillTextColor,
+            borderColor: isStatusActive ? colors.border : statusPillColor,
             cursor: onStatusClick ? 'pointer' : 'default',
           }}
         >
@@ -133,7 +145,7 @@ export default function ProjectCard({
         {typeLabel && (
           <button
             type="button"
-            className={`pill-badge pill-badge-contextual ${usesLimeHighlight ? 'project-card-lime-pill highlight-invert' : ''}`}
+            className={`pill-badge pill-badge-contextual ${usesLimeHighlight && !isTypeActive ? 'project-card-lime-pill highlight-invert' : ''} ${usesLimeHighlight && isTypeActive ? 'project-card-lime-pill-active' : ''}`}
             onClick={(event) => {
               event.stopPropagation();
               onTypeClick?.();
@@ -144,17 +156,22 @@ export default function ProjectCard({
               ['--badge-base-fg' as string]: colors.text,
               ['--badge-hover-bg' as string]: usesLimeHighlight ? 'var(--color-dark-void)' : colors.border,
               ['--badge-hover-fg' as string]: usesLimeHighlight ? 'var(--color-accent-lime)' : colors.text,
-              backgroundColor: usesLimeHighlight ? colors.border : 'transparent',
+              backgroundColor: isTypeActive ? colors.border : (usesLimeHighlight ? colors.border : 'transparent'),
+              color: isTypeActive ? 'var(--color-dark-void)' : colors.text,
+              borderColor: colors.border,
             }}
           >
             {typeLabel}
           </button>
         )}
-        {topicLabels.map((topic, index) => (
+        {topicLabels.map((topic, index) => {
+          const topicKey = topicKeys?.[index] || topic;
+          const isTopicActive = activeTopic !== undefined && activeTopic !== 'all' && activeTopic === topicKey;
+          return (
           <button
             type="button"
             key={`${projectId}-${topic}`}
-            className={`pill-badge pill-badge-contextual ${usesLimeHighlight ? 'project-card-lime-pill highlight-invert' : ''}`}
+            className={`pill-badge pill-badge-contextual ${usesLimeHighlight && !isTopicActive ? 'project-card-lime-pill highlight-invert' : ''} ${usesLimeHighlight && isTopicActive ? 'project-card-lime-pill-active' : ''}`}
             onClick={(event) => {
               event.stopPropagation();
               onTopicClick?.(index);
@@ -165,12 +182,15 @@ export default function ProjectCard({
               ['--badge-base-fg' as string]: colors.text,
               ['--badge-hover-bg' as string]: usesLimeHighlight ? 'var(--color-dark-void)' : colors.border,
               ['--badge-hover-fg' as string]: usesLimeHighlight ? 'var(--color-accent-lime)' : colors.text,
-              backgroundColor: usesLimeHighlight ? colors.border : 'transparent',
+              backgroundColor: isTopicActive ? colors.border : (usesLimeHighlight ? colors.border : 'transparent'),
+              color: isTopicActive ? 'var(--color-dark-void)' : colors.text,
+              borderColor: colors.border,
             }}
           >
             {topic}
           </button>
-        ))}
+          );
+        })}
       </div>
 
       {primaryLink && (
