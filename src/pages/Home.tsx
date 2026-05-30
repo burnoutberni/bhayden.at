@@ -1,12 +1,41 @@
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { useLanguage } from '@/hooks/useLanguage';
 import { projects } from '@/data/content';
 import { notes } from '@/data/notes';
 import NewsletterSignup from '@/components/NewsletterSignup';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { getProjectCardColors, projectCardPalette } from '@/lib/projectCardColors';
+
+type EverycalEvent = {
+  id: string;
+  slug: string;
+  title: string;
+  start_date: string;
+  end_date: string | null;
+  start_at_utc?: string;
+  end_at_utc?: string | null;
+  location_name: string | null;
+  location_address: string | null;
+  location_url: string | null;
+  image_url: string | null;
+  tags: string | null;
+  repost_username: string | null;
+  account_username: string;
+};
+
+type EverycalResponse = {
+  events: EverycalEvent[];
+};
 
 export default function Home() {
   const { lang, t } = useLanguage();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
+  const [events, setEvents] = useState<EverycalEvent[]>([]);
+  const [eventsLoading, setEventsLoading] = useState(true);
+  const [eventsError, setEventsError] = useState<string | null>(null);
+  const [currentTime, setCurrentTime] = useState(0);
 
   const navigateToWork = (query: string) => {
     window.scrollTo({ top: 0, behavior: 'auto' });
@@ -41,12 +70,6 @@ export default function Home() {
     .sort((a, b) => getArchiveEndYear(b.startYear, b.endYear) - getArchiveEndYear(a.startYear, a.endYear))
     .slice(0, 5);
 
-  const projectColors = {
-    lime: { border: 'var(--color-accent-lime)', badge: 'var(--color-accent-lime)' },
-    coral: { border: 'var(--color-accent-coral)', badge: 'var(--color-accent-coral)' },
-    cyan: { border: 'var(--color-accent-cyan)', badge: 'var(--color-accent-cyan)' },
-  };
-
   const campaignTopics = new Set([
     'urban mobility',
     'activism',
@@ -59,15 +82,93 @@ export default function Home() {
     'cities',
   ]);
 
+  const getTopicColors = (topics: string[]) => {
+    const hasCampaignTopic = topics.some((topic) => campaignTopics.has(topic.toLowerCase()));
+    if (hasCampaignTopic) return projectCardPalette.lime;
+    return projectCardPalette.cyan;
+  };
+
   const getProjectColors = (project: (typeof projects)[number]) => {
-    if (project.status === 'work_in_progress') return projectColors.coral;
+    return getProjectCardColors(project.type);
+  };
 
-    const hasCampaignTopic = project.topics.some((topic) =>
-      campaignTopics.has(topic.toLowerCase())
-    );
+  useEffect(() => {
+    let isMounted = true;
 
-    if (hasCampaignTopic) return projectColors.lime;
-    return projectColors.cyan;
+    const fetchEvents = async () => {
+      try {
+        setEventsLoading(true);
+        setEventsError(null);
+
+        const response = await fetch('https://events.bhayden.at/api/v1/feeds/nini.json');
+        if (!response.ok) {
+          throw new Error(`Failed to load events (${response.status})`);
+        }
+
+        const data = (await response.json()) as EverycalResponse;
+        if (!isMounted) return;
+
+        const sorted = (data.events || []).slice().sort((a, b) => {
+          const dateA = new Date(a.start_at_utc || a.start_date).getTime();
+          const dateB = new Date(b.start_at_utc || b.start_date).getTime();
+          return dateA - dateB;
+        });
+
+        setEvents(sorted);
+      } catch {
+        if (!isMounted) return;
+        setEventsError(lang === 'de' ? 'Events konnten gerade nicht geladen werden.' : 'Unable to load events right now.');
+      } finally {
+        if (isMounted) setEventsLoading(false);
+      }
+    };
+
+    fetchEvents();
+    const intervalId = window.setInterval(fetchEvents, 1000 * 60 * 5);
+
+    return () => {
+      isMounted = false;
+      window.clearInterval(intervalId);
+    };
+  }, [lang]);
+
+  useEffect(() => {
+    const updateCurrentTime = () => setCurrentTime(Date.now());
+    updateCurrentTime();
+
+    const intervalId = window.setInterval(updateCurrentTime, 1000 * 60);
+    return () => window.clearInterval(intervalId);
+  }, []);
+
+  const upcomingEvents = useMemo(() => {
+    return events
+      .filter((event) => {
+        const endValue = event.end_at_utc || event.end_date || event.start_at_utc || event.start_date;
+        return new Date(endValue).getTime() >= currentTime;
+      })
+      .slice(0, 6);
+  }, [currentTime, events]);
+
+  const formatEventDate = (event: EverycalEvent) => {
+    const startDate = new Date(event.start_at_utc || event.start_date);
+    const endDate = event.end_at_utc || event.end_date ? new Date(event.end_at_utc || event.end_date || event.start_date) : null;
+    const locale = lang === 'de' ? 'de-AT' : 'en-US';
+
+    const dateText = new Intl.DateTimeFormat(locale, {
+      weekday: 'short',
+      day: '2-digit',
+      month: 'short',
+    }).format(startDate);
+
+    const timeFormat = new Intl.DateTimeFormat(locale, {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
+    const startTime = timeFormat.format(startDate);
+    const endTime = endDate ? timeFormat.format(endDate) : null;
+
+    return endTime ? `${dateText} - ${startTime} - ${endTime}` : `${dateText} - ${startTime}`;
   };
 
   return (
@@ -92,7 +193,7 @@ export default function Home() {
         <p className="font-mono text-xs-custom mb-1" style={{ color: 'rgba(245, 241, 232, 0.82)' }}>
           {lang === 'en' ? 'also known as:' : 'auch bekannt als:'}
           {' '}
-          <span className="font-mono" style={{ color: 'var(--color-accent-cyan)' }}>nini</span>
+          <span className="font-mono" style={{ color: 'var(--color-accent-lime)' }}>nini</span>
         </p>
         <p
           className="font-grotesk text-base-custom uppercase tracking-widest mb-10"
@@ -191,12 +292,18 @@ export default function Home() {
               const displayTags = project.topics.slice(0, 3);
 
               return (
-                <a
+                <article
                   key={project.id}
-                  href={project.links?.[0]?.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group block p-6 transition-all duration-300"
+                  className="group block p-6 transition-all duration-300 hover:-translate-y-1 cursor-pointer"
+                  onClick={() => navigate(`/work#${encodeURIComponent(project.id)}`)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      navigate(`/work#${encodeURIComponent(project.id)}`);
+                    }
+                  }}
+                  role="link"
+                  tabIndex={0}
                   style={{
                     backgroundColor: '#1a1a1a',
                     border: `2px solid ${colors.border}`,
@@ -207,7 +314,6 @@ export default function Home() {
                     <button
                       type="button"
                       onClick={(e) => {
-                        e.preventDefault();
                         e.stopPropagation();
                         navigateToWork(`status=${encodeURIComponent(project.status)}`);
                       }}
@@ -232,7 +338,7 @@ export default function Home() {
                     <span
                       className="pill-badge pill-badge-contextual"
                       onClick={(e) => {
-                        e.preventDefault();
+                        e.stopPropagation();
                         navigateToWork(`type=${encodeURIComponent(project.type)}`);
                       }}
                       style={{
@@ -250,7 +356,7 @@ export default function Home() {
                         key={`${project.id}-${tag}`}
                         className="pill-badge pill-badge-contextual"
                         onClick={(e) => {
-                          e.preventDefault();
+                          e.stopPropagation();
                           const topic = project.topics[tagIndex] || project.topics[0] || tag;
                           navigateToWork(`topic=${encodeURIComponent(topic)}`);
                         }}
@@ -266,10 +372,185 @@ export default function Home() {
                       </span>
                     ))}
                   </div>
-                </a>
+
+                  {project.links && project.links.length > 0 && (
+                    <div className="flex gap-3 mt-4">
+                      {project.links.map((link) => (
+                        <a
+                          key={link.url}
+                          href={link.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="font-grotesk text-xs-custom uppercase tracking-widest transition-colors hover:underline"
+                          style={{ color: colors.border, textUnderlineOffset: '3px' }}
+                        >
+                          {link.label + ' \u2192'}
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </article>
               );
             })}
           </div>
+
+          <Link
+            to="/work"
+            className="font-grotesk text-sm-custom inline-flex items-center gap-1 mt-8 transition-colors hover:underline"
+            style={{ color: 'var(--color-accent-lime)', textUnderlineOffset: '4px' }}
+          >
+            {lang === 'de' ? 'Alle Projekte' : 'Browse all work'}
+            <span>{' \u2192'}</span>
+          </Link>
+        </div>
+      </section>
+
+      {/* Events */}
+      <section
+        className="relative py-20 md:py-28 px-6 overflow-hidden"
+        style={{
+          borderBottom: '2px solid var(--color-border-brutalist)',
+          background:
+            'radial-gradient(circle at 12% 22%, rgba(224, 245, 104, 0.2) 0%, transparent 46%), radial-gradient(circle at 86% 18%, rgba(86, 182, 194, 0.18) 0%, transparent 42%), linear-gradient(165deg, #151515 0%, #1a1a1a 60%, #101010 100%)',
+        }}
+      >
+        <div className="events-glow events-glow-left" aria-hidden="true" />
+        <div className="events-glow events-glow-right" aria-hidden="true" />
+        <div className="max-w-[1200px] mx-auto relative z-10">
+          <div className="mb-12">
+            <h2 className="font-serif text-3xl-custom mb-2" style={{ color: '#F5F1E8' }}>
+              {lang === 'de' ? 'Triff mich hier' : 'Meet me here'}
+            </h2>
+            <div className="w-16 h-0.5 mb-4" style={{ backgroundColor: 'var(--color-accent-cyan)' }} />
+            <p
+              className="font-grotesk text-sm-custom max-w-[700px]"
+              style={{ color: 'rgba(245, 241, 232, 0.86)' }}
+            >
+              {lang === 'de'
+                ? 'Hier findest du kommende Termine, Lesekreise und Veranstaltungen. Alles wird automatisch von EveryCal synchronisiert - immer aktuell, ohne manuelle Pflege.'
+                : 'Find upcoming events, reading circles, and gatherings here. This section syncs automatically from EveryCal, so it always stays up to date.'}
+            </p>
+          </div>
+
+          <div className="events-frame-wrap">
+            {eventsLoading && (
+              <div className="events-loading-grid" aria-live="polite">
+                {Array.from({ length: 3 }).map((_, index) => (
+                  <div key={`event-skeleton-${index}`} className="events-card events-card-skeleton" />
+                ))}
+              </div>
+            )}
+
+            {!eventsLoading && eventsError && (
+              <div className="events-error-state">
+                <p className="font-grotesk text-sm-custom" style={{ color: '#F5F1E8' }}>{eventsError}</p>
+              </div>
+            )}
+
+            {!eventsLoading && !eventsError && upcomingEvents.length === 0 && (
+              <div className="events-error-state">
+                <p className="font-grotesk text-sm-custom" style={{ color: '#F5F1E8' }}>
+                  {lang === 'de' ? 'Derzeit sind keine kommenden Events gelistet.' : 'No upcoming events listed right now.'}
+                </p>
+              </div>
+            )}
+
+            {!eventsLoading && !eventsError && upcomingEvents.length > 0 && (
+              <div className="events-grid">
+                {upcomingEvents.map((event) => {
+                  const eventHref = `https://events.bhayden.at/@${event.account_username}/${event.slug}`;
+                  const tags = event.tags ? event.tags.split(',').map((tag) => tag.trim()).filter(Boolean).slice(0, 3) : [];
+
+                  return (
+                    <a
+                      key={event.id}
+                      href={eventHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="events-card"
+                    >
+                      {event.image_url && (
+                        <div className="events-card-image-wrap">
+                          <img src={event.image_url} alt={event.title} className="events-card-image" loading="lazy" />
+                        </div>
+                      )}
+                      <div className="events-card-body">
+                        <p className="events-card-date">{formatEventDate(event)}</p>
+                        <h3 className="events-card-title">{event.title}</h3>
+                        {(event.location_name || event.location_address || event.location_url) && (
+                          <div className="events-card-location-wrap">
+                            {event.location_name && <p className="events-card-location">{event.location_name}</p>}
+                            {event.location_address && <p className="events-card-location-detail">{event.location_address}</p>}
+                            {event.location_url && (
+                              <a
+                                href={event.location_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="events-card-location-link"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                {lang === 'de' ? 'Ort ansehen' : 'View venue'}
+                              </a>
+                            )}
+                          </div>
+                        )}
+                        <div className="events-card-meta-row">
+                          {isMobile ? (
+                            <span className="events-card-owner">@{event.account_username}</span>
+                          ) : (
+                            <a
+                              href={`https://events.bhayden.at/@${event.account_username}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="events-card-owner events-card-owner-link"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              @{event.account_username}
+                            </a>
+                          )}
+                          <span className="events-card-arrow" aria-hidden="true">{String.fromCharCode(8599)}</span>
+                        </div>
+                        {tags.length > 0 && (
+                          <div className="events-card-tags">
+                            {tags.map((tag) => (
+                              <a
+                                key={`${event.id}-${tag}`}
+                                className="pill-badge pill-badge-contextual"
+                                href={`https://events.bhayden.at/?tags=${encodeURIComponent(tag)}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(e) => e.stopPropagation()}
+                                style={{
+                                  ['--badge-base-border' as string]: 'rgba(86, 182, 194, 0.62)',
+                                  ['--badge-base-fg' as string]: 'rgba(245, 241, 232, 0.9)',
+                                  ['--badge-hover-bg' as string]: 'var(--color-accent-cyan)',
+                                  ['--badge-hover-fg' as string]: '#111111',
+                                }}
+                              >
+                                {tag}
+                              </a>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </a>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          <a
+            href="https://events.bhayden.at/@nini"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-grotesk text-sm-custom inline-flex items-center gap-1 mt-6 transition-colors hover:underline"
+            style={{ color: 'var(--color-accent-cyan)', textUnderlineOffset: '4px' }}
+          >
+            {lang === 'de' ? 'In EveryCal oeffnen' : 'Open in EveryCal'}
+            <span>{' \u2197'}</span>
+          </a>
         </div>
       </section>
 
@@ -297,9 +578,15 @@ export default function Home() {
             {archiveHighlights.map((entry, i) => {
               const title = lang === 'de' && entry.titleDe ? entry.titleDe : entry.title;
               const role = lang === 'de' && entry.roleDe ? entry.roleDe : entry.role;
-              const period = lang === 'de' && entry.dateLabelDe
-                ? entry.dateLabelDe
-                : (entry.dateLabel || (entry.endYear ? `${entry.startYear} - ${entry.endYear}` : `${entry.startYear ?? ''}`));
+              const hasSingleYearRange = Boolean(entry.startYear && entry.endYear && entry.startYear === entry.endYear);
+              const hasArchivedSingleStartYear = Boolean(entry.status === 'archived' && entry.startYear && !entry.endYear);
+              const period = hasSingleYearRange || hasArchivedSingleStartYear
+                ? `${entry.startYear ?? ''}`
+                : entry.endYear
+                  ? `${entry.startYear} - ${entry.endYear}`
+                  : entry.startYear
+                    ? `${entry.startYear} - ${lang === 'de' ? 'heute' : 'now'}`
+                    : '';
 
               return (
               <li
@@ -340,12 +627,15 @@ export default function Home() {
           <h2 className="font-serif text-3xl-custom mb-2" style={{ color: 'var(--color-ink)' }}>
             {t.notes.title}
           </h2>
+          <div className="w-16 h-0.5 mb-4" style={{ backgroundColor: 'var(--color-accent-coral)' }} />
           <p className="font-grotesk text-sm-custom mb-10" style={{ color: 'var(--color-ink-muted)' }}>
             {t.notes.subtitle}
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             {latestNotes.map((note) => {
+              const noteColors = getTopicColors(note.topics);
+
               return (
                 <Link
                   key={note.id}
@@ -353,7 +643,7 @@ export default function Home() {
                   className="block p-6 transition-all duration-300 hover:-translate-y-1"
                   style={{
                     backgroundColor: 'var(--color-editor-bg)',
-                    border: '2px solid var(--color-border-brutalist)',
+                    border: `2px solid ${noteColors.border}`,
                     borderRadius: 'var(--radius-soft)',
                   }}
                 >
@@ -370,12 +660,18 @@ export default function Home() {
                     {note.topics.slice(0, 3).map((tag) => (
                       <span
                         key={tag}
-                        className="pill-badge"
+                        className="pill-badge pill-badge-contextual"
                         onClick={(e) => {
                           e.preventDefault();
                           navigateToNotes(`topic=${encodeURIComponent(tag)}`);
                         }}
-                        style={{ fontSize: '9px', padding: '2px 8px', cursor: 'pointer' }}
+                        style={{
+                          cursor: 'pointer',
+                          ['--badge-base-border' as string]: noteColors.border,
+                          ['--badge-base-fg' as string]: 'var(--color-ink)',
+                          ['--badge-hover-bg' as string]: noteColors.border,
+                          ['--badge-hover-fg' as string]: '#111111',
+                        }}
                       >
                         {tag}
                       </span>
@@ -389,7 +685,7 @@ export default function Home() {
           <Link
             to="/notes"
             className="font-grotesk text-sm-custom inline-flex items-center gap-1 transition-colors hover:underline"
-            style={{ color: 'var(--color-accent-cyan)', textUnderlineOffset: '4px' }}
+            style={{ color: 'var(--color-accent-coral)', textUnderlineOffset: '4px' }}
           >
             {t.notes.allNotes}
             <span>{' \u2192'}</span>
