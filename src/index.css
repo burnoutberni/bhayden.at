@@ -527,17 +527,15 @@
     flex-direction: column;
     min-height: 100%;
     cursor: pointer;
-    border: 1px solid rgba(86, 182, 194, 0.62);
+    border: 2px solid var(--color-accent-cyan);
     border-radius: var(--radius-soft);
     background: rgba(9, 11, 11, 0.74);
     overflow: hidden;
-    transition: transform 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
+    transition: transform 200ms ease;
   }
 
   .events-card:hover {
     transform: translateY(-4px);
-    border-color: var(--color-accent-cyan);
-    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.32);
   }
 
   .events-card-image-wrap {
