@@ -270,16 +270,16 @@
     border-color: var(--color-dark-void) !important;
   }
 
-  html:not([data-theme="dark"]) .highlight-invert.project-card-lime-pill:hover,
-  html:not([data-theme="dark"]) .highlight-invert.project-card-lime-pill:focus-visible {
+  html:not([data-theme="dark"]) .project-card-selection:not(.project-card-theme-dark) .highlight-invert.project-card-lime-pill:hover,
+  html:not([data-theme="dark"]) .project-card-selection:not(.project-card-theme-dark) .highlight-invert.project-card-lime-pill:focus-visible {
     background-color: var(--color-accent-lime) !important;
     color: var(--color-dark-void) !important;
     border-color: var(--color-accent-lime) !important;
   }
 
-  .project-card-role-highlight::selection {
-    background-color: var(--color-dark-void);
-    color: var(--color-accent-lime);
+  .project-card-selection .project-card-role-highlight::selection {
+    background-color: var(--color-accent-lime) !important;
+    color: var(--color-dark-void) !important;
   }
 
   .highlight-invert {
@@ -323,8 +323,8 @@
     text-decoration: underline;
   }
 
-  html:not([data-theme="dark"]) .project-card-selection:hover:not(:has(.project-card-secondary-link:hover)):not(:has(.pill-badge:hover)) .project-card-primary-link.highlight-invert,
-  html:not([data-theme="dark"]) .project-card-selection:focus-within:not(:has(.project-card-secondary-link:focus-visible)):not(:has(.pill-badge:focus)) .project-card-primary-link.highlight-invert {
+  html:not([data-theme="dark"]) .project-card-selection:not(.project-card-theme-dark):hover:not(:has(.project-card-secondary-link:hover)):not(:has(.pill-badge:hover)) .project-card-primary-link.highlight-invert,
+  html:not([data-theme="dark"]) .project-card-selection:not(.project-card-theme-dark):focus-within:not(:has(.project-card-secondary-link:focus-visible)):not(:has(.pill-badge:focus)) .project-card-primary-link.highlight-invert {
     background-color: var(--color-dark-void) !important;
     color: var(--color-accent-lime) !important;
   }
