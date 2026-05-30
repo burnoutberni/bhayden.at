@@ -54,6 +54,7 @@ export default function App() {
       : pathname.startsWith('/about') || pathname.startsWith('/imprint') || pathname.startsWith('/contact')
         ? 'var(--color-accent-cyan)'
       : 'var(--color-accent-lime)';
+  const isLimeAccent = pageAccent === 'var(--color-accent-lime)';
 
   return (
     <ThemeProvider>
@@ -64,6 +65,12 @@ export default function App() {
             backgroundColor: 'var(--color-cream)',
             color: 'var(--color-ink)',
             ['--color-page-accent' as string]: pageAccent,
+            ['--accent-highlight-fg' as string]: isLimeAccent ? 'var(--color-dark-void)' : 'var(--color-page-accent)',
+            ['--accent-highlight-bg' as string]: isLimeAccent ? 'var(--color-page-accent)' : 'transparent',
+            ['--accent-highlight-padding' as string]: isLimeAccent ? '0 0.25rem' : '0',
+            ['--accent-highlight-icon-padding' as string]: isLimeAccent ? '1px' : '0',
+            ['--highlight-invert-hover-bg' as string]: isLimeAccent ? 'var(--color-dark-void)' : 'transparent',
+            ['--highlight-invert-hover-fg' as string]: isLimeAccent ? 'var(--color-accent-lime)' : 'var(--accent-highlight-fg)',
           }}
         >
           <ScrollToTop />

@@ -208,15 +208,15 @@
   }
 
   .accent-highlight {
-    color: var(--color-dark-void);
-    background-color: var(--color-page-accent);
-    padding: 0 0.25rem;
+    color: var(--accent-highlight-fg, var(--color-page-accent));
+    background-color: var(--accent-highlight-bg, transparent);
+    padding: var(--accent-highlight-padding, 0);
   }
 
   .accent-highlight-icon {
-    color: var(--color-dark-void);
-    background-color: var(--color-page-accent);
-    padding: 1px;
+    color: var(--accent-highlight-fg, var(--color-page-accent));
+    background-color: var(--accent-highlight-bg, transparent);
+    padding: var(--accent-highlight-icon-padding, 0);
   }
 
   html[data-theme="dark"] .accent-highlight {
@@ -285,8 +285,8 @@
 
   html:not([data-theme="dark"]) .highlight-invert:hover,
   html:not([data-theme="dark"]) .highlight-invert:focus-visible {
-    background-color: var(--color-dark-void) !important;
-    color: var(--color-accent-lime) !important;
+    background-color: var(--highlight-invert-hover-bg, transparent) !important;
+    color: var(--highlight-invert-hover-fg, var(--accent-highlight-fg, var(--color-page-accent))) !important;
   }
 
   .project-card-theme-dark .highlight-invert:hover,
@@ -305,8 +305,8 @@
 
   html:not([data-theme="dark"]) .highlight-invert-group:hover .highlight-invert-icon,
   html:not([data-theme="dark"]) .highlight-invert-group:focus-within .highlight-invert-icon {
-    background-color: var(--color-dark-void) !important;
-    color: var(--color-accent-lime) !important;
+    background-color: var(--highlight-invert-hover-bg, transparent) !important;
+    color: var(--highlight-invert-hover-fg, var(--accent-highlight-fg, var(--color-page-accent))) !important;
   }
 
   .project-card-selection:hover:not(:has(.pill-badge:hover)) .project-card-secondary-link,
@@ -399,6 +399,12 @@
     background-color: var(--badge-hover-bg, var(--color-page-accent));
     color: var(--badge-hover-fg, var(--color-dark-void));
     border-color: var(--badge-hover-bg, var(--color-page-accent));
+  }
+
+  .pill-badge-underline-hover:hover {
+    background-color: transparent;
+    color: inherit;
+    border-color: inherit;
   }
 
   .pill-badge-contextual {
