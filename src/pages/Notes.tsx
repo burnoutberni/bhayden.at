@@ -113,7 +113,7 @@ export default function Notes() {
                 </div>
                 <Link to={`/notes/${note.slug}`} style={{ color: 'var(--color-page-accent)' }}>
                   <h3
-                    className="font-grotesk text-xl-custom font-medium mb-2 underline-offset-4 hover:underline"
+                    className="font-serif text-xl-custom mb-2 underline-offset-4 hover:underline"
                     style={{ color: 'var(--color-page-accent)' }}
                   >
                     {note.title}

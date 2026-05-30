@@ -610,7 +610,7 @@ export default function Home() {
                   <p className="font-mono text-xs-custom mb-2" style={{ color: 'var(--color-ink-muted)' }}>
                     {note.date}
                   </p>
-                  <h3 className="font-grotesk text-xl-custom mb-2 leading-tight" style={{ color: 'var(--color-ink)' }}>
+                  <h3 className="font-serif text-xl-custom mb-2 leading-tight" style={{ color: 'var(--color-ink)' }}>
                     {note.title}
                   </h3>
                   <p className="font-grotesk text-sm-custom line-clamp-2 mb-3" style={{ color: 'var(--color-ink-muted)' }}>
@@ -620,7 +620,7 @@ export default function Home() {
                     {note.topics.slice(0, 3).map((tag) => (
                       <span
                         key={tag}
-                        className="pill-badge pill-badge-contextual"
+                        className="pill-badge pill-badge-contextual home-notes-topic-pill"
                         onClick={(e) => {
                           e.preventDefault();
                           navigateToNotes(`topic=${encodeURIComponent(tag)}`);
@@ -628,7 +628,7 @@ export default function Home() {
                         style={{
                           cursor: 'pointer',
                           ['--badge-base-border' as string]: 'var(--color-accent-coral)',
-                          ['--badge-base-fg' as string]: 'var(--color-ink)',
+                          ['--badge-base-fg' as string]: 'var(--color-accent-coral)',
                           ['--badge-hover-bg' as string]: 'var(--color-accent-coral)',
                           ['--badge-hover-fg' as string]: '#111111',
                         }}

@@ -455,6 +455,13 @@
     border-color: var(--badge-base-border, var(--color-border-brutalist));
   }
 
+  .home-notes-topic-pill:hover,
+  .home-notes-topic-pill:focus-visible {
+    background-color: transparent;
+    color: var(--color-accent-coral);
+    border-color: var(--color-accent-coral);
+  }
+
   .pill-button {
     display: inline-flex;
     align-items: center;
