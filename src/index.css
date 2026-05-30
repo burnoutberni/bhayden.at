@@ -211,6 +211,9 @@
     color: var(--accent-highlight-fg, var(--color-page-accent));
     background-color: var(--accent-highlight-bg, transparent);
     padding: var(--accent-highlight-padding, 0);
+    display: inline-block;
+    line-height: 1;
+    vertical-align: baseline;
   }
 
   .accent-highlight-icon {
