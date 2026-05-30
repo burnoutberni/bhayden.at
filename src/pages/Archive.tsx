@@ -170,7 +170,7 @@ export default function Archive() {
                 {/* Dot */}
                 <div
                   className="absolute left-0 top-1.5 w-2 h-2 rounded-full transition-transform group-hover:scale-150"
-                  style={{ backgroundColor: 'var(--color-accent-cyan)' }}
+                  style={{ backgroundColor: 'var(--color-page-accent)' }}
                 />
 
                 {/* Card */}
@@ -200,7 +200,7 @@ export default function Archive() {
                       title
                     )}
                   </h3>
-                  <p className="font-grotesk text-sm-custom mb-2" style={{ color: 'var(--color-accent-cyan)' }}>
+                  <p className="font-grotesk text-sm-custom mb-2" style={{ color: 'var(--color-page-accent)' }}>
                     {role}
                   </p>
                   <p className="font-grotesk text-sm-custom mb-3" style={{ color: 'var(--color-ink-muted)' }}>
@@ -213,9 +213,9 @@ export default function Archive() {
                         onClick={() => toggleTypeFilter(entry.type)}
                         className="pill-badge"
                         style={{
-                          backgroundColor: typeFilter === entry.type ? 'var(--color-accent-lime)' : 'transparent',
+                          backgroundColor: typeFilter === entry.type ? 'var(--color-page-accent)' : 'transparent',
                           color: typeFilter === entry.type ? 'var(--color-dark-void)' : 'var(--color-ink)',
-                          borderColor: typeFilter === entry.type ? 'var(--color-accent-lime)' : 'var(--color-border-brutalist)',
+                          borderColor: typeFilter === entry.type ? 'var(--color-page-accent)' : 'var(--color-border-brutalist)',
                         }}
                       >
                         {typeLabel}
@@ -228,9 +228,9 @@ export default function Archive() {
                         onClick={() => toggleTopicFilter(tag)}
                         className="pill-badge"
                         style={{
-                          backgroundColor: topicFilter === tag ? 'var(--color-accent-lime)' : 'transparent',
+                          backgroundColor: topicFilter === tag ? 'var(--color-page-accent)' : 'transparent',
                           color: topicFilter === tag ? 'var(--color-dark-void)' : 'var(--color-ink)',
-                          borderColor: topicFilter === tag ? 'var(--color-accent-lime)' : 'var(--color-border-brutalist)',
+                          borderColor: topicFilter === tag ? 'var(--color-page-accent)' : 'var(--color-border-brutalist)',
                         }}
                       >
                         {tag}
@@ -246,7 +246,7 @@ export default function Archive() {
                           target="_blank"
                           rel="noopener noreferrer"
                           className="font-grotesk text-xs-custom uppercase tracking-widest transition-colors hover:underline"
-                          style={{ color: 'var(--color-accent-cyan)', textUnderlineOffset: '3px' }}
+                          style={{ color: 'var(--color-page-accent)', textUnderlineOffset: '3px' }}
                         >
                           {link.label}
                           <ExternalLinkGlyph />
@@ -271,7 +271,7 @@ export default function Archive() {
           <Link
             to="/work"
             className="font-grotesk text-sm-custom inline-flex items-center gap-1 transition-colors link-with-arrow"
-            style={{ color: 'var(--color-accent-cyan)', textUnderlineOffset: '4px' }}
+            style={{ color: 'var(--color-page-accent)', textUnderlineOffset: '4px' }}
           >
             <span className="link-label">{lang === 'de' ? 'Zur Work-Seite' : 'Go to Work'}</span>
             <span className="link-arrow" aria-hidden="true">→</span>

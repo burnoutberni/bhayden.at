@@ -51,6 +51,8 @@ export default function App() {
     ? 'var(--color-accent-coral)'
     : pathname.startsWith('/work')
       ? 'var(--color-accent-lime)'
+      : pathname.startsWith('/archive')
+        ? 'var(--color-accent-cyan)'
       : pathname.startsWith('/about') || pathname.startsWith('/imprint') || pathname.startsWith('/contact')
         ? 'var(--color-accent-cyan)'
       : 'var(--color-accent-lime)';
