@@ -213,6 +213,7 @@ export const projects: Project[] = [
     links: [
       { label: 'Website', url: 'https://mau.se' },
       { label: 'Programme', url: 'https://mau.se/en/study-education/programme/sgime/' },
+      { label: 'Thesis', url: 'https://mau.diva-portal.org/smash/record.jsf?pid=diva2%3A1866174&dswid=3794' },
     ],
     topics: ['research'],
   },
