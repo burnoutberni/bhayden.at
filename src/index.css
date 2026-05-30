@@ -462,6 +462,13 @@
     border-color: var(--color-accent-coral);
   }
 
+  .home-events-tag-pill:hover,
+  .home-events-tag-pill:focus-visible {
+    background-color: transparent;
+    color: var(--badge-base-fg, var(--color-accent-cyan));
+    border-color: var(--badge-base-border, rgba(86, 182, 194, 0.62));
+  }
+
   .pill-button {
     display: inline-flex;
     align-items: center;

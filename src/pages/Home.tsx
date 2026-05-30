@@ -471,14 +471,14 @@ export default function Home() {
                             {tags.map((tag) => (
                               <a
                                 key={`${event.id}-${tag}`}
-                                className="pill-badge pill-badge-contextual"
+                                className="pill-badge pill-badge-contextual home-events-tag-pill"
                                 href={`https://events.bhayden.at/?tags=${encodeURIComponent(tag)}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 onClick={(e) => e.stopPropagation()}
                                 style={{
                                   ['--badge-base-border' as string]: 'rgba(86, 182, 194, 0.62)',
-                                  ['--badge-base-fg' as string]: 'rgba(245, 241, 232, 0.9)',
+                                  ['--badge-base-fg' as string]: 'var(--color-accent-cyan)',
                                   ['--badge-hover-bg' as string]: 'var(--color-accent-cyan)',
                                   ['--badge-hover-fg' as string]: '#111111',
                                 }}
