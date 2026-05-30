@@ -56,16 +56,16 @@ export default function NewsletterSignup({ borderedTop = true }: NewsletterSignu
           {t.notesPage.privacy}
         </p>
 
-        <div className="flex items-center justify-center gap-2 mt-6">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-page-accent-text)' }}>
+        <div className="highlight-invert-group flex items-center justify-center gap-2 mt-6">
+          <svg className="accent-highlight-icon highlight-invert-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M4 11a9 9 0 0 1 9 9" />
             <path d="M4 4a16 16 0 0 1 16 16" />
             <circle cx="5" cy="19" r="1" />
           </svg>
           <a
             href="/rss.xml"
-            className="font-grotesk text-sm-custom transition-colors hover:underline"
-            style={{ color: 'var(--color-page-accent-text)', textUnderlineOffset: '3px' }}
+            className="accent-highlight highlight-invert font-grotesk text-sm-custom transition-colors hover:underline"
+            style={{ textUnderlineOffset: '3px' }}
           >
             {t.notesPage.rss}
           </a>

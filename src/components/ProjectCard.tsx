@@ -5,6 +5,7 @@ import ExternalLinkGlyph from '@/components/ExternalLinkGlyph';
 type CardColors = {
   border: string;
   badge: string;
+  text: string;
 };
 
 type ProjectCardProps = {
@@ -54,6 +55,7 @@ export default function ProjectCard({
   const isDark = variant === 'dark';
   const cardTextColor = isDark ? '#F5F1E8' : 'var(--color-ink)';
   const mutedColor = isDark ? 'rgba(245, 241, 232, 0.82)' : 'var(--color-ink-muted)';
+  const usesLimeHighlight = !isDark && colors.text === 'var(--color-dark-void)';
   const statusPillColor = statusKey === 'archived' && !isDark ? 'var(--color-ink)' : colors.badge;
   const statusPillTextColor = statusKey === 'archived' && !isDark ? 'var(--color-cream)' : '#111111';
   const cardProps = handleCardActivate
@@ -113,8 +115,13 @@ export default function ProjectCard({
       </h3>
 
       {role && (
-        <p className="font-grotesk text-sm-custom mb-2" style={{ color: colors.border }}>
-          {role}
+        <p className="font-grotesk text-sm-custom mb-2" style={{ color: colors.text }}>
+          <span
+            className={usesLimeHighlight ? 'accent-highlight project-card-role-highlight' : ''}
+            style={usesLimeHighlight ? { padding: 0 } : undefined}
+          >
+            {role}
+          </span>
         </p>
       )}
 
@@ -126,7 +133,7 @@ export default function ProjectCard({
         {typeLabel && (
           <button
             type="button"
-            className="pill-badge pill-badge-contextual"
+            className={`pill-badge pill-badge-contextual ${usesLimeHighlight ? 'project-card-lime-pill highlight-invert' : ''}`}
             onClick={(event) => {
               event.stopPropagation();
               onTypeClick?.();
@@ -134,9 +141,10 @@ export default function ProjectCard({
             style={{
               cursor: onTypeClick ? 'pointer' : 'default',
               ['--badge-base-border' as string]: colors.border,
-              ['--badge-base-fg' as string]: colors.border,
-              ['--badge-hover-bg' as string]: colors.border,
-              ['--badge-hover-fg' as string]: '#111111',
+              ['--badge-base-fg' as string]: colors.text,
+              ['--badge-hover-bg' as string]: usesLimeHighlight ? 'var(--color-dark-void)' : colors.border,
+              ['--badge-hover-fg' as string]: usesLimeHighlight ? 'var(--color-accent-lime)' : colors.text,
+              backgroundColor: usesLimeHighlight ? colors.border : 'transparent',
             }}
           >
             {typeLabel}
@@ -146,7 +154,7 @@ export default function ProjectCard({
           <button
             type="button"
             key={`${projectId}-${topic}`}
-            className="pill-badge pill-badge-contextual"
+            className={`pill-badge pill-badge-contextual ${usesLimeHighlight ? 'project-card-lime-pill highlight-invert' : ''}`}
             onClick={(event) => {
               event.stopPropagation();
               onTopicClick?.(index);
@@ -154,9 +162,10 @@ export default function ProjectCard({
             style={{
               cursor: onTopicClick ? 'pointer' : 'default',
               ['--badge-base-border' as string]: colors.border,
-              ['--badge-base-fg' as string]: colors.border,
-              ['--badge-hover-bg' as string]: colors.border,
-              ['--badge-hover-fg' as string]: '#111111',
+              ['--badge-base-fg' as string]: colors.text,
+              ['--badge-hover-bg' as string]: usesLimeHighlight ? 'var(--color-dark-void)' : colors.border,
+              ['--badge-hover-fg' as string]: usesLimeHighlight ? 'var(--color-accent-lime)' : colors.text,
+              backgroundColor: usesLimeHighlight ? colors.border : 'transparent',
             }}
           >
             {topic}
@@ -171,8 +180,12 @@ export default function ProjectCard({
             target="_blank"
             rel="noopener noreferrer"
             onClick={(event) => event.stopPropagation()}
-            className="project-card-link project-card-primary-link font-grotesk text-xs-custom uppercase tracking-widest transition-colors hover:underline"
-            style={{ color: colors.border, textUnderlineOffset: '3px' }}
+            className={`project-card-link project-card-primary-link font-grotesk text-xs-custom uppercase tracking-widest transition-colors hover:underline ${usesLimeHighlight ? 'accent-highlight highlight-invert' : ''}`}
+            style={{
+              color: usesLimeHighlight ? undefined : colors.text,
+              padding: usesLimeHighlight ? 0 : undefined,
+              textUnderlineOffset: '3px',
+            }}
           >
             {primaryLink.label}
             <ExternalLinkGlyph />
@@ -184,9 +197,10 @@ export default function ProjectCard({
               target="_blank"
               rel="noopener noreferrer"
               onClick={(event) => event.stopPropagation()}
-              className="project-card-link project-card-secondary-link font-grotesk text-xs-custom uppercase tracking-widest hover:underline"
+            className={`project-card-link project-card-secondary-link font-grotesk text-xs-custom uppercase tracking-widest hover:underline ${usesLimeHighlight ? 'accent-highlight highlight-invert' : ''}`}
               style={{
-                color: colors.border,
+                color: usesLimeHighlight ? undefined : colors.text,
+                padding: usesLimeHighlight ? 0 : undefined,
                 textUnderlineOffset: '3px',
                 transitionDelay: `${index * 55}ms`,
               }}

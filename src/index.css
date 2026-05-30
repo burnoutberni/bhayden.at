@@ -20,7 +20,7 @@
     --color-accent-cyan: #56B6C2;
     --color-accent-orange: #E5C07B;
     --color-page-accent: var(--color-accent-lime);
-    --color-page-accent-text: var(--color-ink-muted);
+    --color-page-accent-text: #111111;
     --events-section-bg: radial-gradient(circle at 12% 22%, rgba(224, 245, 104, 0.2) 0%, transparent 46%), radial-gradient(circle at 86% 18%, rgba(86, 182, 194, 0.18) 0%, transparent 42%), linear-gradient(165deg, #f4f4f1 0%, #efefec 60%, #e8e8e4 100%);
 
     --text-xs: 10px;
@@ -79,7 +79,7 @@
     --color-border-brutalist-inverse: #111111;
     --shadow-brutal: 8px 8px 0px 0px #EFEFEF;
     --shadow-brutal-inverse: 8px 8px 0px 0px #111111;
-    --color-page-accent-text: var(--color-page-accent);
+    --color-page-accent-text: #111111;
     --events-section-bg: radial-gradient(circle at 12% 22%, rgba(224, 245, 104, 0.2) 0%, transparent 46%), radial-gradient(circle at 86% 18%, rgba(86, 182, 194, 0.18) 0%, transparent 42%), linear-gradient(165deg, #151515 0%, #1a1a1a 60%, #101010 100%);
 
     --background: 0 0% 6.7%;
@@ -129,8 +129,8 @@
   }
 
   ::selection {
-    background-color: var(--color-accent-lime);
-    color: var(--color-ink);
+    background-color: var(--color-page-accent);
+    color: var(--color-page-accent-text);
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -188,6 +188,11 @@
     text-decoration-line: none !important;
   }
 
+  .link-arrow-left {
+    margin-left: 0;
+    margin-right: 0.18em;
+  }
+
   .link-with-arrow:hover .link-label,
   .link-with-arrow:focus-visible .link-label {
     text-decoration: underline;
@@ -202,6 +207,67 @@
     transition: color 220ms ease, opacity 220ms ease;
   }
 
+  .accent-highlight {
+    color: var(--color-dark-void);
+    background-color: var(--color-page-accent);
+    padding: 0 0.25rem;
+  }
+
+  .accent-highlight-icon {
+    color: var(--color-dark-void);
+    background-color: var(--color-page-accent);
+    padding: 1px;
+  }
+
+  html[data-theme="dark"] .accent-highlight {
+    color: var(--color-page-accent);
+    background-color: transparent;
+    padding: 0;
+  }
+
+  html[data-theme="dark"] .accent-highlight-icon {
+    color: var(--color-page-accent);
+    background-color: transparent;
+    padding: 0;
+  }
+
+  html[data-theme="dark"] .project-card-lime-pill,
+  html[data-theme="dark"] .project-card-lime-pill:hover,
+  html[data-theme="dark"] .project-card-lime-pill:focus-visible {
+    color: var(--color-accent-lime) !important;
+    background-color: transparent !important;
+    border-color: var(--color-accent-lime) !important;
+  }
+
+  .project-card-role-highlight::selection {
+    background-color: var(--color-dark-void);
+    color: var(--color-accent-lime);
+  }
+
+  .highlight-invert {
+    transition: background-color 180ms ease, color 180ms ease;
+  }
+
+  html:not([data-theme="dark"]) .highlight-invert:hover,
+  html:not([data-theme="dark"]) .highlight-invert:focus-visible {
+    background-color: var(--color-dark-void) !important;
+    color: var(--color-accent-lime) !important;
+  }
+
+  .highlight-invert-group {
+    transition: background-color 180ms ease, color 180ms ease;
+  }
+
+  .highlight-invert-group .highlight-invert-icon {
+    transition: background-color 180ms ease, color 180ms ease;
+  }
+
+  html:not([data-theme="dark"]) .highlight-invert-group:hover .highlight-invert-icon,
+  html:not([data-theme="dark"]) .highlight-invert-group:focus-within .highlight-invert-icon {
+    background-color: var(--color-dark-void) !important;
+    color: var(--color-accent-lime) !important;
+  }
+
   .project-card-selection:hover .project-card-secondary-link,
   .project-card-selection:focus-within .project-card-secondary-link {
     color: var(--color-ink-muted) !important;
@@ -211,6 +277,12 @@
   .project-card-selection:hover:not(:has(.project-card-secondary-link:hover)) .project-card-primary-link,
   .project-card-selection:focus-within:not(:has(.project-card-secondary-link:focus-visible)) .project-card-primary-link {
     text-decoration: underline;
+  }
+
+  html:not([data-theme="dark"]) .project-card-selection:hover:not(:has(.project-card-secondary-link:hover)) .project-card-primary-link.highlight-invert,
+  html:not([data-theme="dark"]) .project-card-selection:focus-within:not(:has(.project-card-secondary-link:focus-visible)) .project-card-primary-link.highlight-invert {
+    background-color: var(--color-dark-void) !important;
+    color: var(--color-accent-lime) !important;
   }
 
   .project-card-links:has(.project-card-link:hover) .project-card-link:not(:hover) {
@@ -269,17 +341,17 @@
   }
 
   .pill-badge:hover {
-    background-color: var(--color-accent-lime);
+    background-color: var(--color-page-accent);
     color: var(--color-dark-void);
-    border-color: var(--color-accent-lime);
+    border-color: var(--color-page-accent);
     text-decoration: underline;
     text-underline-offset: 3px;
   }
 
   .pill-badge-contextual:hover {
-    background-color: var(--badge-hover-bg, var(--color-accent-lime));
+    background-color: var(--badge-hover-bg, var(--color-page-accent));
     color: var(--badge-hover-fg, var(--color-dark-void));
-    border-color: var(--badge-hover-bg, var(--color-accent-lime));
+    border-color: var(--badge-hover-bg, var(--color-page-accent));
   }
 
   .pill-badge-contextual {
