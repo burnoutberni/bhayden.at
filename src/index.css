@@ -21,6 +21,7 @@
     --color-accent-orange: #E5C07B;
     --color-page-accent: var(--color-accent-lime);
     --color-page-accent-text: var(--color-ink-muted);
+    --events-section-bg: radial-gradient(circle at 12% 22%, rgba(224, 245, 104, 0.2) 0%, transparent 46%), radial-gradient(circle at 86% 18%, rgba(86, 182, 194, 0.18) 0%, transparent 42%), linear-gradient(165deg, #f4f4f1 0%, #efefec 60%, #e8e8e4 100%);
 
     --text-xs: 10px;
     --text-sm: 12px;
@@ -79,6 +80,7 @@
     --shadow-brutal: 8px 8px 0px 0px #EFEFEF;
     --shadow-brutal-inverse: 8px 8px 0px 0px #111111;
     --color-page-accent-text: var(--color-page-accent);
+    --events-section-bg: radial-gradient(circle at 12% 22%, rgba(224, 245, 104, 0.2) 0%, transparent 46%), radial-gradient(circle at 86% 18%, rgba(86, 182, 194, 0.18) 0%, transparent 42%), linear-gradient(165deg, #151515 0%, #1a1a1a 60%, #101010 100%);
 
     --background: 0 0% 6.7%;
     --foreground: 0 0% 93.7%;

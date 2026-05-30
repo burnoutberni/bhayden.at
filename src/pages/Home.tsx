@@ -411,21 +411,20 @@ export default function Home() {
         className="relative py-20 md:py-28 px-6 overflow-hidden"
         style={{
           borderBottom: '2px solid var(--color-border-brutalist)',
-          background:
-            'radial-gradient(circle at 12% 22%, rgba(224, 245, 104, 0.2) 0%, transparent 46%), radial-gradient(circle at 86% 18%, rgba(86, 182, 194, 0.18) 0%, transparent 42%), linear-gradient(165deg, #151515 0%, #1a1a1a 60%, #101010 100%)',
+          background: 'var(--events-section-bg)',
         }}
       >
         <div className="events-glow events-glow-left" aria-hidden="true" />
         <div className="events-glow events-glow-right" aria-hidden="true" />
         <div className="max-w-[1200px] mx-auto relative z-10">
           <div className="mb-12">
-            <h2 className="font-serif text-3xl-custom mb-2" style={{ color: '#F5F1E8' }}>
+            <h2 className="font-serif text-3xl-custom mb-2" style={{ color: 'var(--color-ink)' }}>
               {lang === 'de' ? 'Triff mich hier' : 'Meet me here'}
             </h2>
             <div className="w-16 h-0.5 mb-4" style={{ backgroundColor: 'var(--color-accent-cyan)' }} />
             <p
               className="font-grotesk text-sm-custom max-w-[700px]"
-              style={{ color: 'rgba(245, 241, 232, 0.86)' }}
+              style={{ color: 'var(--color-ink-muted)' }}
             >
               {lang === 'de'
                 ? 'Hier findest du kommende Termine, Lesekreise und Veranstaltungen. Alles wird automatisch von EveryCal synchronisiert - immer aktuell, ohne manuelle Pflege.'
