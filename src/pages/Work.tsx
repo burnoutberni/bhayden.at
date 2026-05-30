@@ -40,7 +40,7 @@ const consolidatedTopicLabels: Record<string, { en: string; de: string }> = {
   'open knowledge': { en: 'Open knowledge', de: 'Offenes Wissen' },
   politics: { en: 'Politics', de: 'Politik' },
   'spaces': { en: 'Spaces', de: 'Räume' },
-  research: { en: 'Research', de: 'Forschung' },
+  migration: { en: 'Migration', de: 'Migration' },
 };
 
 type WorkEntry = {

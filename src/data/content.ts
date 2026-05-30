@@ -211,7 +211,7 @@ export const projects: Project[] = [
       { label: 'Programme', url: 'https://mau.se/en/study-education/programme/sgime/' },
       { label: 'Thesis', url: 'https://mau.diva-portal.org/smash/record.jsf?pid=diva2%3A1866174&dswid=3794' },
     ],
-    topics: ['research'],
+    topics: ['migration'],
   },
   {
     id: 'linnaeus-university-digital-humanities',
@@ -229,7 +229,7 @@ export const projects: Project[] = [
       { label: 'Website', url: 'https://lnu.se' },
       { label: 'Programme', url: 'https://lnu.se/en/programme/digital-humanities-master-programme/distance-international-autumn/' },
     ],
-    topics: ['research', 'open knowledge'],
+    topics: ['open knowledge'],
   },
   {
     id: 'navigating-contradictions',
