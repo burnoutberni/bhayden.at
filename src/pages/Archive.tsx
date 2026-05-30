@@ -40,11 +40,24 @@ export default function Archive() {
     () => projects
       .filter((project) => project.status === 'archived')
       .map((project) => ({
+        ...project,
         id: `project-${project.id}`,
         title: project.title,
         titleDe: project.titleDe,
-        period: project.dateLabel || `${project.startYear ?? ''}${project.endYear ? ` - ${project.endYear}` : ''}`,
-        periodDe: project.dateLabelDe || project.dateLabel || `${project.startYear ?? ''}${project.endYear ? ` - ${project.endYear}` : ''}`,
+        period: ((project.startYear && project.endYear && project.startYear === project.endYear) || (project.status === 'archived' && project.startYear && !project.endYear)
+          ? `${project.startYear ?? ''}`
+          : project.endYear
+            ? `${project.startYear ?? ''} - ${project.endYear}`
+            : project.startYear
+              ? `${project.startYear} - now`
+              : ''),
+        periodDe: ((project.startYear && project.endYear && project.startYear === project.endYear) || (project.status === 'archived' && project.startYear && !project.endYear)
+          ? `${project.startYear ?? ''}`
+          : project.endYear
+            ? `${project.startYear ?? ''} - ${project.endYear}`
+            : project.startYear
+              ? `${project.startYear} - heute`
+              : ''),
         role: project.role || 'Archived project',
         roleDe: project.roleDe || 'Archiviertes Projekt',
         description: project.summary,
@@ -199,8 +212,6 @@ export default function Archive() {
                         onClick={() => toggleTypeFilter(entry.type)}
                         className="pill-badge"
                         style={{
-                          fontSize: '9px',
-                          padding: '2px 8px',
                           backgroundColor: typeFilter === entry.type ? 'var(--color-accent-lime)' : 'transparent',
                           color: typeFilter === entry.type ? 'var(--color-dark-void)' : 'var(--color-ink)',
                           borderColor: typeFilter === entry.type ? 'var(--color-accent-lime)' : 'var(--color-border-brutalist)',
@@ -216,8 +227,6 @@ export default function Archive() {
                         onClick={() => toggleTopicFilter(tag)}
                         className="pill-badge"
                         style={{
-                          fontSize: '9px',
-                          padding: '2px 8px',
                           backgroundColor: topicFilter === tag ? 'var(--color-accent-lime)' : 'transparent',
                           color: topicFilter === tag ? 'var(--color-dark-void)' : 'var(--color-ink)',
                           borderColor: topicFilter === tag ? 'var(--color-accent-lime)' : 'var(--color-border-brutalist)',

@@ -5,12 +5,10 @@ export interface Project {
   titleDe?: string;
   summary: string;
   summaryDe?: string;
-  status: 'current' | 'work_in_progress' | 'archived' | 'inactive' | 'experimental';
-  type: 'project' | 'campaign' | 'organisation' | 'tool' | 'website' | 'role' | 'community' | 'space' | 'reading_circle' | 'education' | 'archive_item';
+  status: 'current' | 'work_in_progress' | 'archived';
+  type: 'project' | 'campaign' | 'organisation' | 'tool' | 'website' | 'community' | 'education';
   startYear?: number;
   endYear?: number;
-  dateLabel?: string;
-  dateLabelDe?: string;
   location?: string;
   role?: string;
   roleDe?: string;
@@ -36,12 +34,12 @@ export const projects: Project[] = [
     summaryDe: 'Ein föderierter Kalender für gemeinnütziges Organisieren. Offene Infrastruktur für kollektives Handeln.',
     status: 'work_in_progress',
     type: 'tool',
-    startYear: 2024,
+    startYear: 2026,
     location: 'Vienna',
     role: 'Founder & Developer',
     roleDe: 'Gründer & Entwickler',
     links: [{ label: 'GitHub', url: 'https://github.com/burnoutberni/everycal' }],
-    topics: ['civic tech', 'open web', 'public infrastructure'],
+    topics: ['civic tech', 'open knowledge'],
     homepagePriority: 1,
   },
   {
@@ -51,13 +49,13 @@ export const projects: Project[] = [
     summary: 'Campaigning for safer streets and better infrastructure in Vienna. Communication, strategy, and street-level activism.',
     summaryDe: 'Kampagne für sicherere Straßen und bessere Infrastruktur in Wien. Kommunikation, Strategie und Aktivismus auf Straßenebene.',
     status: 'current',
-    type: 'role',
+    type: 'community',
     startYear: 2022,
     location: 'Vienna',
     role: 'Communication & Politics',
     roleDe: 'Kommunikation & Politik',
     links: [{ label: 'Website', url: 'https://wirmachen.wien' }],
-    topics: ['urban mobility', 'activism', 'Vienna'],
+    topics: ['urbanism', 'politics'],
     homepagePriority: 2,
   },
   {
@@ -73,7 +71,7 @@ export const projects: Project[] = [
     role: 'Volunteer & Board',
     roleDe: 'Freiwilliger & Vorstand',
     links: [{ label: 'Website', url: 'https://wikimedia.at' }],
-    topics: ['free knowledge', 'open access', 'communities'],
+    topics: ['open knowledge', 'digital rights'],
     homepagePriority: 3,
   },
   {
@@ -90,7 +88,7 @@ export const projects: Project[] = [
     role: 'Policy Advocacy',
     roleDe: 'Policy-Advocacy',
     links: [{ label: 'Website', url: 'https://epicenter.works' }],
-    topics: ['digital rights', 'copyright', 'civil society'],
+    topics: ['digital rights', 'politics'],
   },
   {
     id: 'citymapper',
@@ -99,14 +97,14 @@ export const projects: Project[] = [
     summary: 'Urban mobility data and city transport infrastructure. Mapping and improving how people navigate cities.',
     summaryDe: 'Urban-Mobility-Daten und städtische Verkehrsinfrastruktur. Kartierung und Verbesserung der Stadtnavigation.',
     status: 'archived',
-    type: 'role',
+    type: 'organisation',
     startYear: 2022,
     endYear: 2023,
     location: 'Vienna / Remote',
-    role: 'Freelance — Cities Team',
-    roleDe: 'Freelance — Cities Team',
+    role: 'Freelance - Cities Team',
+    roleDe: 'Freelance - Cities Team',
     links: [{ label: 'Website', url: 'https://citymapper.com' }],
-    topics: ['urban mobility', 'civic tech', 'cities'],
+    topics: ['urbanism', 'civic tech'],
   },
   {
     id: 'oeffimonitor',
@@ -125,12 +123,12 @@ export const projects: Project[] = [
       { label: 'GitHub', url: 'https://github.com/Metalab/oeffimonitor' },
       { label: 'Metalab Wiki', url: 'https://metalab.at/wiki/%C3%96ffimonitor' },
     ],
-    topics: ['urban mobility', 'civic tech', 'open data', 'Vienna'],
+    topics: ['urbanism', 'civic tech'],
   },
   {
     id: 'links-wien',
-    title: 'LINKS — Vienna Elections 2020',
-    titleDe: 'LINKS — Wiener Wahlen 2020',
+    title: 'LINKS',
+    titleDe: 'LINKS',
     summary: 'Campaign manager for LINKS in the 2020 Vienna municipal elections. Organising, communication, and political campaigning.',
     summaryDe: 'Campaign Manager für LINKS bei den Wiener Gemeinderatswahlen 2020. Organisierung, Kommunikation und politische Kampagnenarbeit.',
     status: 'archived',
@@ -140,7 +138,7 @@ export const projects: Project[] = [
     role: 'Campaign Manager',
     roleDe: 'Campaign Manager',
     links: [{ label: 'Website', url: 'https://links.wien' }],
-    topics: ['politics', 'Vienna', 'elections', 'organising'],
+    topics: ['politics'],
   },
   {
     id: 'piratenpartei',
@@ -151,12 +149,10 @@ export const projects: Project[] = [
     status: 'archived',
     type: 'campaign',
     startYear: 2013,
-    dateLabel: '2013',
-    dateLabelDe: '2013',
     role: 'Candidate',
     roleDe: 'Kandidat',
     links: [{ label: 'Website', url: 'https://piratenpartei.at' }],
-    topics: ['digital rights', 'politics', 'elections'],
+    topics: ['digital rights', 'politics'],
   },
   {
     id: 'young-pirates-europe',
@@ -165,15 +161,13 @@ export const projects: Project[] = [
     summary: 'Presidency of Young Pirates of Europe, focusing on digital rights and internet freedom across the EU.',
     summaryDe: 'Präsidium der Young Pirates of Europe mit Fokus auf digitale Rechte und Internetfreiheit in der EU.',
     status: 'archived',
-    type: 'role',
+    type: 'organisation',
     startYear: 2016,
     endYear: 2018,
-    dateLabel: '2016 - 2018',
-    dateLabelDe: '2016 - 2018',
     role: 'President',
     roleDe: 'Präsident',
     links: [{ label: 'Website', url: 'https://young-pirates.eu' }],
-    topics: ['digital rights', 'copyright', 'europe'],
+    topics: ['digital rights', 'politics'],
   },
   {
     id: 'copyfighters',
@@ -185,12 +179,10 @@ export const projects: Project[] = [
     type: 'campaign',
     startYear: 2017,
     endYear: 2019,
-    dateLabel: '2017 - 2019',
-    dateLabelDe: '2017 - 2019',
     role: 'Campaigner',
     roleDe: 'Kampagnenarbeit',
     links: [{ label: 'Website', url: 'https://copyfighters.eu' }],
-    topics: ['digital rights', 'copyright', 'europe'],
+    topics: ['digital rights', 'politics'],
   },
   {
     id: 'felix-reda',
@@ -199,14 +191,12 @@ export const projects: Project[] = [
     summary: 'Worked with MEP Felix Reda on Copyright in the Digital Single Market Directive. European Parliament digital-rights advocacy.',
     summaryDe: 'Arbeit mit MEP Felix Reda an der Copyright-Richtlinie für den digitalen Binnenmarkt. Advocacy für digitale Rechte im Europäischen Parlament.',
     status: 'archived',
-    type: 'role',
+    type: 'campaign',
     startYear: 2015,
-    dateLabel: '2015',
-    dateLabelDe: '2015',
     role: 'Intern',
     roleDe: 'Praktikant',
     links: [{ label: 'Website', url: 'https://felixreda.eu' }],
-    topics: ['digital rights', 'copyright', 'europe'],
+    topics: ['digital rights', 'politics'],
   },
   {
     id: 'malmo-university',
@@ -218,12 +208,31 @@ export const projects: Project[] = [
     type: 'education',
     startYear: 2016,
     endYear: 2024,
-    dateLabel: '2016 - 2024',
-    dateLabelDe: '2016 - 2024',
-    role: 'Student - International Migration and Ethnic Relations',
-    roleDe: 'Student - International Migration and Ethnic Relations',
-    links: [{ label: 'Website', url: 'https://mau.se' }],
-    topics: ['migration', 'education', 'international'],
+    role: 'International Migration and Ethnic Relations',
+    roleDe: 'International Migration and Ethnic Relations',
+    links: [
+      { label: 'Website', url: 'https://mau.se' },
+      { label: 'Programme', url: 'https://mau.se/en/study-education/programme/sgime/' },
+    ],
+    topics: ['research'],
+  },
+  {
+    id: 'linnaeus-university-digital-humanities',
+    title: 'Linnaeus University',
+    titleDe: 'Linné Universität',
+    summary: "Master's programme in Digital Humanities, focusing on the intersection of humanities research, digital methods, and public knowledge infrastructure.",
+    summaryDe: 'Masterstudium in Digital Humanities mit Fokus auf die Schnittstelle von geisteswissenschaftlicher Forschung, digitalen Methoden und öffentlicher Wissensinfrastruktur.',
+    status: 'current',
+    type: 'education',
+    startYear: 2025,
+    location: 'Remote',
+    role: 'Digital Humanities',
+    roleDe: 'Digital Humanities',
+    links: [
+      { label: 'Website', url: 'https://lnu.se' },
+      { label: 'Programme', url: 'https://lnu.se/en/programme/digital-humanities-master-programme/distance-international-autumn/' },
+    ],
+    topics: ['research', 'open knowledge'],
   },
   {
     id: 'navigating-contradictions',
@@ -232,13 +241,13 @@ export const projects: Project[] = [
     summary: 'A reading circle for political education, critical theory, and collective learning. Exploring contradiction as a method.',
     summaryDe: 'Ein Lesekreis für politische Bildung, kritische Theorie und kollektives Lernen. Erkundung von Widerspruch als Methode.',
     status: 'current',
-    type: 'reading_circle',
+    type: 'community',
     startYear: 2022,
     location: 'Vienna',
     role: 'Founder',
     roleDe: 'Gründer',
     links: [{ label: 'Website', url: 'https://navigating-contradictions.com' }],
-    topics: ['reading', 'political education', 'organising'],
+    topics: ['politics'],
   },
   {
     id: 'gtblank',
@@ -247,13 +256,13 @@ export const projects: Project[] = [
     summary: 'Co-founder of a community space at the intersection of culture, politics, and technology. Shared infrastructure for collective action.',
     summaryDe: 'Mitgründer eines Community-Space an der Schnittstelle von Kultur, Politik und Technologie. Geteilte Infrastruktur für kollektives Handeln.',
     status: 'current',
-    type: 'space',
+    type: 'community',
     startYear: 2022,
     location: 'Vienna',
     role: 'Co-founder',
     roleDe: 'Mitgründer',
     links: [{ label: 'Website', url: 'https://gtblank.org' }],
-    topics: ['community spaces', 'infrastructure', 'organising'],
+    topics: ['spaces'],
   },
 ];
 
@@ -261,8 +270,8 @@ export const projects: Project[] = [
 export const bioData: BioData = {
   short: 'Bernhard Hayden is a Vienna-based activist, civic technologist, and communicator working on digital rights, free knowledge, civic tech, urban mobility, and public-interest infrastructure.',
   shortDe: 'Bernhard Hayden ist Aktivist, Civic-Technologist und Kommunikator in Wien. Er arbeitet zu digitalen Rechten, freiem Wissen, Civic Tech, Mobilität, öffentlicher Infrastruktur und Organisierung.',
-  medium: 'Bernhard Hayden is a Vienna-based activist, civic technologist, and communicator working across digital rights, free knowledge, civic tech, urban mobility, and public-interest infrastructure.\n\nHis work has moved through different institutions, campaigns, and communities — from European copyright reform with the Young Pirates and epicenter.works, to urban mobility campaigning with Wir machen Wien, to free knowledge advocacy with Wikimedia Österreich. He is currently building everycal, a federated calendar for public-interest organising.',
-  mediumDe: 'Bernhard Hayden ist Aktivist, Civic-Technologist und Kommunikator in Wien. Er arbeitet zu digitalen Rechten, freiem Wissen, Civic Tech, Mobilität und öffentlicher Infrastruktur.\n\nSeine Arbeit hat sich durch verschiedene Institutionen, Kampagnen und Communities bewegt — von der europäischen Urheberrechtsreform mit den Young Pirates und epicenter.works über Urban-Mobility-Kampagnen mit Wir machen Wien bis hin zu Free-Knowledge-Advocacy mit Wikimedia Österreich. Er baut derzeit everycal, einen föderierten Kalender für gemeinnütziges Organisieren.',
+  medium: 'Bernhard Hayden is a Vienna-based activist, civic technologist, and communicator working across digital rights, free knowledge, civic tech, urban mobility, and public-interest infrastructure.\n\nHis work has moved through different institutions, campaigns, and communities—from European copyright reform with the Young Pirates and epicenter.works, to urban mobility campaigning with Wir machen Wien, to free knowledge advocacy with Wikimedia Österreich. He is currently building everycal, a federated calendar for public-interest organising.',
+  mediumDe: 'Bernhard Hayden ist Aktivist, Civic-Technologist und Kommunikator in Wien. Er arbeitet zu digitalen Rechten, freiem Wissen, Civic Tech, Mobilität und öffentlicher Infrastruktur.\n\nSeine Arbeit hat sich durch verschiedene Institutionen, Kampagnen und Communities bewegt – von der europäischen Urheberrechtsreform mit den Young Pirates und epicenter.works über Urban-Mobility-Kampagnen mit Wir machen Wien bis hin zu Free-Knowledge-Advocacy mit Wikimedia Österreich. Er baut derzeit everycal, einen föderierten Kalender für gemeinnütziges Organisieren.',
 };
 
 // Translations
@@ -283,21 +292,6 @@ export const translations = {
     manifesto: 'I work on digital rights, free knowledge, civic tech, and urban mobility. I build tools and spaces for collective action. From European copyright reform to safer streets in Vienna, I connect the dots between policy, code, and community.',
     currentWork: {
       title: 'Current work',
-      everycal: {
-        title: 'everycal',
-        status: 'Currently building',
-        desc: 'A federated calendar for public-interest organizing. Open infrastructure for collective action.',
-      },
-      wirmachenwien: {
-        title: 'Wir machen Wien',
-        status: 'Current',
-        desc: 'Campaigning for safer streets and better infrastructure in Vienna. Communication, strategy, and street-level activism.',
-      },
-      wikimedia: {
-        title: 'Wikimedia Österreich',
-        status: 'Current',
-        desc: 'Advancing free knowledge, open access, and digital literacy in Austria. Community building and policy advocacy.',
-      },
     },
     notes: {
       title: 'Notes',
@@ -339,8 +333,7 @@ export const translations = {
     about: {
       whoIAm: 'Who I am',
       subtitle: 'Activist, civic technologist, communicator.',
-      bio: "I have a hard time putting my work into a single box. I've been involved in internet politics, copyright reform, election campaigns, migration studies, civic tech, urban mobility, reading circles, community spaces, and open knowledge. What connects those things is less a job title than a recurring question: how do people get the infrastructure, knowledge, and confidence they need to act together?",
-      nickname: 'nini is my nickname. I usually use Bernhard Hayden where clarity or searchability matters, and nini where things get more personal.',
+      bio: "I have a hard time putting my work into a single box. I've been involved in internet politics, copyright reform, election campaigns, migration studies, civic tech, urban mobility, reading circles, spaces, and open knowledge. What connects those things is less a job title than a recurring question: how do people get the infrastructure, knowledge, and confidence they need to act together?",
       dayjob: 'My day job is in public service, answering citizen questions and requests by phone and email. The work that shapes this site most strongly, though, is my activism, organising, and public-interest technology work.',
       whatICareAbout: 'What I care about',
       careItems: [
@@ -355,7 +348,6 @@ export const translations = {
         title: 'Press & Speaking',
         shortBio: 'Short bio (~50 words)',
         mediumBio: 'Medium bio (~150 words)',
-        german: 'Deutsch',
         portraitCredit: 'Portrait: Lena Holzerbauer, CC BY-SA 4.0',
         contact: 'For press inquiries:',
         topics: 'Main topics',
@@ -364,8 +356,6 @@ export const translations = {
     contact: {
       title: 'Ping me',
       subtitle: 'Working on something around open knowledge, civic tech, digital rights, urban mobility, or organising? I\'d love to hear from you.',
-      collaboration: 'Want to collaborate on useful troublemaking?',
-      sameChannels: 'Same email. Same channels.',
     },
   },
   de: {
@@ -381,28 +371,13 @@ export const translations = {
       ctaPrimary: 'Arbeit erkunden',
       ctaSecondary: 'Schreib mir',
     },
-    manifesto: 'Ich arbeite zu digitalen Rechten, freiem Wissen, Civic Tech und Urban Mobility. Ich baue Werkzeuge und Räume für kollektives Handeln. Von der europäischen Urheberrechtsreform bis zu sichereren Straßen in Wien — ich verbinde die Punkte zwischen Politik, Code und Community.',
+    manifesto: 'Ich arbeite zu digitalen Rechten, freiem Wissen, Civic Tech und Urban Mobility. Ich baue Werkzeuge und Räume für kollektives Handeln. Von der europäischen Urheberrechtsreform bis zu sichereren Straßen in Wien – ich verbinde die Punkte zwischen Politik, Code und Community.',
     currentWork: {
       title: 'Aktuelle Arbeit',
-      everycal: {
-        title: 'everycal',
-        status: 'In Entwicklung',
-        desc: 'Ein föderierter Kalender für gemeinnütziges Organisieren. Offene Infrastruktur für kollektives Handeln.',
-      },
-      wirmachenwien: {
-        title: 'Wir machen Wien',
-        status: 'Aktiv',
-        desc: 'Kampagne für sicherere Straßen und bessere Infrastruktur in Wien. Kommunikation, Strategie und Aktivismus.',
-      },
-      wikimedia: {
-        title: 'Wikimedia Österreich',
-        status: 'Aktiv',
-        desc: 'Förderung freien Wissens, offenen Zugangs und digitaler Kompetenz in Österreich. Community-Aufbau und Advocacy.',
-      },
     },
     notes: {
       title: 'Notizen',
-      subtitle: 'Essays, Updates und Reflexionen zu Civic Tech, Stadten und offenem Wissen.',
+      subtitle: 'Essays, Updates und Reflexionen zu Civic Tech, Städten und offenem Wissen.',
       allNotes: 'Alle Notizen',
     },
     footer: {
@@ -441,7 +416,6 @@ export const translations = {
       whoIAm: 'Wer ich bin',
       subtitle: 'Aktivist, Civic-Technologist, Kommunikator.',
       bio: 'Ich habe Schwierigkeiten, meine Arbeit in eine einzige Schublade zu stecken. Ich war in Internetpolitik, Urheberrechtsreform, Wahlkampagnen, Migrationsforschung, Civic Tech, Urban Mobility, Lesekreisen, Community-Räumen und freiem Wissen involviert. Was diese Dinge verbindet, ist weniger ein Jobtitel als eine wiederkehrende Frage: Wie bekommen Menschen die Infrastruktur, das Wissen und das Selbstvertrauen, das sie brauchen, um gemeinsam zu handeln?',
-      nickname: 'nini ist mein Spitzname. Ich verwende normalerweise Bernhard Hayden, wo Klarheit oder Auffindbarkeit wichtig ist, und nini, wo es persönlicher wird.',
       dayjob: 'Mein Tagjob ist im öffentlichen Dienst, wo ich Bürgeranfragen und -gesuche per Telefon und E-Mail beantworte. Die Arbeit, die diese Site am stärksten prägt, ist jedoch mein Aktivismus, mein Organisieren und meine Public-Interest-Technology-Arbeit.',
       whatICareAbout: 'Worum es mir geht',
       careItems: [
@@ -456,7 +430,6 @@ export const translations = {
         title: 'Presse & Vorträge',
         shortBio: 'Kurze Bio (~50 Wörter)',
         mediumBio: 'Mittlere Bio (~150 Wörter)',
-        german: 'Deutsch',
         portraitCredit: 'Portrait: Lena Holzerbauer, CC BY-SA 4.0',
         contact: 'Für Presseanfragen:',
         topics: 'Hauptthemen',
@@ -465,8 +438,6 @@ export const translations = {
     contact: {
       title: 'Schreib mir',
       subtitle: 'Arbeitest du an etwas rund um offenes Wissen, Civic Tech, digitale Rechte, Urban Mobility oder Organisierung? Ich freue mich, von dir zu hören.',
-      collaboration: 'Lust auf gemeinsames "useful troublemaking"?',
-      sameChannels: 'Gleiche E-Mail. Gleiche Kanäle.',
     },
   },
 };
