@@ -64,8 +64,8 @@ export default function NewsletterSignup({ borderedTop = true }: NewsletterSignu
           </svg>
           <a
             href="/rss.xml"
-            className="accent-highlight highlight-invert font-grotesk text-sm-custom transition-colors hover:underline"
-            style={{ textUnderlineOffset: '3px' }}
+            className="accent-highlight font-grotesk text-sm-custom transition-colors hover:underline"
+            style={{ textUnderlineOffset: '3px', textDecorationColor: 'currentColor' }}
           >
             {t.notesPage.rss}
           </a>

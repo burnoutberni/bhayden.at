@@ -216,6 +216,11 @@
     vertical-align: baseline;
   }
 
+  html:not([data-theme="dark"]) .accent-highlight::selection {
+    background-color: var(--color-dark-void);
+    color: var(--color-accent-lime);
+  }
+
   .accent-highlight-icon {
     color: var(--accent-highlight-fg, var(--color-page-accent));
     background-color: var(--accent-highlight-bg, transparent);
@@ -275,11 +280,6 @@
     background-color: var(--color-accent-lime) !important;
     color: var(--color-dark-void) !important;
     border-color: var(--color-accent-lime) !important;
-  }
-
-  .project-card-selection .project-card-role-highlight::selection {
-    background-color: var(--color-accent-lime) !important;
-    color: var(--color-dark-void) !important;
   }
 
   .highlight-invert {

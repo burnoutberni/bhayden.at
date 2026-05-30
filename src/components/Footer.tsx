@@ -43,10 +43,11 @@ export default function Footer() {
             </p>
             <a
               href={mailto}
-              className="accent-highlight highlight-invert font-mono text-xl-custom md:text-2xl-custom inline-block mb-6 transition-all duration-200 hover:underline"
+              className="accent-highlight font-mono text-xl-custom md:text-2xl-custom inline-block mb-6 transition-all duration-200 hover:underline"
               style={{
                 textUnderlineOffset: '6px',
                 textDecorationThickness: '2px',
+                textDecorationColor: 'currentColor',
               }}
             >
               {email}
