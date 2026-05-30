@@ -309,18 +309,18 @@
     color: var(--color-accent-lime) !important;
   }
 
-  .project-card-selection:hover .project-card-secondary-link,
+  .project-card-selection:hover:not(:has(.pill-badge:hover)) .project-card-secondary-link,
   .project-card-selection:focus-within .project-card-secondary-link {
     color: var(--color-ink-muted) !important;
     opacity: 0.72;
   }
 
-  .project-card-selection:hover:not(:has(.project-card-secondary-link:hover)) .project-card-primary-link,
+  .project-card-selection:hover:not(:has(.project-card-secondary-link:hover)):not(:has(.pill-badge:hover)) .project-card-primary-link,
   .project-card-selection:focus-within:not(:has(.project-card-secondary-link:focus-visible)) .project-card-primary-link {
     text-decoration: underline;
   }
 
-  html:not([data-theme="dark"]) .project-card-selection:hover:not(:has(.project-card-secondary-link:hover)) .project-card-primary-link.highlight-invert,
+  html:not([data-theme="dark"]) .project-card-selection:hover:not(:has(.project-card-secondary-link:hover)):not(:has(.pill-badge:hover)) .project-card-primary-link.highlight-invert,
   html:not([data-theme="dark"]) .project-card-selection:focus-within:not(:has(.project-card-secondary-link:focus-visible)) .project-card-primary-link.highlight-invert {
     background-color: var(--color-dark-void) !important;
     color: var(--color-accent-lime) !important;
