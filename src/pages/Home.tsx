@@ -4,8 +4,10 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { projects } from '@/data/content';
 import { notes } from '@/data/notes';
 import NewsletterSignup from '@/components/NewsletterSignup';
+import ProjectCard from '@/components/ProjectCard';
+import ExternalLinkGlyph from '@/components/ExternalLinkGlyph';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { getProjectCardColors, projectCardPalette } from '@/lib/projectCardColors';
+import { getProjectCardColors } from '@/lib/projectCardColors';
 
 type EverycalEvent = {
   id: string;
@@ -26,6 +28,12 @@ type EverycalEvent = {
 
 type EverycalResponse = {
   events: EverycalEvent[];
+};
+
+const statusPriority: Record<string, number> = {
+  work_in_progress: 0,
+  current: 1,
+  archived: 2,
 };
 
 export default function Home() {
@@ -53,10 +61,18 @@ export default function Home() {
   const currentProjects = projects
     .filter((p) => p.status === 'current' || p.status === 'work_in_progress')
     .sort((a, b) => {
-      const priorityA = a.homepagePriority ?? Number.MAX_SAFE_INTEGER;
-      const priorityB = b.homepagePriority ?? Number.MAX_SAFE_INTEGER;
+      const statusDiff = (statusPriority[a.status] ?? Number.MAX_SAFE_INTEGER)
+        - (statusPriority[b.status] ?? Number.MAX_SAFE_INTEGER);
+      if (statusDiff !== 0) return statusDiff;
 
-      if (priorityA !== priorityB) return priorityA - priorityB;
+      const aYear = a.endYear ?? a.startYear ?? 0;
+      const bYear = b.endYear ?? b.startYear ?? 0;
+      if (aYear !== bYear) return bYear - aYear;
+
+      const aStart = a.startYear ?? 0;
+      const bStart = b.startYear ?? 0;
+      if (aStart !== bStart) return bStart - aStart;
+
       return a.title.localeCompare(b.title);
     });
 
@@ -73,6 +89,10 @@ export default function Home() {
     .sort((a, b) => getArchiveEndYear(b.startYear, b.endYear) - getArchiveEndYear(a.startYear, a.endYear))
     .slice(0, 5);
 
+  const getProjectColors = (project: (typeof projects)[number]) => {
+    return getProjectCardColors(project.type);
+  };
+
   const campaignTopics = new Set([
     'urban mobility',
     'activism',
@@ -87,12 +107,9 @@ export default function Home() {
 
   const getTopicColors = (topics: string[]) => {
     const hasCampaignTopic = topics.some((topic) => campaignTopics.has(topic.toLowerCase()));
-    if (hasCampaignTopic) return projectCardPalette.lime;
-    return projectCardPalette.cyan;
-  };
-
-  const getProjectColors = (project: (typeof projects)[number]) => {
-    return getProjectCardColors(project.type);
+    return hasCampaignTopic
+      ? { border: 'var(--color-accent-lime)', badge: 'var(--color-accent-lime)' }
+      : { border: 'var(--color-accent-cyan)', badge: 'var(--color-accent-cyan)' };
   };
 
   useEffect(() => {
@@ -172,6 +189,10 @@ export default function Home() {
     const endTime = endDate ? timeFormat.format(endDate) : null;
 
     return endTime ? `${dateText} - ${startTime} - ${endTime}` : `${dateText} - ${startTime}`;
+  };
+
+  const openInNewTab = (url: string) => {
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   return (
@@ -292,119 +313,53 @@ export default function Home() {
               const isWip = project.status === 'work_in_progress';
               const title = lang === 'de' && project.titleDe ? project.titleDe : project.title;
               const summary = lang === 'de' && project.summaryDe ? project.summaryDe : project.summary;
+              const roleLabel = lang === 'de' && project.roleDe ? project.roleDe : project.role;
               const displayTags = project.topics.slice(0, 3);
+              const statusLabel = isWip
+                ? (lang === 'de' ? 'In Entwicklung' : 'Currently building')
+                : (lang === 'de' ? 'Aktiv' : 'Current');
+              const hasSingleYearRange = Boolean(project.startYear && project.endYear && project.startYear === project.endYear);
+              const yearLabel = hasSingleYearRange
+                ? `${project.startYear ?? ''}`
+                : project.endYear
+                  ? `${project.startYear} — ${project.endYear}`
+                  : project.startYear
+                    ? `${project.startYear} — ${lang === 'de' ? 'heute' : 'now'}`
+                    : '';
 
               return (
-                <article
+                <ProjectCard
                   key={project.id}
-                  className="group block p-6 transition-all duration-300 hover:-translate-y-1 cursor-pointer"
-                  onClick={() => navigate(`/work#${encodeURIComponent(project.id)}`)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      navigate(`/work#${encodeURIComponent(project.id)}`);
-                    }
+                  projectId={project.id}
+                  title={title}
+                  summary={summary}
+                  role={roleLabel}
+                  yearLabel={yearLabel}
+                  statusLabel={statusLabel}
+                  statusKey={project.status}
+                  typeLabel={project.type.replace('_', ' ')}
+                  topicLabels={displayTags}
+                  links={project.links}
+                  colors={colors}
+                  variant="dark"
+                  onStatusClick={(status) => navigateToWork(`status=${encodeURIComponent(status)}`)}
+                  onTypeClick={() => navigateToWork(`type=${encodeURIComponent(project.type)}`)}
+                  onTopicClick={(index) => {
+                    const topic = project.topics[index] || project.topics[0];
+                    if (topic) navigateToWork(`topic=${encodeURIComponent(topic)}`);
                   }}
-                  role="link"
-                  tabIndex={0}
-                  style={{
-                    backgroundColor: '#1a1a1a',
-                    border: `2px solid ${colors.border}`,
-                    borderRadius: 'var(--radius-soft)',
-                  }}
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigateToWork(`status=${encodeURIComponent(project.status)}`);
-                      }}
-                      className="pill-badge"
-                      style={{
-                        backgroundColor: colors.badge,
-                        color: '#111111',
-                        borderColor: colors.badge,
-                        cursor: 'pointer',
-                      }}
-                    >
-                      {isWip ? (lang === 'de' ? 'In Entwicklung' : 'Currently building') : (lang === 'de' ? 'Aktiv' : 'Current')}
-                    </button>
-                  </div>
-                  <h3 className="font-serif text-2xl-custom mb-2" style={{ color: '#F5F1E8' }}>
-                    {title}
-                  </h3>
-                  <p className="font-grotesk text-sm-custom mb-4" style={{ color: 'rgba(245, 241, 232, 0.82)' }}>
-                    {summary}
-                  </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    <span
-                      className="pill-badge pill-badge-contextual"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigateToWork(`type=${encodeURIComponent(project.type)}`);
-                      }}
-                      style={{
-                        cursor: 'pointer',
-                        ['--badge-base-border' as string]: colors.border,
-                        ['--badge-base-fg' as string]: colors.border,
-                        ['--badge-hover-bg' as string]: colors.border,
-                        ['--badge-hover-fg' as string]: '#111111',
-                      }}
-                    >
-                      {project.type.replace('_', ' ')}
-                    </span>
-                    {displayTags.map((tag, tagIndex) => (
-                      <span
-                        key={`${project.id}-${tag}`}
-                        className="pill-badge pill-badge-contextual"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const topic = project.topics[tagIndex] || project.topics[0] || tag;
-                          navigateToWork(`topic=${encodeURIComponent(topic)}`);
-                        }}
-                        style={{
-                          cursor: 'pointer',
-                          ['--badge-base-border' as string]: colors.border,
-                          ['--badge-base-fg' as string]: colors.border,
-                          ['--badge-hover-bg' as string]: colors.border,
-                          ['--badge-hover-fg' as string]: '#111111',
-                        }}
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-
-                  {project.links && project.links.length > 0 && (
-                    <div className="flex gap-3 mt-4">
-                      {project.links.map((link) => (
-                        <a
-                          key={link.url}
-                          href={link.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="font-grotesk text-xs-custom uppercase tracking-widest transition-colors hover:underline"
-                          style={{ color: colors.border, textUnderlineOffset: '3px' }}
-                        >
-                          {link.label + ' \u2192'}
-                        </a>
-                      ))}
-                    </div>
-                  )}
-                </article>
+                />
               );
             })}
           </div>
 
           <Link
             to="/work"
-            className="font-grotesk text-sm-custom inline-flex items-center gap-1 mt-8 transition-colors hover:underline"
+            className="font-grotesk text-sm-custom inline-flex items-center gap-1 mt-8 transition-colors link-with-arrow"
             style={{ color: 'var(--color-accent-lime)', textUnderlineOffset: '4px' }}
           >
-            {lang === 'de' ? 'Alle Projekte' : 'Browse all work'}
-            <span>{' \u2192'}</span>
+            <span className="link-label">{lang === 'de' ? 'Alle Projekte' : 'Browse all work'}</span>
+            <span className="link-arrow" aria-hidden="true">→</span>
           </Link>
         </div>
       </section>
@@ -465,12 +420,18 @@ export default function Home() {
                   const tags = event.tags ? event.tags.split(',').map((tag) => tag.trim()).filter(Boolean).slice(0, 3) : [];
 
                   return (
-                    <a
+                    <article
                       key={event.id}
-                      href={eventHref}
-                      target="_blank"
-                      rel="noopener noreferrer"
                       className="events-card"
+                      role="link"
+                      tabIndex={0}
+                      onClick={() => openInNewTab(eventHref)}
+                      onKeyDown={(eventKey) => {
+                        if (eventKey.key === 'Enter' || eventKey.key === ' ') {
+                          eventKey.preventDefault();
+                          openInNewTab(eventHref);
+                        }
+                      }}
                     >
                       {event.image_url && (
                         <div className="events-card-image-wrap">
@@ -511,7 +472,7 @@ export default function Home() {
                               @{event.account_username}
                             </a>
                           )}
-                          <span className="events-card-arrow" aria-hidden="true">{String.fromCharCode(8599)}</span>
+                          <span className="events-card-arrow" aria-hidden="true"><ExternalLinkGlyph /></span>
                         </div>
                         {tags.length > 0 && (
                           <div className="events-card-tags">
@@ -536,7 +497,7 @@ export default function Home() {
                           </div>
                         )}
                       </div>
-                    </a>
+                    </article>
                   );
                 })}
               </div>
@@ -614,11 +575,11 @@ export default function Home() {
           </ul>
           <Link
             to="/archive"
-            className="font-grotesk text-sm-custom inline-flex items-center gap-1 mt-6 transition-colors hover:underline"
+            className="font-grotesk text-sm-custom inline-flex items-center gap-1 mt-6 transition-colors link-with-arrow"
             style={{ color: 'var(--color-accent-cyan)', textUnderlineOffset: '4px' }}
           >
-            {lang === 'de' ? 'Gesamtes Archiv' : 'Browse full archive'}
-            <span>{' \u2192'}</span>
+            <span className="link-label">{lang === 'de' ? 'Gesamtes Archiv' : 'Browse full archive'}</span>
+            <span className="link-arrow" aria-hidden="true">→</span>
           </Link>
         </div>
       </section>
@@ -686,11 +647,11 @@ export default function Home() {
 
           <Link
             to="/notes"
-            className="font-grotesk text-sm-custom inline-flex items-center gap-1 transition-colors hover:underline"
+            className="font-grotesk text-sm-custom inline-flex items-center gap-1 transition-colors link-with-arrow"
             style={{ color: 'var(--color-accent-coral)', textUnderlineOffset: '4px' }}
           >
-            {t.notes.allNotes}
-            <span>{' \u2192'}</span>
+            <span className="link-label">{t.notes.allNotes}</span>
+            <span className="link-arrow" aria-hidden="true">→</span>
           </Link>
         </div>
       </section>
