@@ -93,25 +93,6 @@ export default function Home() {
     return getProjectCardColors(project.type);
   };
 
-  const campaignTopics = new Set([
-    'urban mobility',
-    'activism',
-    'politics',
-    'organising',
-    'streets',
-    'vienna',
-    'elections',
-    'transport',
-    'cities',
-  ]);
-
-  const getTopicColors = (topics: string[]) => {
-    const hasCampaignTopic = topics.some((topic) => campaignTopics.has(topic.toLowerCase()));
-    return hasCampaignTopic
-      ? { border: 'var(--color-accent-lime)', badge: 'var(--color-accent-lime)' }
-      : { border: 'var(--color-accent-cyan)', badge: 'var(--color-accent-cyan)' };
-  };
-
   useEffect(() => {
     let isMounted = true;
 
@@ -597,8 +578,6 @@ export default function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             {latestNotes.map((note) => {
-              const noteColors = getTopicColors(note.topics);
-
               return (
                 <Link
                   key={note.id}
@@ -606,7 +585,7 @@ export default function Home() {
                   className="block p-6 transition-all duration-300 hover:-translate-y-1"
                   style={{
                     backgroundColor: 'var(--color-editor-bg)',
-                    border: `2px solid ${noteColors.border}`,
+                    border: '2px solid var(--color-accent-coral)',
                     borderRadius: 'var(--radius-soft)',
                   }}
                 >
@@ -630,9 +609,9 @@ export default function Home() {
                         }}
                         style={{
                           cursor: 'pointer',
-                          ['--badge-base-border' as string]: noteColors.border,
+                          ['--badge-base-border' as string]: 'var(--color-accent-coral)',
                           ['--badge-base-fg' as string]: 'var(--color-ink)',
-                          ['--badge-hover-bg' as string]: noteColors.border,
+                          ['--badge-hover-bg' as string]: 'var(--color-accent-coral)',
                           ['--badge-hover-fg' as string]: '#111111',
                         }}
                       >
