@@ -579,8 +579,9 @@
 
   .events-card-title {
     font-family: var(--font-serif), serif;
-    font-size: 1.26rem;
-    line-height: 1.32;
+    font-size: var(--text-2xl);
+    line-height: 1.2;
+    margin: 0;
     color: #f5f1e8;
   }
 
@@ -730,7 +731,7 @@
     }
 
     .events-card-title {
-      font-size: 1.1rem;
+      font-size: var(--text-xl);
     }
   }
 
