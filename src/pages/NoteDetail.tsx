@@ -105,7 +105,7 @@ export default function NoteDetail() {
               <Link
                 key={topic}
                 to={`/notes?topic=${encodeURIComponent(topic)}`}
-                className="pill-badge"
+                className="pill-badge pill-badge-underline-hover"
                 style={{ borderColor: 'var(--color-page-accent)', color: 'var(--color-page-accent)' }}
               >
                 {topic}
