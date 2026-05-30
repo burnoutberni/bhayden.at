@@ -81,23 +81,35 @@ export default function Notes() {
               <article
                 key={note.id}
                 className="group py-8 transition-all duration-200 hover:translate-x-1"
-                style={{ borderBottom: '1px solid var(--color-border-brutalist)' }}
+                style={{
+                  borderBottom: '1px solid var(--color-border-brutalist)',
+                  borderLeft: '2px solid var(--color-page-accent)',
+                  paddingLeft: '1rem',
+                }}
               >
                 <div className="flex items-center gap-3 mb-2">
                   <p className="font-mono text-xs-custom" style={{ color: 'var(--color-ink-muted)' }}>
                     {note.date}
                   </p>
-                  <span
-                    className="pill-badge"
-                    style={{ borderColor: 'var(--color-page-accent)', color: 'var(--color-ink)' }}
+                  <button
+                    type="button"
+                    className="pill-badge pill-badge-contextual"
+                    onClick={() => setLanguageFilter((prev) => (prev === note.language ? 'all' : note.language))}
+                    style={{
+                      cursor: 'pointer',
+                      ['--badge-base-border' as string]: 'var(--color-page-accent)',
+                      ['--badge-base-fg' as string]: 'var(--color-page-accent)',
+                      ['--badge-hover-bg' as string]: 'var(--color-page-accent)',
+                      ['--badge-hover-fg' as string]: '#111111',
+                    }}
                   >
                     {note.language.toUpperCase()}
-                  </span>
+                  </button>
                 </div>
-                <Link to={`/notes/${note.slug}`}>
+                <Link to={`/notes/${note.slug}`} style={{ color: 'var(--color-page-accent)' }}>
                   <h3
-                    className="font-grotesk text-xl-custom font-medium mb-2 transition-colors group-hover:text-[var(--color-page-accent)]"
-                    style={{ color: 'var(--color-ink)' }}
+                    className="font-grotesk text-xl-custom font-medium mb-2 underline-offset-4 hover:underline"
+                    style={{ color: 'var(--color-page-accent)' }}
                   >
                     {note.title}
                   </h3>
@@ -114,7 +126,7 @@ export default function Notes() {
                       style={{
                         cursor: 'pointer',
                         ['--badge-base-border' as string]: 'var(--color-page-accent)',
-                        ['--badge-base-fg' as string]: 'var(--color-ink)',
+                        ['--badge-base-fg' as string]: 'var(--color-page-accent)',
                         ['--badge-hover-bg' as string]: 'var(--color-page-accent)',
                         ['--badge-hover-fg' as string]: '#111111',
                       }}
