@@ -6,7 +6,6 @@ import { notes } from '@/data/notes';
 import NewsletterSignup from '@/components/NewsletterSignup';
 import ProjectCard from '@/components/ProjectCard';
 import ExternalLinkGlyph from '@/components/ExternalLinkGlyph';
-import { useIsMobile } from '@/hooks/use-mobile';
 import { getProjectCardColors } from '@/lib/projectCardColors';
 
 type EverycalEvent = {
@@ -49,7 +48,6 @@ const statusPriority: Record<string, number> = {
 export default function Home() {
   const { lang, t } = useLanguage();
   const navigate = useNavigate();
-  const isMobile = useIsMobile();
   const ccBySaUrl = lang === 'de'
     ? 'https://creativecommons.org/licenses/by-sa/4.0/deed.de'
     : 'https://creativecommons.org/licenses/by-sa/4.0/deed.en';
@@ -409,7 +407,6 @@ export default function Home() {
               <div className="events-grid">
                 {upcomingEvents.map((event) => {
                   const eventHref = `https://events.bhayden.at/@${event.account_username}/${event.slug}`;
-                  const tags = event.tags ? event.tags.split(',').map((tag) => tag.trim()).filter(Boolean).slice(0, 3) : [];
 
                   return (
                     <article
@@ -432,7 +429,15 @@ export default function Home() {
                       )}
                       <div className="events-card-body">
                         <p className="events-card-date">{formatEventDate(event)}</p>
-                        <h3 className="events-card-title">{event.title}</h3>
+                        <a
+                          href={eventHref}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="events-card-title events-card-title-link"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {event.title}
+                        </a>
                         {(event.location_name || event.location_address || event.location_url) && (
                           <div className="events-card-location-wrap">
                             {event.location_name && <p className="events-card-location">{event.location_name}</p>}
@@ -451,43 +456,21 @@ export default function Home() {
                           </div>
                         )}
                         <div className="events-card-meta-row">
-                          {isMobile ? (
-                            <span className="events-card-owner">@{event.account_username}</span>
-                          ) : (
-                            <a
-                              href={`https://events.bhayden.at/@${event.account_username}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="events-card-owner events-card-owner-link"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              @{event.account_username}
-                            </a>
-                          )}
-                          <span className="events-card-arrow" aria-hidden="true"><ExternalLinkGlyph /></span>
+                          <a
+                            href={eventHref}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="project-card-link project-card-secondary-link font-grotesk text-xs-custom uppercase tracking-widest hover:underline"
+                            onClick={(e) => e.stopPropagation()}
+                            style={{
+                              color: 'var(--color-accent-cyan)',
+                              textUnderlineOffset: '3px',
+                            }}
+                          >
+                            {lang === 'de' ? 'In EveryCal öffnen' : 'Open in EveryCal'}
+                            <ExternalLinkGlyph />
+                          </a>
                         </div>
-                        {tags.length > 0 && (
-                          <div className="events-card-tags">
-                            {tags.map((tag) => (
-                              <a
-                                key={`${event.id}-${tag}`}
-                                className="pill-badge pill-badge-contextual home-events-tag-pill"
-                                href={`https://events.bhayden.at/?tags=${encodeURIComponent(tag)}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                onClick={(e) => e.stopPropagation()}
-                                style={{
-                                  ['--badge-base-border' as string]: 'rgba(86, 182, 194, 0.62)',
-                                  ['--badge-base-fg' as string]: 'var(--color-accent-cyan)',
-                                  ['--badge-hover-bg' as string]: 'var(--color-accent-cyan)',
-                                  ['--badge-hover-fg' as string]: '#111111',
-                                }}
-                              >
-                                {tag}
-                              </a>
-                            ))}
-                          </div>
-                        )}
                       </div>
                     </article>
                   );
@@ -503,7 +486,7 @@ export default function Home() {
             className="font-grotesk text-sm-custom inline-flex items-center gap-1 mt-6 transition-colors hover:underline"
             style={{ color: 'var(--color-accent-cyan)', textUnderlineOffset: '4px' }}
           >
-            {lang === 'de' ? 'In EveryCal öffnen' : 'Open in EveryCal'}
+            {lang === 'de' ? 'Folge mir auf EveryCal' : 'Follow me on EveryCal'}
             <span>{' \u2197'}</span>
           </a>
         </div>
