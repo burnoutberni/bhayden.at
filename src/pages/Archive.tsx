@@ -4,6 +4,7 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { projects } from '@/data/content';
 import FilterToolbar from '@/components/FilterToolbar';
 import NewsletterSignup from '@/components/NewsletterSignup';
+import ExternalLinkGlyph from '@/components/ExternalLinkGlyph';
 
 
 type ArchiveItem = {
@@ -247,7 +248,8 @@ export default function Archive() {
                           className="font-grotesk text-xs-custom uppercase tracking-widest transition-colors hover:underline"
                           style={{ color: 'var(--color-accent-cyan)', textUnderlineOffset: '3px' }}
                         >
-                          {link.label + ' \u2192'}
+                          {link.label}
+                          <ExternalLinkGlyph />
                         </a>
                       ))}
                     </div>
@@ -268,11 +270,11 @@ export default function Archive() {
           </p>
           <Link
             to="/work"
-            className="font-grotesk text-sm-custom inline-flex items-center gap-1 transition-colors hover:underline"
+            className="font-grotesk text-sm-custom inline-flex items-center gap-1 transition-colors link-with-arrow"
             style={{ color: 'var(--color-accent-cyan)', textUnderlineOffset: '4px' }}
           >
-            {lang === 'de' ? 'Zur Work-Seite' : 'Go to Work'}
-            <span>{' ->'}</span>
+            <span className="link-label">{lang === 'de' ? 'Zur Work-Seite' : 'Go to Work'}</span>
+            <span className="link-arrow" aria-hidden="true">→</span>
           </Link>
         </div>
       </section>

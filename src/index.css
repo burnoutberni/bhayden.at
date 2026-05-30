@@ -167,6 +167,62 @@
     font-size: var(--text-base);
   }
 
+  .project-card-selection ::selection {
+    background-color: var(--project-card-selection-bg, var(--color-page-accent));
+    color: var(--project-card-selection-fg, #111111);
+  }
+
+  .external-link-icon {
+    display: inline-block;
+    vertical-align: text-top;
+    text-decoration: none !important;
+    text-decoration-line: none !important;
+  }
+
+  .link-arrow {
+    display: inline-block;
+    font-size: 0.92em;
+    line-height: 1;
+    margin-left: 0.18em;
+    text-decoration: none !important;
+    text-decoration-line: none !important;
+  }
+
+  .link-with-arrow:hover .link-label,
+  .link-with-arrow:focus-visible .link-label {
+    text-decoration: underline;
+    text-underline-offset: inherit;
+  }
+
+  .project-card-secondary-link {
+    transition: color 220ms ease, opacity 220ms ease;
+  }
+
+  .project-card-link {
+    transition: color 220ms ease, opacity 220ms ease;
+  }
+
+  .project-card-selection:hover .project-card-secondary-link,
+  .project-card-selection:focus-within .project-card-secondary-link {
+    color: var(--color-ink-muted) !important;
+    opacity: 0.72;
+  }
+
+  .project-card-selection:hover:not(:has(.project-card-secondary-link:hover)) .project-card-primary-link,
+  .project-card-selection:focus-within:not(:has(.project-card-secondary-link:focus-visible)) .project-card-primary-link {
+    text-decoration: underline;
+  }
+
+  .project-card-links:has(.project-card-link:hover) .project-card-link:not(:hover) {
+    color: var(--color-ink-muted) !important;
+    opacity: 0.72;
+  }
+
+  .project-card-links:has(.project-card-link:hover) .project-card-link:hover {
+    color: var(--project-card-selection-bg, var(--color-page-accent)) !important;
+    opacity: 1;
+  }
+
   .text-lg-custom {
     font-size: var(--text-lg);
   }

@@ -14,7 +14,6 @@ export interface Project {
   roleDe?: string;
   links?: { label: string; url: string }[];
   topics: string[];
-  homepagePriority?: number;
 }
 
 export interface BioData {
@@ -40,7 +39,6 @@ export const projects: Project[] = [
     roleDe: 'Gründer & Entwickler',
     links: [{ label: 'GitHub', url: 'https://github.com/burnoutberni/everycal' }],
     topics: ['civic tech', 'open knowledge'],
-    homepagePriority: 1,
   },
   {
     id: 'wir-machen-wien',
@@ -56,7 +54,6 @@ export const projects: Project[] = [
     roleDe: 'Kommunikation & Politik',
     links: [{ label: 'Website', url: 'https://wirmachen.wien' }],
     topics: ['urbanism', 'politics'],
-    homepagePriority: 2,
   },
   {
     id: 'wikimedia-oesterreich',
@@ -72,7 +69,6 @@ export const projects: Project[] = [
     roleDe: 'Vorstandsmitglied',
     links: [{ label: 'Website', url: 'https://wikimedia.at' }],
     topics: ['open knowledge', 'digital rights'],
-    homepagePriority: 3,
   },
   {
     id: 'epicenter-works',
@@ -98,7 +94,7 @@ export const projects: Project[] = [
     summaryDe: 'Urban-Mobility-Daten und städtische Verkehrsinfrastruktur. Kartierung und Verbesserung der Stadtnavigation.',
     status: 'archived',
     type: 'organisation',
-    startYear: 2022,
+    startYear: 2024,
     endYear: 2023,
     location: 'Vienna / Remote',
     role: 'Freelance - Cities Team',
@@ -243,7 +239,7 @@ export const projects: Project[] = [
     summaryDe: 'Ein Lesekreis für politische Bildung, kritische Theorie und kollektives Lernen. Erkundung von Widerspruch als Methode.',
     status: 'current',
     type: 'community',
-    startYear: 2022,
+    startYear: 2024,
     location: 'Vienna',
     role: 'Founder',
     roleDe: 'Gründer',
@@ -258,7 +254,7 @@ export const projects: Project[] = [
     summaryDe: 'Mitgründer eines Community-Space an der Schnittstelle von Kultur, Politik und Technologie. Geteilte Infrastruktur für kollektives Handeln.',
     status: 'current',
     type: 'community',
-    startYear: 2022,
+    startYear: 2023,
     location: 'Vienna',
     role: 'Co-founder',
     roleDe: 'Mitgründer',

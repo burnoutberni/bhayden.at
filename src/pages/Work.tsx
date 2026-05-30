@@ -4,7 +4,8 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { projects } from '@/data/content';
 import FilterToolbar from '@/components/FilterToolbar';
 import NewsletterSignup from '@/components/NewsletterSignup';
-import { getProjectCardColors, projectCardPalette } from '@/lib/projectCardColors';
+import ProjectCard from '@/components/ProjectCard';
+import { getProjectCardColors } from '@/lib/projectCardColors';
 
 const statusLabels: Record<string, { en: string; de: string }> = {
   current: { en: 'Current', de: 'Aktiv' },
@@ -187,13 +188,9 @@ export default function Work() {
             const summary = lang === 'de' && project.summaryDe ? project.summaryDe : project.summary;
             const topics = project.topics;
             const cardColors = getProjectCardColors(project.type || 'project');
-            const cardAccentTextColor = cardColors.border === projectCardPalette.lime.border
-              ? 'var(--color-page-accent-text)'
-              : cardColors.border;
             const statusLabel = statusLabels[project.status]?.[lang] || project.status;
             const typeLabel = project.type ? (typeLabels[project.type]?.[lang] || project.type) : null;
             const roleLabel = lang === 'de' && project.roleDe ? project.roleDe : project.role;
-            const statusPillColor = project.status === 'archived' ? 'var(--color-ink)' : cardColors.badge;
             const hasSingleYearRange = Boolean(project.startYear && project.endYear && project.startYear === project.endYear);
             const hasArchivedSingleStartYear = Boolean(project.status === 'archived' && project.startYear && !project.endYear);
             const yearLabel = (hasSingleYearRange || hasArchivedSingleStartYear
@@ -205,104 +202,27 @@ export default function Work() {
                   : '');
 
             return (
-              <div
+              <ProjectCard
                 key={project.id}
-                id={project.id}
-                className="group p-6 transition-all duration-300 hover:-translate-y-1"
-                style={{
-                  backgroundColor: 'var(--color-editor-bg)',
-                  border: `2px solid ${cardColors.border}`,
-                  borderRadius: 'var(--radius-soft)',
+                projectId={project.id}
+                title={title}
+                summary={summary}
+                role={roleLabel}
+                yearLabel={yearLabel}
+                statusLabel={statusLabel}
+                statusKey={project.status}
+                typeLabel={typeLabel || undefined}
+                topicLabels={topics.map((tag) => consolidatedTopicLabels[tag]?.[lang] || tag)}
+                links={project.links}
+                colors={cardColors}
+                variant="light"
+                onStatusClick={toggleStatusFilter}
+                onTypeClick={project.type ? () => toggleTypeFilter(project.type as string) : undefined}
+                onTopicClick={(index) => {
+                  const topic = topics[index];
+                  if (topic) toggleTopicFilter(topic);
                 }}
-              >
-                {/* Status Badge */}
-                <div className="flex justify-end mb-3">
-                  <button
-                    type="button"
-                    className="pill-badge"
-                    onClick={() => toggleStatusFilter(project.status)}
-                    style={{
-                      backgroundColor: statusPillColor,
-                      color: project.status === 'archived' ? 'var(--color-cream)' : '#111111',
-                      borderColor: statusPillColor,
-                    }}
-                  >
-                    {statusLabel}
-                  </button>
-                </div>
-
-                {/* Year */}
-                <p className="font-mono text-xs-custom mb-1" style={{ color: 'var(--color-ink-muted)' }}>
-                  {yearLabel}
-                </p>
-
-                {/* Title */}
-                <h3 className="font-grotesk text-xl-custom font-medium mb-2" style={{ color: 'var(--color-ink)' }}>
-                  {title}
-                </h3>
-
-                {roleLabel && (
-                  <p className="font-grotesk text-sm-custom mb-2" style={{ color: cardAccentTextColor }}>
-                    {roleLabel}
-                  </p>
-                )}
-
-                {/* Summary */}
-                <p className="font-grotesk text-sm-custom mb-4" style={{ color: 'var(--color-ink-muted)' }}>
-                  {summary}
-                </p>
-
-                {/* Tags */}
-                <div className="flex flex-wrap gap-1.5 mb-4">
-                  {project.type && typeLabel && (
-                    <button
-                      type="button"
-                      onClick={() => toggleTypeFilter(project.type as string)}
-                      className="pill-badge"
-                      style={{
-                        backgroundColor: typeFilter === project.type ? 'var(--color-accent-lime)' : 'transparent',
-                        color: typeFilter === project.type ? 'var(--color-dark-void)' : 'var(--color-ink)',
-                        borderColor: typeFilter === project.type ? 'var(--color-accent-lime)' : 'var(--color-border-brutalist)',
-                      }}
-                    >
-                      {typeLabel}
-                    </button>
-                  )}
-                  {topics.map((tag) => (
-                    <button
-                      type="button"
-                      key={tag}
-                      onClick={() => toggleTopicFilter(tag)}
-                      className="pill-badge"
-                      style={{
-                        backgroundColor: topicFilter === tag ? 'var(--color-accent-lime)' : 'transparent',
-                        color: topicFilter === tag ? 'var(--color-dark-void)' : 'var(--color-ink)',
-                        borderColor: topicFilter === tag ? 'var(--color-accent-lime)' : 'var(--color-border-brutalist)',
-                      }}
-                    >
-                      {consolidatedTopicLabels[tag]?.[lang] || tag}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Links */}
-                {project.links && project.links.length > 0 && (
-                  <div className="flex gap-3">
-                    {project.links.map((link) => (
-                      <a
-                        key={link.url}
-                        href={link.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="font-grotesk text-xs-custom uppercase tracking-widest transition-colors hover:underline"
-                        style={{ color: cardAccentTextColor, textUnderlineOffset: '3px' }}
-                      >
-                        {link.label + ' \u2192'}
-                      </a>
-                    ))}
-                  </div>
-                )}
-              </div>
+              />
             );
           })}
         </div>
