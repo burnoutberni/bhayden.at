@@ -12,6 +12,7 @@ const Notes = lazy(() => import('@/pages/Notes'));
 const NoteDetail = lazy(() => import('@/pages/NoteDetail'));
 const About = lazy(() => import('@/pages/About'));
 const Contact = lazy(() => import('@/pages/Contact'));
+const Imprint = lazy(() => import('@/pages/Imprint'));
 
 function ScrollToTop() {
   const { pathname, hash } = useLocation();
@@ -50,7 +51,7 @@ export default function App() {
     ? 'var(--color-accent-coral)'
     : pathname.startsWith('/work')
       ? 'var(--color-accent-lime)'
-      : pathname.startsWith('/about')
+      : pathname.startsWith('/about') || pathname.startsWith('/imprint')
         ? 'var(--color-accent-cyan)'
       : 'var(--color-accent-lime)';
 
@@ -85,6 +86,7 @@ export default function App() {
                 <Route path="/notes/:slug" element={<NoteDetail />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} />
+                <Route path="/imprint" element={<Imprint />} />
               </Routes>
             </Suspense>
           </main>

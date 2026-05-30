@@ -27,7 +27,7 @@ export default function Contact() {
             href={mailto}
             className="font-mono text-2xl-custom inline-block transition-all duration-200 hover:underline"
             style={{
-              color: 'var(--color-accent-cyan)',
+              color: 'var(--color-page-accent)',
               textUnderlineOffset: '6px',
               textDecorationThickness: '2px',
             }}

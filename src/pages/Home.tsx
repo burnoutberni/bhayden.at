@@ -32,6 +32,9 @@ export default function Home() {
   const { lang, t } = useLanguage();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const ccBySaUrl = lang === 'de'
+    ? 'https://creativecommons.org/licenses/by-sa/4.0/deed.de'
+    : 'https://creativecommons.org/licenses/by-sa/4.0/deed.en';
   const [events, setEvents] = useState<EverycalEvent[]>([]);
   const [eventsLoading, setEventsLoading] = useState(true);
   const [eventsError, setEventsError] = useState<string | null>(null);
@@ -249,7 +252,7 @@ export default function Home() {
           ,
           {' '}
           <a
-            href="https://creativecommons.org/licenses/by-sa/4.0/"
+            href={ccBySaUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="underline hover:no-underline"

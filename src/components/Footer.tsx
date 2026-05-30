@@ -4,11 +4,14 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { getContactEmail, getContactMailto } from '@/lib/utils';
 
 export default function Footer() {
-  const { t } = useLanguage();
+  const { lang, t } = useLanguage();
   const { pathname } = useLocation();
   const isContactPage = pathname === '/contact';
   const email = getContactEmail();
   const mailto = getContactMailto();
+  const ccBySaUrl = lang === 'de'
+    ? 'https://creativecommons.org/licenses/by-sa/4.0/deed.de'
+    : 'https://creativecommons.org/licenses/by-sa/4.0/deed.en';
 
   const socialLinks = [
     { label: 'GitHub', url: 'https://github.com/burnoutberni', color: 'var(--color-accent-lime)' },
@@ -42,7 +45,7 @@ export default function Footer() {
               href={mailto}
               className="font-mono text-xl-custom md:text-2xl-custom inline-block mb-6 transition-all duration-200 hover:underline"
               style={{
-                color: 'var(--color-page-accent-text)',
+                color: 'var(--color-page-accent)',
                 textUnderlineOffset: '6px',
                 textDecorationThickness: '2px',
               }}
@@ -94,7 +97,25 @@ export default function Footer() {
           {t.footer.finePrint}
         </p>
         <p className="font-mono text-xs-custom" style={{ color: 'var(--color-ink-muted)' }}>
-          {t.footer.copyright}
+          {t.footer.copyrightName}.{' '}
+          <Link
+            to="/imprint"
+            className="text-[10px] tracking-wide transition-opacity hover:opacity-70"
+            style={{ color: 'var(--color-ink-muted)' }}
+          >
+            {t.footer.imprint}
+          </Link>
+          . {t.footer.copyrightLicensePrefix}{' '}
+          <a
+            href={ccBySaUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="transition-opacity hover:opacity-70"
+            style={{ color: 'var(--color-ink-muted)' }}
+          >
+            CC BY-SA 4.0
+          </a>{' '}
+          {t.footer.copyrightLicenseSuffix}
         </p>
       </div>
     </footer>
