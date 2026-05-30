@@ -138,8 +138,8 @@ export const projects: Project[] = [
   },
   {
     id: 'piratenpartei',
-    title: 'Piratenpartei - Nationalrat Candidacy',
-    titleDe: 'Piratenpartei - Nationalratskandidatur',
+    title: 'Piratenpartei',
+    titleDe: 'Piratenpartei',
     summary: 'Ran for Austrian Nationalrat with the Piratenpartei at age 18. Early political involvement in digital rights, participation, and internet politics.',
     summaryDe: 'Kandidatur für den österreichischen Nationalrat bei den Piraten im Alter von 18 Jahren. Frühe politische Engagements für digitale Rechte, Partizipation und Internetpolitik.',
     status: 'archived',
@@ -182,8 +182,8 @@ export const projects: Project[] = [
   },
   {
     id: 'felix-reda',
-    title: 'Internship with MEP Felix Reda',
-    titleDe: 'Praktikum bei MEP Felix Reda',
+    title: 'MEP Felix Reda',
+    titleDe: 'MEP Felix Reda',
     summary: 'Worked with MEP Felix Reda on Copyright in the Digital Single Market Directive. European Parliament digital-rights advocacy.',
     summaryDe: 'Arbeit mit MEP Felix Reda an der Copyright-Richtlinie für den digitalen Binnenmarkt. Advocacy für digitale Rechte im Europäischen Parlament.',
     status: 'archived',
