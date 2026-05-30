@@ -359,6 +359,7 @@ export default function Home() {
       <section
         className="relative py-20 md:py-28 px-6 overflow-hidden"
         style={{
+          ['--color-page-accent' as string]: 'var(--color-accent-cyan)',
           borderBottom: '2px solid var(--color-border-brutalist)',
           background: 'var(--events-section-bg)',
         }}
@@ -513,6 +514,7 @@ export default function Home() {
         <div
           className="max-w-[700px] mx-auto p-8 md:p-12 transition-all duration-300 hover:-translate-y-0.5"
           style={{
+            ['--color-page-accent' as string]: 'var(--color-accent-cyan)',
             border: '2px solid var(--color-border-brutalist)',
             borderRadius: 'var(--radius-sharp)',
             boxShadow: 'var(--shadow-brutal)',
@@ -576,7 +578,13 @@ export default function Home() {
       </section>
 
       {/* Notes Preview */}
-      <section className="py-16 md:py-24 px-6" style={{ borderTop: '1px solid var(--color-border-brutalist)' }}>
+      <section
+        className="py-16 md:py-24 px-6"
+        style={{
+          ['--color-page-accent' as string]: 'var(--color-accent-coral)',
+          borderTop: '1px solid var(--color-border-brutalist)',
+        }}
+      >
         <div className="max-w-[1200px] mx-auto">
           <h2 className="font-serif text-3xl-custom mb-2" style={{ color: 'var(--color-ink)' }}>
             {t.notes.title}
