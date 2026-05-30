@@ -522,7 +522,7 @@ export default function Home() {
           }}
         >
           <div className="flex items-center gap-3 mb-6">
-            <h2 className="font-grotesk text-3xl-custom uppercase font-bold" style={{ color: 'var(--color-ink)' }}>
+            <h2 className="font-serif text-3xl-custom" style={{ color: 'var(--color-ink)' }}>
               {t.archive.title}
             </h2>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-ink)' }}>
@@ -555,10 +555,10 @@ export default function Home() {
               >
                 <Link
                   to={`/archive#${entry.id}`}
-                  className="inline-block transition-colors hover:underline"
-                  style={{ color: 'inherit', textUnderlineOffset: '3px' }}
+                  className="archive-preview-link inline-block"
+                  style={{ textUnderlineOffset: '3px' }}
                 >
-                  <span className="font-mono text-xs-custom mr-2" style={{ color: 'var(--color-ink-muted)' }}>{period}</span>
+                  <span className="archive-preview-link-year font-mono text-xs-custom mr-2">{period}</span>
                   {title}
                   <span style={{ color: 'var(--color-ink-muted)' }}> - {role}</span>
                 </Link>

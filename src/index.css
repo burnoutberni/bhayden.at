@@ -207,6 +207,28 @@
     transition: color 220ms ease, opacity 220ms ease;
   }
 
+  .archive-preview-link {
+    transition: color 180ms ease;
+  }
+
+  .archive-preview-link:hover,
+  .archive-preview-link:focus-visible {
+    text-decoration: underline;
+    text-decoration-color: var(--color-ink);
+  }
+
+  .archive-preview-link-year {
+    color: var(--color-ink-muted);
+    transition: color 180ms ease;
+  }
+
+  .archive-preview-link:hover .archive-preview-link-year,
+  .archive-preview-link:focus-visible .archive-preview-link-year {
+    color: var(--color-accent-cyan);
+    text-decoration: underline;
+    text-decoration-color: var(--color-accent-cyan);
+  }
+
   .accent-highlight {
     color: var(--accent-highlight-fg, var(--color-page-accent));
     background-color: var(--accent-highlight-bg, transparent);
