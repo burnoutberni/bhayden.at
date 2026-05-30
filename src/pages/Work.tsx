@@ -175,7 +175,11 @@ export default function Work() {
             label: t.work.filters.type,
             activeKey: typeFilter,
             onSelect: setTypeFilter,
-            options: typeFilters.map((f) => ({ key: f, label: f === 'all' ? t.work.filters.all : (typeLabels[f]?.[lang] || f) })),
+            options: typeFilters.map((f) => ({
+              key: f,
+              label: f === 'all' ? t.work.filters.all : (typeLabels[f]?.[lang] || f),
+              accentColor: f === 'all' ? undefined : getProjectCardColors(f).badge,
+            })),
           },
         ]}
       />

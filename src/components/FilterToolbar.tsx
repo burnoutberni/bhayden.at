@@ -3,6 +3,7 @@ import { useEffect, useId, useMemo, useState, type ReactNode } from 'react';
 type FilterOption = {
   key: string;
   label: string;
+  accentColor?: string;
 };
 
 type FilterGroup = {
@@ -178,9 +179,9 @@ export default function FilterToolbar({
                     onClick={() => handleSelect(group, option.key)}
                     className="pill-badge transition-all duration-200"
                     style={{
-                      backgroundColor: group.activeKey === option.key ? accentColor : 'transparent',
+                      backgroundColor: group.activeKey === option.key ? (option.accentColor || accentColor) : 'transparent',
                       color: group.activeKey === option.key ? 'var(--color-dark-void)' : 'var(--color-ink)',
-                      borderColor: group.activeKey === option.key ? accentColor : 'var(--color-border-brutalist)',
+                      borderColor: group.activeKey === option.key ? (option.accentColor || accentColor) : 'var(--color-border-brutalist)',
                     }}
                   >
                     {option.label}
