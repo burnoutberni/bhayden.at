@@ -10,13 +10,13 @@ export default function Notes() {
   const [searchParams] = useSearchParams();
   const filtersRef = useRef<HTMLElement | null>(null);
   const [topicFilter, setTopicFilter] = useState('all');
-  const [languageFilter, setLanguageFilter] = useState<'all' | 'en' | 'de'>('all');
+  const [languageFilter, setLanguageFilter] = useState<'all' | 'en' | 'de' | 'sv'>('all');
 
   useEffect(() => {
     const topicParam = searchParams.get('topic') || searchParams.get('tag');
     const languageParam = searchParams.get('language') || searchParams.get('lang');
     const nextTopic = topicParam && noteTopics.includes(topicParam) ? topicParam : 'all';
-    const nextLanguage = languageParam === 'en' || languageParam === 'de' ? languageParam : 'all';
+    const nextLanguage = languageParam === 'en' || languageParam === 'de' || languageParam === 'sv' ? languageParam : 'all';
     setTopicFilter(nextTopic);
     setLanguageFilter(nextLanguage);
 
@@ -63,11 +63,12 @@ export default function Notes() {
           },
           {
             activeKey: languageFilter,
-            onSelect: (key) => setLanguageFilter(key as 'all' | 'en' | 'de'),
+            onSelect: (key) => setLanguageFilter(key as 'all' | 'en' | 'de' | 'sv'),
             options: [
               { key: 'all', label: t.notesPage.allLanguages },
               { key: 'en', label: 'en' },
               { key: 'de', label: 'de' },
+              { key: 'sv', label: 'sv' },
             ],
           },
         ]}

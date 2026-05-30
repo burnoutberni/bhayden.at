@@ -4,7 +4,7 @@ export interface Note {
   date: string;
   summary: string;
   topics: string[];
-  language: 'en' | 'de';
+  language: 'en' | 'de' | 'sv';
   slug: string;
   body: string;
 }
