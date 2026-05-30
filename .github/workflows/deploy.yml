@@ -26,5 +26,5 @@ jobs:
           script: |
             cd /srv/REDACTED
             git pull
-            npm install
+            npm ci
             npm run build
