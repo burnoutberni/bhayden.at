@@ -96,7 +96,7 @@ export default function NoteDetail() {
             <span className="link-label">{t.noteDetail.backToAll}</span>
           </Link>
           <p className="font-mono text-xs-custom mt-4 mb-2" style={{ color: 'var(--color-ink-muted)' }}>{note.date}</p>
-          <h1 className="font-serif text-4xl-custom mb-3" style={{ color: 'var(--color-ink)' }}>{note.title}</h1>
+          <h1 className="font-serif text-2xl-custom mb-3" style={{ color: 'var(--color-ink)' }}>{note.title}</h1>
           <p className="font-grotesk text-base-custom" style={{ color: 'var(--color-ink-muted)' }}>
             {lang === 'de' && note.summaryDe ? note.summaryDe : note.summary}
           </p>
