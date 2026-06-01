@@ -48,8 +48,7 @@ const statusPriority: Record<string, number> = {
 export default function Home() {
   const { lang, t } = useLanguage();
   const navigate = useNavigate();
-  const userAgent = typeof navigator === 'undefined' ? '' : navigator.userAgent || '';
-  const isPrerenderCrawl = userAgent.includes('ReactSnap') || navigator.webdriver;
+  const isPrerenderCrawl = typeof navigator !== 'undefined' && navigator.webdriver;
   const ccBySaUrl = lang === 'de'
     ? 'https://creativecommons.org/licenses/by-sa/4.0/deed.de'
     : 'https://creativecommons.org/licenses/by-sa/4.0/deed.en';
@@ -105,7 +104,6 @@ export default function Home() {
 
   useEffect(() => {
     if (isPrerenderCrawl) {
-      setEventsLoading(false);
       return;
     }
 

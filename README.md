@@ -26,7 +26,7 @@ Deploy the contents of `dist/` to any static hosting provider (for example: Netl
 
 This repository deploys from GitHub Actions on push to `main`:
 
-1. CI runs `npm ci` and `npm run build` (including `react-snap` pre-rendering).
+1. CI runs `npm ci` and `npm run build` (including static pre-rendering).
 2. CI uploads the generated `dist/` files to the remote path in `DEPLOY_DIST_PATH` over SSH.
 
 Required GitHub secrets for deploy:

@@ -15,12 +15,16 @@ const ThemeContext = createContext<ThemeContextValue>({
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => {
     if (typeof window !== 'undefined') {
+      const domTheme = document.documentElement.getAttribute('data-theme');
+      if (domTheme === 'dark' || domTheme === 'light') return domTheme;
+
       const stored = localStorage.getItem('theme') as Theme | null;
-      if (stored) return stored;
+      if (stored === 'dark' || stored === 'light') return stored;
+
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       return prefersDark ? 'dark' : 'light';
     }
-    return 'dark';
+    return 'light';
   });
 
   useEffect(() => {
