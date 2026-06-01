@@ -28,7 +28,7 @@ export default function Navigation() {
   ];
 
   const isActive = (path: string) => location.pathname === path;
-  const onHero = location.pathname === '/' && !scrolled && !mobileOpen;
+  const onHero = location.pathname === '/' && !scrolled;
   const navTextColor = onHero ? '#F5F1E8' : 'var(--color-ink)';
   const navMutedColor = onHero ? 'rgba(245, 241, 232, 0.78)' : 'var(--color-ink-muted)';
 
