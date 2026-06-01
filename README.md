@@ -37,6 +37,8 @@ Required GitHub secrets for deploy:
 - `SSH_PORT` (optional; defaults to `22`)
 - `DEPLOY_DIST_PATH` (for example `/var/www/bhayden.at/dist`)
 
+If you want newsletter signup and Plausible analytics to work in production, define the optional environment variables from `.env.example` in your deployment environment.
+
 Manual flow:
 
 1. Run `npm ci`.
