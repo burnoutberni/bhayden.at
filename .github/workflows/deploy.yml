@@ -45,6 +45,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script_stop: true
           script: |
+            setopt NULL_GLOB
             mkdir -p "${{ secrets.DEPLOY_DIST_PATH }}"
             rm -rf "${{ secrets.DEPLOY_DIST_PATH }}"/*
 
