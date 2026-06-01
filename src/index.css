@@ -364,8 +364,20 @@
     background-color: var(--footer-link-hover-bg, transparent);
   }
 
+  .footer-page-link-trigger:hover .footer-page-link,
+  .footer-page-link-trigger:focus-visible .footer-page-link {
+    color: var(--footer-link-hover-fg, var(--footer-link-accent, var(--color-page-accent)));
+    background-color: var(--footer-link-hover-bg, transparent);
+  }
+
   html[data-theme="dark"] .footer-page-link:hover,
   html[data-theme="dark"] .footer-page-link:focus-visible {
+    color: var(--footer-link-accent, var(--color-page-accent));
+    background-color: transparent;
+  }
+
+  html[data-theme="dark"] .footer-page-link-trigger:hover .footer-page-link,
+  html[data-theme="dark"] .footer-page-link-trigger:focus-visible .footer-page-link {
     color: var(--footer-link-accent, var(--color-page-accent));
     background-color: transparent;
   }

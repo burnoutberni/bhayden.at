@@ -21,10 +21,10 @@ export default function Navigation() {
   }, [location.pathname]);
 
   const navLinks = [
-    { label: t.nav.work, path: '/work' },
-    { label: t.nav.notes, path: '/notes' },
-    { label: t.nav.about, path: '/about' },
-    { label: t.nav.contact, path: '/contact' },
+    { label: t.nav.work, path: '/work', accent: 'var(--color-accent-lime)' },
+    { label: t.nav.notes, path: '/notes', accent: 'var(--color-accent-coral)' },
+    { label: t.nav.about, path: '/about', accent: 'var(--color-accent-cyan)' },
+    { label: t.nav.contact, path: '/contact', accent: 'var(--color-accent-cyan)' },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -57,13 +57,16 @@ export default function Navigation() {
               key={link.path}
               to={link.path}
               aria-current={isActive(link.path) ? 'page' : undefined}
-              className="px-3 py-1.5 font-grotesk text-xs-custom uppercase tracking-widest transition-all duration-200"
+              className="footer-page-link-trigger px-3 py-1.5 font-grotesk text-xs-custom uppercase tracking-widest transition-all duration-200"
               style={{
-                color: isActive(link.path) ? navTextColor : navMutedColor,
+                ['--footer-link-base-color' as string]: isActive(link.path) ? navTextColor : navMutedColor,
+                ['--footer-link-accent' as string]: link.accent,
+                ['--footer-link-hover-bg' as string]: link.accent === 'var(--color-accent-lime)' ? 'var(--color-accent-lime)' : 'transparent',
+                ['--footer-link-hover-fg' as string]: link.accent === 'var(--color-accent-lime)' ? 'var(--color-dark-void)' : link.accent,
                 fontWeight: isActive(link.path) ? 600 : 400,
               }}
             >
-              {link.label}
+              <span className="footer-page-link">{link.label}</span>
             </Link>
           ))}
 
@@ -155,10 +158,15 @@ export default function Navigation() {
               key={link.path}
               to={link.path}
               aria-current={isActive(link.path) ? 'page' : undefined}
-              className="py-2 font-grotesk text-sm uppercase tracking-widest"
-              style={{ color: 'var(--color-ink)' }}
+              className="footer-page-link-trigger py-2 font-grotesk text-sm uppercase tracking-widest"
+              style={{
+                ['--footer-link-base-color' as string]: 'var(--color-ink)',
+                ['--footer-link-accent' as string]: link.accent,
+                ['--footer-link-hover-bg' as string]: link.accent === 'var(--color-accent-lime)' ? 'var(--color-accent-lime)' : 'transparent',
+                ['--footer-link-hover-fg' as string]: link.accent === 'var(--color-accent-lime)' ? 'var(--color-dark-void)' : link.accent,
+              }}
             >
-              {link.label}
+              <span className="footer-page-link">{link.label}</span>
             </Link>
           ))}
           <div className="flex items-center gap-4 pt-2 border-t" style={{ borderColor: 'var(--color-border-brutalist)' }}>
