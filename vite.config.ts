@@ -49,7 +49,7 @@ function manualChunks(moduleId: string): string | undefined {
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: "./",
+  base: "/",
   plugins: [react()],
   build: {
     cssMinify: "esbuild",

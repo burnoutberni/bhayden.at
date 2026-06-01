@@ -13,6 +13,7 @@ const NoteDetail = lazy(() => import('@/pages/NoteDetail'));
 const About = lazy(() => import('@/pages/About'));
 const Contact = lazy(() => import('@/pages/Contact'));
 const Imprint = lazy(() => import('@/pages/Imprint'));
+const NotFound = lazy(() => import('@/pages/NotFound'));
 
 function ScrollToTop() {
   const { pathname, hash } = useLocation();
@@ -54,12 +55,24 @@ function ScrollToTop() {
 
 export default function App() {
   const { pathname } = useLocation();
+  const isKnownRoute =
+    pathname === '/' ||
+    pathname === '/work' ||
+    pathname === '/archive' ||
+    pathname === '/notes' ||
+    pathname.startsWith('/notes/') ||
+    pathname === '/about' ||
+    pathname === '/contact' ||
+    pathname === '/imprint' ||
+    pathname === '/404.html';
   const pageAccent = pathname.startsWith('/notes')
     ? 'var(--color-accent-coral)'
     : pathname.startsWith('/work')
       ? 'var(--color-accent-lime)'
-      : pathname.startsWith('/archive')
+    : pathname.startsWith('/archive')
         ? 'var(--color-accent-cyan)'
+      : pathname === '/404.html' || !isKnownRoute
+        ? 'var(--color-accent-coral)'
       : pathname.startsWith('/about') || pathname.startsWith('/imprint') || pathname.startsWith('/contact')
         ? 'var(--color-accent-cyan)'
       : 'var(--color-accent-lime)';
@@ -109,6 +122,8 @@ export default function App() {
                 <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/imprint" element={<Imprint />} />
+                <Route path="/404.html" element={<NotFound />} />
+                <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
           </main>

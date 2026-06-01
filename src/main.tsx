@@ -1,5 +1,5 @@
 import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
+import { createRoot, hydrateRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router'
 import '@fontsource/instrument-serif/400.css'
 import '@fontsource/instrument-serif/400-italic.css'
@@ -16,6 +16,10 @@ import App from './App.tsx'
 function setupPlausible() {
   const plausibleScriptSrc = import.meta.env.VITE_PLAUSIBLE_SCRIPT_SRC as string | undefined;
   if (!plausibleScriptSrc) return;
+
+  const userAgent = typeof navigator === 'undefined' ? '' : navigator.userAgent || '';
+  const isPrerenderCrawl = userAgent.includes('ReactSnap') || navigator.webdriver;
+  if (isPrerenderCrawl) return;
 
   const win = window as Window & {
     plausible?: ((...args: unknown[]) => void) & {
@@ -55,10 +59,17 @@ function setupPlausible() {
 
 setupPlausible();
 
-createRoot(document.getElementById('root')!).render(
+const rootElement = document.getElementById('root')!;
+const app = (
   <StrictMode>
     <BrowserRouter>
       <App />
     </BrowserRouter>
-  </StrictMode>,
-)
+  </StrictMode>
+);
+
+if (rootElement.hasChildNodes()) {
+  hydrateRoot(rootElement, app);
+} else {
+  createRoot(rootElement).render(app);
+}

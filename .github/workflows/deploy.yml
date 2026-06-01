@@ -15,7 +15,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Run deploy commands over SSH
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Setup Chrome
+        id: setup-chrome
+        uses: browser-actions/setup-chrome@v1
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build static site
+        env:
+          PUPPETEER_EXECUTABLE_PATH: ${{ steps.setup-chrome.outputs.chrome-path }}
+        run: npm run build
+
+      - name: Clean remote dist directory
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -24,7 +45,16 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script_stop: true
           script: |
-            cd /srv/REDACTED
-            git pull
-            npm ci
-            npm run build
+            mkdir -p "${{ secrets.DEPLOY_DIST_PATH }}"
+            rm -rf "${{ secrets.DEPLOY_DIST_PATH }}"/*
+
+      - name: Upload dist to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          key: ${{ secrets.SSH_KEY }}
+          source: "dist/*"
+          target: "${{ secrets.DEPLOY_DIST_PATH }}"
+          strip_components: 1

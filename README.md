@@ -2,6 +2,8 @@
 
 Personal site built with React, TypeScript, and Vite.
 
+The build includes static pre-rendering for main routes, producing HTML files per route in `dist/`.
+
 ## Run locally
 
 ```bash
@@ -22,7 +24,20 @@ This creates a production build in `dist/`.
 
 Deploy the contents of `dist/` to any static hosting provider (for example: Netlify, Vercel static output, Cloudflare Pages, or GitHub Pages).
 
-Typical flow:
+This repository deploys from GitHub Actions on push to `main`:
+
+1. CI runs `npm ci` and `npm run build` (including `react-snap` pre-rendering).
+2. CI uploads the generated `dist/` files to the remote path in `DEPLOY_DIST_PATH` over SSH.
+
+Required GitHub secrets for deploy:
+
+- `SSH_HOST`
+- `SSH_USER`
+- `SSH_KEY`
+- `SSH_PORT` (optional; defaults to `22`)
+- `DEPLOY_DIST_PATH` (for example `/var/www/bhayden.at/dist`)
+
+Manual flow:
 
 1. Run `npm ci`.
 2. Run `npm run build`.
@@ -30,14 +45,13 @@ Typical flow:
 
 ## Caddy
 
-Example `Caddyfile` for serving this site as a single-page app:
+Example `Caddyfile` for serving this site as static pre-rendered pages:
 
 ```caddy
 bhayden.at, www.bhayden.at {
 	encode zstd gzip
 
 	root * /var/www/bhayden.at/dist
-	try_files {path} /index.html
 	file_server
 
 	header {
