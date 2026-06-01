@@ -23,9 +23,18 @@ async function main() {
   const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
   const options = packageJson.reactSnap || {};
   const browserPath = resolveBrowserPath();
+  const isCiLinux = process.platform === "linux" && process.env.CI;
+  const defaultPuppeteerArgs = isCiLinux
+    ? ["--no-sandbox", "--disable-setuid-sandbox"]
+    : [];
+  const puppeteerArgs = [
+    ...(options.puppeteerArgs || []),
+    ...defaultPuppeteerArgs.filter((arg) => !(options.puppeteerArgs || []).includes(arg)),
+  ];
 
   await run({
     ...options,
+    puppeteerArgs,
     ...(browserPath ? { puppeteerExecutablePath: browserPath } : {}),
   });
 }
