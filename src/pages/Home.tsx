@@ -479,7 +479,7 @@ export default function Home() {
             style={{ color: 'var(--color-accent-cyan)', textUnderlineOffset: '4px' }}
           >
             <span className="events-follow-link-label">{lang === 'de' ? 'Folge mir auf EveryCal' : 'Follow me on EveryCal'}</span>
-            <span className="events-follow-link-arrow">{' \u2197'}</span>
+            <ExternalLinkGlyph className="events-follow-link-arrow" />
           </a>
         </div>
       </section>
