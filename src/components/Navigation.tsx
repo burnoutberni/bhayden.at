@@ -82,7 +82,7 @@ export default function Navigation() {
             <button
               type="button"
               onClick={() => setLang('en')}
-              className="px-2 py-0.5 transition-opacity"
+              className="px-2 py-0.5 transition-opacity hover:underline focus-visible:underline"
               aria-pressed={lang === 'en'}
               style={{ fontWeight: lang === 'en' ? 700 : 400, opacity: lang === 'en' ? 1 : 0.6 }}
             >
@@ -92,7 +92,7 @@ export default function Navigation() {
             <button
               type="button"
               onClick={() => setLang('de')}
-              className="px-2 py-0.5 transition-opacity"
+              className="px-2 py-0.5 transition-opacity hover:underline focus-visible:underline"
               aria-pressed={lang === 'de'}
               style={{ fontWeight: lang === 'de' ? 700 : 400, opacity: lang === 'de' ? 1 : 0.6 }}
             >
@@ -171,9 +171,9 @@ export default function Navigation() {
           ))}
           <div className="flex items-center gap-4 pt-2 border-t" style={{ borderColor: 'var(--color-border-brutalist)' }}>
             <div className="flex items-center gap-2">
-              <button type="button" onClick={() => setLang('en')} className="font-mono text-xs" aria-pressed={lang === 'en'} style={{ fontWeight: lang === 'en' ? 700 : 400, color: 'var(--color-ink)' }}>EN</button>
+              <button type="button" onClick={() => setLang('en')} className="font-mono text-xs hover:underline focus-visible:underline" aria-pressed={lang === 'en'} style={{ fontWeight: lang === 'en' ? 700 : 400, color: 'var(--color-ink)' }}>EN</button>
               <span className="font-mono text-xs opacity-50">|</span>
-              <button type="button" onClick={() => setLang('de')} className="font-mono text-xs" aria-pressed={lang === 'de'} style={{ fontWeight: lang === 'de' ? 700 : 400, color: 'var(--color-ink)' }}>DE</button>
+              <button type="button" onClick={() => setLang('de')} className="font-mono text-xs hover:underline focus-visible:underline" aria-pressed={lang === 'de'} style={{ fontWeight: lang === 'de' ? 700 : 400, color: 'var(--color-ink)' }}>DE</button>
             </div>
             <button type="button" onClick={toggleTheme} className="font-mono text-xs uppercase" style={{ color: 'var(--color-ink)' }}>{theme === 'dark' ? t.common.light : t.common.dark}</button>
           </div>
