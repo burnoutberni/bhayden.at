@@ -146,9 +146,10 @@ export default function Work() {
       {/* Header */}
       <section className="px-6 py-12 md:py-16" style={{ borderBottom: '2px solid var(--color-border-brutalist)' }}>
         <div className="max-w-[1200px] mx-auto">
-          <h1 className="font-serif text-4xl-custom mb-3" style={{ color: 'var(--color-ink)' }}>
+          <h1 className="font-serif text-4xl-custom mb-2" style={{ color: 'var(--color-ink)' }}>
             {t.work.title}
           </h1>
+          <div className="w-16 h-0.5 mb-4" style={{ backgroundColor: 'var(--color-page-accent)' }} />
           <p className="font-grotesk text-base-custom" style={{ color: 'var(--color-ink-muted)' }}>
             {t.work.subtitle}
           </p>

@@ -45,9 +45,10 @@ export default function About() {
 
           {/* Bio Header */}
           <div className="pt-4">
-            <h1 className="font-serif text-3xl-custom mb-3" style={{ color: 'var(--color-ink)' }}>
+            <h1 className="font-serif text-3xl-custom mb-2" style={{ color: 'var(--color-ink)' }}>
               {t.about.whoIAm}
             </h1>
+            <div className="w-16 h-0.5 mb-4" style={{ backgroundColor: 'var(--color-page-accent)' }} />
             <p className="font-grotesk text-lg-custom mb-8" style={{ color: 'var(--color-ink-muted)' }}>
               {t.about.subtitle}
             </p>
