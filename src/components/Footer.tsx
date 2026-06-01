@@ -33,6 +33,7 @@ export default function Footer() {
       style={{
         borderTop: '2px solid var(--color-border-brutalist)',
         backgroundColor: 'var(--color-cream)',
+        boxShadow: 'inset 0 3px 0 0 var(--color-page-accent)',
       }}
     >
       <div className="max-w-[1200px] mx-auto px-6 py-16 md:py-24 text-center">
@@ -74,29 +75,27 @@ export default function Footer() {
           </div>
         )}
 
-        {!isContactPage && (
-          <div className="flex flex-wrap justify-center gap-1 mb-5">
-            {navLinks.map((link, i) => (
-              <span key={link.path} className="flex items-center">
-                <Link
-                  to={link.path}
-                  className="footer-page-link font-grotesk text-xs-custom uppercase tracking-widest"
-                  style={{
-                    ['--footer-link-base-color' as string]: 'var(--color-ink)',
-                    ['--footer-link-accent' as string]: link.accent,
-                    ['--footer-link-hover-bg' as string]: link.accent === 'var(--color-accent-lime)' ? 'var(--color-accent-lime)' : 'transparent',
-                    ['--footer-link-hover-fg' as string]: link.accent === 'var(--color-accent-lime)' ? 'var(--color-dark-void)' : link.accent,
-                  }}
-                >
-                  {link.label}
-                </Link>
-                {i < navLinks.length - 1 && (
-                  <span className="mx-2 opacity-40" style={{ color: 'var(--color-ink-muted)' }}>/</span>
-                )}
-              </span>
-            ))}
-          </div>
-        )}
+        <div className="flex flex-wrap justify-center gap-1 mb-5">
+          {navLinks.map((link, i) => (
+            <span key={link.path} className="flex items-center">
+              <Link
+                to={link.path}
+                className="footer-page-link font-grotesk text-xs-custom uppercase tracking-widest"
+                style={{
+                  ['--footer-link-base-color' as string]: 'var(--color-ink)',
+                  ['--footer-link-accent' as string]: link.accent,
+                  ['--footer-link-hover-bg' as string]: link.accent === 'var(--color-accent-lime)' ? 'var(--color-accent-lime)' : 'transparent',
+                  ['--footer-link-hover-fg' as string]: link.accent === 'var(--color-accent-lime)' ? 'var(--color-dark-void)' : link.accent,
+                }}
+              >
+                {link.label}
+              </Link>
+              {i < navLinks.length - 1 && (
+                <span className="mx-2 opacity-40" style={{ color: 'var(--color-ink-muted)' }}>/</span>
+              )}
+            </span>
+          ))}
+        </div>
 
         <p className={`font-mono text-xs-custom ${isContactPage ? 'mb-2' : 'mb-3'}`} style={{ color: 'var(--color-ink-muted)' }}>
           {t.footer.finePrint}
