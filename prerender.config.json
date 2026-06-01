@@ -1,0 +1,14 @@
+{
+  "source": "dist",
+  "include": [
+    "/",
+    "/work",
+    "/archive",
+    "/notes",
+    "/about",
+    "/contact",
+    "/imprint"
+  ],
+  "skipThirdPartyRequests": true,
+  "waitFor": 250
+}
