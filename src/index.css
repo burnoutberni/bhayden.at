@@ -430,6 +430,11 @@
     opacity: 1;
   }
 
+  html:not([data-theme="dark"]) .project-card-secondary-link.highlight-invert:hover,
+  html:not([data-theme="dark"]) .project-card-secondary-link.highlight-invert:focus-visible {
+    background-color: transparent !important;
+  }
+
   .text-lg-custom {
     font-size: var(--text-lg);
   }
