@@ -392,13 +392,13 @@ export default function Home() {
 
             {!eventsLoading && eventsError && (
               <div className="events-error-state">
-                <p className="font-grotesk text-sm-custom" style={{ color: '#F5F1E8' }}>{eventsError}</p>
+                <p className="font-grotesk text-sm-custom">{eventsError}</p>
               </div>
             )}
 
             {!eventsLoading && !eventsError && upcomingEvents.length === 0 && (
               <div className="events-error-state">
-                <p className="font-grotesk text-sm-custom" style={{ color: '#F5F1E8' }}>
+                <p className="font-grotesk text-sm-custom">
                   {lang === 'de' ? 'Derzeit sind keine kommenden Events gelistet.' : 'No upcoming events listed right now.'}
                 </p>
               </div>
