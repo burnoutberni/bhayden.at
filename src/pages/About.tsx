@@ -2,13 +2,16 @@ import { useMemo } from 'react';
 import { Link } from 'react-router';
 import { useLanguage } from '@/hooks/useLanguage';
 import { bioData, projects } from '@/data/content';
-import { getContactEmail, getContactMailto } from '@/lib/utils';
+import { getPressEmail, getPressMailto } from '@/lib/utils';
 import NewsletterSignup from '@/components/NewsletterSignup';
 
 export default function About() {
   const { lang, t } = useLanguage();
-  const email = getContactEmail();
-  const mailto = getContactMailto();
+  const pressEmail = getPressEmail();
+  const pressMailto = getPressMailto();
+  const ccBySaUrl = lang === 'de'
+    ? 'https://creativecommons.org/licenses/by-sa/4.0/deed.de'
+    : 'https://creativecommons.org/licenses/by-sa/4.0/deed.en';
 
   const bio = bioData;
   const careItems = t.about.careItems;
@@ -39,7 +42,16 @@ export default function About() {
               />
             </div>
             <p className="font-mono text-xs-custom mt-3" style={{ color: 'var(--color-ink-muted)' }}>
-              {t.about.press.portraitCredit}
+              {t.about.press.portraitLabel} Lena Holzerbauer,{' '}
+              <a
+                href={ccBySaUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="transition-opacity hover:opacity-70"
+                style={{ color: 'var(--color-ink-muted)' }}
+              >
+                CC BY-SA 4.0
+              </a>
             </p>
           </div>
 
@@ -174,14 +186,26 @@ export default function About() {
                 {t.about.press.downloadPortrait}
               </a>
             </p>
+            <p className="font-mono text-xs-custom mb-4" style={{ color: 'var(--color-ink-muted)' }}>
+              {t.about.press.copyrightLabel} Lena Holzerbauer,{' '}
+              <a
+                href={ccBySaUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="transition-opacity hover:opacity-70"
+                style={{ color: 'var(--color-ink-muted)' }}
+              >
+                CC BY-SA 4.0
+              </a>
+            </p>
             <p className="font-grotesk text-sm-custom" style={{ color: 'var(--color-ink)' }}>
               {t.about.press.contact}{' '}
               <a
-                href={mailto}
+                href={pressMailto}
                 className="transition-colors hover:underline"
                 style={{ color: 'var(--color-page-accent)', textUnderlineOffset: '3px' }}
               >
-                {email}
+                {pressEmail}
               </a>
             </p>
           </div>
