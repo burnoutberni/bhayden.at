@@ -22,7 +22,7 @@ export default function NewsletterSignup({ borderedTop = true }: NewsletterSignu
             type="email"
             name="email"
             placeholder="your@email.com"
-            className="px-4 py-2 font-mono text-xs-custom outline-none"
+            className="px-4 py-2 font-mono text-xs-custom outline-hidden"
             style={{
               border: '2px solid var(--color-border-brutalist)',
               borderRadius: 'var(--radius-pill)',

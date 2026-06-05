@@ -113,7 +113,7 @@ export default function FilterToolbar({
       ref={filtersRef}
       data-sticky-filters="true"
       data-collapsed={isMobile && isCollapsed ? 'true' : 'false'}
-      className="sticky top-14 z-40 px-6 py-3 md:py-4 backdrop-blur-sm transition-[padding] duration-200"
+      className="sticky top-14 z-40 px-6 py-3 md:py-4 backdrop-blur-xs transition-[padding] duration-200"
       style={{
         backgroundColor: 'color-mix(in srgb, var(--color-editor-bg) 92%, transparent)',
         borderBottom: '1px solid var(--color-border-brutalist)',
