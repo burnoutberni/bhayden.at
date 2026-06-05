@@ -33,7 +33,7 @@ const manualChunkGroups: Record<string, string[]> = {
     "@radix-ui/react-tooltip",
   ],
   mdx: ["@mdx-js/mdx"],
-  charts: ["recharts"],
+
 }
 
 function manualChunks(moduleId: string): string | undefined {
