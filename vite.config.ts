@@ -13,7 +13,6 @@ const manualChunkGroups: Record<string, string[]> = {
     "@radix-ui/react-checkbox",
     "@radix-ui/react-collapsible",
     "@radix-ui/react-context-menu",
-    "@radix-ui/react-dialog",
     "@radix-ui/react-dropdown-menu",
     "@radix-ui/react-hover-card",
     "@radix-ui/react-label",
