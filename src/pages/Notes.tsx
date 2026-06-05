@@ -98,7 +98,6 @@ export default function Notes() {
                     className="pill-badge pill-badge-contextual"
                     onClick={() => setLanguageFilter((prev) => (prev === note.language ? 'all' : note.language))}
                     style={{
-                      cursor: 'pointer',
                       ['--badge-base-border' as string]: 'var(--color-page-accent)',
                       ['--badge-base-fg' as string]: 'var(--color-page-accent)',
                       ['--badge-hover-bg' as string]: 'var(--color-page-accent)',
