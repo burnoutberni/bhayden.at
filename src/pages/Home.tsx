@@ -57,6 +57,16 @@ export default function Home() {
   const [eventsError, setEventsError] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
 
+  useEffect(() => {
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.as = 'image';
+    link.href = '/static/wmeu-prague-ga-2026-29.jpg';
+    link.fetchPriority = 'high';
+    document.head.appendChild(link);
+    return () => { document.head.removeChild(link); };
+  }, []);
+
   const navigateToWork = (query: string) => {
     window.scrollTo({ top: 0, behavior: 'auto' });
     navigate(`/work?${query}`);
