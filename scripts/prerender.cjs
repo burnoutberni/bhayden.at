@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const http = require("http");
 const handler = require("serve-handler");
-const puppeteer = require("puppeteer");
+const puppeteer = import("puppeteer");
 
 function resolveBrowserPath() {
   const fromEnv = process.env.PUPPETEER_EXECUTABLE_PATH;
@@ -75,7 +75,7 @@ async function main() {
   await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
   const { port } = server.address();
 
-  const browser = await puppeteer.launch({
+  const browser = await (await puppeteer).launch({
     headless: true,
     args: puppeteerArgs,
     ...(browserPath ? { executablePath: browserPath } : {}),
