@@ -68,7 +68,7 @@ async function main() {
   const server = http.createServer((request, response) =>
     handler(request, response, {
       public: sourceDir,
-      cleanUrls: true,
+      rewrites: [{ source: "**", destination: "/index.html" }],
     })
   );
 
