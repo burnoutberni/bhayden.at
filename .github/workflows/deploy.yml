@@ -36,7 +36,18 @@ jobs:
           PUPPETEER_EXECUTABLE_PATH: ${{ steps.setup-chrome.outputs.chrome-path }}
         run: npm run build
 
-      - name: Clean remote dist directory
+      - name: Upload dist to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          key: ${{ secrets.SSH_KEY }}
+          source: "dist/*"
+          target: "${{ secrets.DEPLOY_DIST_PATH }}.tmp"
+          strip_components: 1
+
+      - name: Swap new dist into place
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -46,16 +57,10 @@ jobs:
           script_stop: true
           script: |
             setopt NULL_GLOB
-            mkdir -p "${{ secrets.DEPLOY_DIST_PATH }}"
-            rm -rf "${{ secrets.DEPLOY_DIST_PATH }}"/*
-
-      - name: Upload dist to server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          port: ${{ secrets.SSH_PORT || 22 }}
-          key: ${{ secrets.SSH_KEY }}
-          source: "dist/*"
-          target: "${{ secrets.DEPLOY_DIST_PATH }}"
-          strip_components: 1
+            DEPLOY_PATH="${{ secrets.DEPLOY_DIST_PATH }}"
+            if [ -d "$DEPLOY_PATH" ]; then
+              rm -rf "$DEPLOY_PATH.old"
+              mv "$DEPLOY_PATH" "$DEPLOY_PATH.old"
+            fi
+            mv "$DEPLOY_PATH.tmp" "$DEPLOY_PATH"
+            rm -rf "$DEPLOY_PATH.old"
