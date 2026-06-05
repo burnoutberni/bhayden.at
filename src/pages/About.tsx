@@ -33,7 +33,7 @@ export default function About() {
               }}
             >
               <img
-                src="/portrait.jpg"
+                src="/static/portrait.jpg"
                 alt={t.about.press.portraitAlt}
                 className="w-full h-full object-cover"
               />
@@ -166,7 +166,7 @@ export default function About() {
           <div>
             <p className="font-grotesk text-sm-custom mb-2" style={{ color: 'var(--color-ink)' }}>
               <a
-                href="/portrait.jpg"
+                href="/static/portrait.jpg"
                 download="bernhard-hayden-portrait.jpg"
                 className="transition-colors hover:underline"
                 style={{ color: 'var(--color-page-accent)', textUnderlineOffset: '3px' }}

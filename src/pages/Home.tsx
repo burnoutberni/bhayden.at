@@ -193,7 +193,7 @@ export default function Home() {
         style={{
           borderBottom: '2px solid var(--color-border-brutalist)',
           backgroundImage:
-            'linear-gradient(to bottom, rgba(11, 15, 18, 0.62), rgba(11, 15, 18, 0.72)), url("/wmeu-prague-ga-2026-29.jpg")',
+            'linear-gradient(to bottom, rgba(11, 15, 18, 0.62), rgba(11, 15, 18, 0.72)), url("/static/wmeu-prague-ga-2026-29.jpg")',
           backgroundSize: 'cover',
           backgroundPosition: 'center 26%',
         }}
