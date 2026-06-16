@@ -52,7 +52,7 @@ export const projects: Project[] = [
     location: 'Vienna',
     role: 'Creator & Developer',
     roleDe: 'Entwickler',
-    links: [{ label: 'GitHub', url: 'https://github.com/burnoutberni/WikiCollab' }],
+    links: [{ label: 'GitHub', url: 'https://github.com/burnoutberni/WikiCollab' }, { label: 'Demo', url: 'https://wikicollab.bhayden.at' }],
     topics: ['open knowledge', 'civic tech'],
   },
   {
