@@ -1422,4 +1422,62 @@
       background-position: -70% 0;
     }
   }
+
+  /* Note image system */
+  .note-img {
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius-soft);
+    border: 1px solid var(--color-border-brutalist);
+    display: block;
+  }
+
+  figure {
+    margin: 2rem 0;
+    padding: 0;
+  }
+
+  figure.note-img-left,
+  figure.note-img-right {
+    margin-top: 0.3rem;
+    margin-bottom: 1rem;
+    float: left;
+    width: 40%;
+    clear: left;
+  }
+
+  figure.note-img-right {
+    float: right;
+    clear: right;
+    margin-left: 2rem;
+    margin-right: 0;
+  }
+
+  figure.note-img-left {
+    margin-right: 2rem;
+    margin-left: 0;
+  }
+
+  figure > p {
+    margin-bottom: 0 !important;
+  }
+  figcaption {
+    font-family: var(--font-grotesk);
+    font-size: var(--text-sm);
+    line-height: 1.5;
+    color: var(--color-ink-muted);
+    margin-top: 0rem;
+    padding-top: 0.5rem;
+  }
+
+  @media (max-width: 767px) {
+    .note-figure.note-img-left,
+    .note-figure.note-img-right {
+      float: none !important;
+      width: 100% !important;
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+      clear: none !important;
+    }
+  }
 }
