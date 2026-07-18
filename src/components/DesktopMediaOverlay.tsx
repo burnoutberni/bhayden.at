@@ -1,4 +1,15 @@
-import { useEffect, useLayoutEffect, useRef, useState, type ChangeEvent, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent } from 'react';
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type CSSProperties,
+  type MutableRefObject,
+  type MouseEvent as ReactMouseEvent,
+  type PointerEvent as ReactPointerEvent,
+  type RefObject,
+} from 'react';
 import { Maximize2, Minimize2, Pause, Play, RotateCcw } from 'lucide-react';
 import { Link, useLocation } from 'react-router';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -6,10 +17,16 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { useMediaQueue } from '@/hooks/useMediaQueue';
 
 type FeedbackType = 'play' | 'pause' | 'muted' | 'unmuted' | null;
+type Position = { x: number; y: number };
+type DragStart = { pointerX: number; pointerY: number; x: number; y: number };
+type MediaQueueState = ReturnType<typeof useMediaQueue>;
+type ActiveItem = NonNullable<MediaQueueState['activeItem']>;
 
 const DESKTOP_MEDIA_POSITION_KEY = 'desktop-media-overlay-position-v1';
 const MEDIA_PLAYER_PLAYBACK_TIMES_KEY = 'media-player-playback-times-v1';
 const LAUNCHER_VISUALIZER_SEGMENTS = 28;
+const DRAG_VIEWPORT_MARGIN = 0;
+const DEFAULT_DESKTOP_BOTTOM_GAP = 16;
 
 function PlayIcon() {
   return (
@@ -61,147 +78,260 @@ function ChevronRightIcon() {
   );
 }
 
-function clampPosition(x: number, y: number, width: number, height: number) {
-  const margin = 0;
+function clampPosition(x: number, y: number, width: number, height: number, margin = DRAG_VIEWPORT_MARGIN) {
   return {
     x: Math.round(Math.min(Math.max(x, margin), Math.max(margin, window.innerWidth - width - margin))),
     y: Math.round(Math.min(Math.max(y, margin), Math.max(margin, window.innerHeight - height - margin))),
   };
 }
 
-function clampOverlayPosition(
+function clampVisiblePosition(
   x: number,
   y: number,
-  overlayRect: DOMRectReadOnly,
-  visibleRect: DOMRectReadOnly,
+  width: number,
+  height: number,
+  margin = DRAG_VIEWPORT_MARGIN,
+  topMargin = margin,
 ) {
-  const margin = 0;
-  const offsetX = visibleRect.left - overlayRect.left;
-  const offsetY = visibleRect.top - overlayRect.top;
-  const minX = margin - offsetX;
-  const minY = margin - offsetY;
-  const maxX = Math.max(minX, window.innerWidth - margin - offsetX - visibleRect.width);
-  const maxY = Math.max(minY, window.innerHeight - margin - offsetY - visibleRect.height);
-
   return {
-    x: Math.round(Math.min(Math.max(x, minX), maxX)),
-    y: Math.round(Math.min(Math.max(y, minY), maxY)),
+    x: Math.round(Math.min(Math.max(x, margin), Math.max(margin, window.innerWidth - width - margin))),
+    y: Math.round(Math.min(Math.max(y, topMargin), Math.max(topMargin, window.innerHeight - height - margin))),
   };
 }
 
-function getVisibleOverlayRect(overlay: HTMLElement, isDismissed: boolean) {
-  if (!isDismissed) {
-    const shell = overlay.querySelector<HTMLElement>('.note-media-shell:not(.is-parked)');
-    return shell?.getBoundingClientRect() || overlay.getBoundingClientRect();
-  }
+function getVisibleTransitionPlan(currentRect: DOMRectReadOnly, nextRect: DOMRectReadOnly) {
+  const targetPosition = {
+    x: currentRect.right - nextRect.width,
+    y: currentRect.bottom - nextRect.height,
+  };
+  const clampedPosition = clampVisiblePosition(
+    targetPosition.x,
+    targetPosition.y,
+    nextRect.width,
+    nextRect.height,
+    DRAG_VIEWPORT_MARGIN,
+    DRAG_VIEWPORT_MARGIN,
+  );
 
-  const launcher = overlay.querySelector<HTMLElement>('.note-media-launcher');
-  return launcher?.getBoundingClientRect() || overlay.getBoundingClientRect();
+  return {
+    targetPosition,
+    clampedPosition,
+  };
 }
 
-function getPositioningRect(overlay: HTMLElement) {
-  return overlay.getBoundingClientRect();
+function createRect(left: number, top: number, right: number, bottom: number): DOMRectReadOnly {
+  const width = right - left;
+  const height = bottom - top;
+
+  return {
+    left,
+    top,
+    right,
+    bottom,
+    width,
+    height,
+    x: left,
+    y: top,
+    toJSON: () => ({ left, top, right, bottom, width, height, x: left, y: top }),
+  } satisfies DOMRectReadOnly;
+}
+
+function getElementRect(element: HTMLElement, useFinalRect = false): DOMRectReadOnly {
+  if (!useFinalRect) {
+    return element.getBoundingClientRect();
+  }
+
+  const rect = element.getBoundingClientRect();
+  const width = element.offsetWidth;
+  const height = element.offsetHeight;
+  const left = rect.right - width;
+  const top = rect.bottom - height;
+
+  return createRect(left, top, rect.right, rect.bottom);
+}
+
+function getRectForOverlayState(overlay: HTMLElement, isDismissed: boolean, useFinalRect = false): DOMRectReadOnly {
+  if (isDismissed) {
+    const launcher = overlay.querySelector<HTMLElement>('.note-media-launcher');
+    return launcher ? getElementRect(launcher, useFinalRect) : overlay.getBoundingClientRect();
+  }
+
+  const shell = overlay.querySelector<HTMLElement>('.note-media-shell:not(.is-parked)')
+    ?? overlay.querySelector<HTMLElement>('.note-media-shell');
+
+  if (!shell) {
+    return overlay.getBoundingClientRect();
+  }
+
+  return getElementRect(shell, useFinalRect);
+}
+
+function getVisibleOverlayElement(overlay: HTMLElement, isDismissed: boolean) {
+  return isDismissed
+    ? overlay.querySelector<HTMLElement>('.note-media-launcher')
+    : overlay.querySelector<HTMLElement>('.note-media-shell:not(.is-parked)')
+      ?? overlay.querySelector<HTMLElement>('.note-media-shell');
+}
+
+function getVisibleOverlayMetrics(overlay: HTMLElement, isDismissed: boolean, useFinalRect = false) {
+  const visibleElement = getVisibleOverlayElement(overlay, isDismissed);
+  const visibleRect = getRectForOverlayState(overlay, isDismissed, useFinalRect);
+
+  return {
+    visibleRect,
+    offsetX: visibleElement?.offsetLeft ?? 0,
+    offsetY: visibleElement?.offsetTop ?? 0,
+  };
 }
 
 function getDefaultDesktopPosition(width: number, height: number) {
   const x = Math.max(0, Math.min((window.innerWidth + 800) / 2 + 16, window.innerWidth - width));
-  const y = window.innerHeight - height;
+  const y = window.innerHeight - height - DEFAULT_DESKTOP_BOTTOM_GAP;
 
   return clampPosition(x, y, width, height);
 }
 
-export default function DesktopMediaOverlay() {
-  const isMobile = useIsMobile();
-  const { pathname } = useLocation();
-  const { t } = useLanguage();
-  const {
-    queue,
-    activeIndex,
-    activeItem,
-    playbackTimes,
-    isMuted,
-    isPlaying,
-    isDismissed,
-    setActiveIndex,
-    setIsDismissed,
-    setIsMuted,
-    setIsPlaying,
-    setPlaybackTime,
-    resetPlaybackTimes,
-  } = useMediaQueue();
-  const overlayRef = useRef<HTMLElement | null>(null);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const shouldResumeOnReturnRef = useRef(false);
-  const animationFrameRef = useRef<number | null>(null);
-  const livePlaybackTimesRef = useRef<Record<string, number>>({});
-  const dragStartRef = useRef<{ pointerX: number; pointerY: number; x: number; y: number } | null>(null);
-  const dragPointerIdRef = useRef<number | null>(null);
-  const dragCleanupRef = useRef<(() => void) | null>(null);
-  const previousPathnameRef = useRef(pathname);
-  const dismissTransitionRef = useRef<{ nextDismissed: boolean; previousRect: DOMRectReadOnly } | null>(null);
-  const didDragRef = useRef(false);
-  const [progress, setProgress] = useState(0);
-  const [feedback, setFeedback] = useState<FeedbackType>(null);
-  const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
-  const [isReady, setIsReady] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
-  const [hoveredScrubSegment, setHoveredScrubSegment] = useState<number | null>(null);
-  const [isLauncherReadMoreAbove, setIsLauncherReadMoreAbove] = useState(false);
-  const [isLauncherHoverArmed, setIsLauncherHoverArmed] = useState(true);
-  const isQueueComplete = activeIndex === queue.length - 1 && !isPlaying && progress >= 1;
+function getWaveform(activeItem: ActiveItem) {
+  return activeItem.waveform?.length
+    ? activeItem.waveform
+    : Array.from({ length: LAUNCHER_VISUALIZER_SEGMENTS }, () => 0.24);
+}
 
-  useEffect(() => {
-    livePlaybackTimesRef.current = playbackTimes;
-  }, [playbackTimes]);
+function ProgressBars({ queue, activeIndex, progress }: { queue: MediaQueueState['queue']; activeIndex: number; progress: number }) {
+  return (
+    <div className="note-media-progress" aria-hidden="true">
+      {queue.map((mediaItem, index) => {
+        const fill = index < activeIndex ? 1 : index === activeIndex ? progress : 0;
 
-  useLayoutEffect(() => {
-    const transition = dismissTransitionRef.current;
-    const overlay = overlayRef.current;
+        return (
+          <span key={mediaItem.id} className="note-media-progress-bar">
+            <span className="note-media-progress-fill" style={{ transform: `scaleX(${fill})` }} />
+          </span>
+        );
+      })}
+    </div>
+  );
+}
 
-    if (!transition || !overlay || transition.nextDismissed !== isDismissed) {
-      return;
-    }
-
-    dismissTransitionRef.current = null;
-
-    const overlayRect = getPositioningRect(overlay);
-    const nextRect = getVisibleOverlayRect(overlay, isDismissed);
-    const deltaX = transition.previousRect.right - nextRect.right;
-    const deltaY = transition.previousRect.bottom - nextRect.bottom;
-
-    if (!deltaX && !deltaY) {
-      return;
-    }
-
-    setPosition((current) => {
-      if (!current) {
-        return current;
+function getWaveformSegmentState(
+  index: number,
+  level: number,
+  progress: number,
+  segmentCount: number,
+  hoveredScrubSegment: number | null,
+  isPlaying: boolean,
+  isQueueComplete: boolean,
+) {
+  const segmentProgress = (index + 1) / segmentCount;
+  const currentSegmentIndex = Math.min(Math.floor(progress * segmentCount), segmentCount - 1);
+  const isHoverPreview = !isPlaying && hoveredScrubSegment !== null;
+  const isActive = !isHoverPreview && progress >= segmentProgress;
+  const isHoveredRange = isHoverPreview && index <= hoveredScrubSegment;
+  const isHovered = !isPlaying && hoveredScrubSegment === index;
+  const isHoveredNeighbor = !isPlaying && hoveredScrubSegment !== null && index === hoveredScrubSegment - 1;
+  const isCurrentResting = hoveredScrubSegment === null && !isQueueComplete && index === currentSegmentIndex;
+  const isCurrentPlaying = isPlaying && index === currentSegmentIndex;
+  const shouldAnimate = isPlaying && !isCurrentPlaying && !isActive;
+  const style: CSSProperties & Record<string, string> = shouldAnimate
+    ? {
+        '--segment-level': String(level),
+        animationName: 'note-media-launcher-bar',
+        animationDuration: `${720 + (index % 7) * 35}ms`,
+        animationDelay: `${(index % 6) * 28}ms`,
+        animationTimingFunction: 'ease-in-out',
+        animationIterationCount: 'infinite',
       }
+    : { '--segment-level': String(level) };
 
-      return clampOverlayPosition(current.x + deltaX, current.y + deltaY, overlayRect, nextRect);
-    });
-  }, [isDismissed]);
+  const className = [
+    isActive ? 'is-active' : '',
+    isHoveredRange ? 'is-hovered-range' : '',
+    isHoveredNeighbor ? ' is-hovered-neighbor' : '',
+    isHovered ? ' is-hovered' : '',
+    isCurrentResting ? ' is-current-resting' : '',
+    isCurrentPlaying ? ' is-current-playing' : '',
+  ].join('');
+
+  return { className, style };
+}
+
+function LauncherVisualizer({
+  waveform,
+  progress,
+  hoveredScrubSegment,
+  isPlaying,
+  isQueueComplete,
+}: {
+  waveform: number[];
+  progress: number;
+  hoveredScrubSegment: number | null;
+  isPlaying: boolean;
+  isQueueComplete: boolean;
+}) {
+  const segmentCount = waveform.length;
+
+  return (
+    <span className={`note-media-launcher-visualizer${isPlaying ? ' is-playing' : ''}`} aria-hidden="true">
+      {waveform.map((level, index) => {
+        const { className, style } = getWaveformSegmentState(
+          index,
+          level,
+          progress,
+          segmentCount,
+          hoveredScrubSegment,
+          isPlaying,
+          isQueueComplete,
+        );
+
+        return <span key={index} style={style} className={className} />;
+      })}
+    </span>
+  );
+}
+
+function useDesktopOverlayPosition({
+  overlayRef,
+  isDismissed,
+  isMobile,
+  pathname,
+  queueLength,
+  skipAutoClampForTransitionRef,
+}: {
+  overlayRef: RefObject<HTMLElement | null>;
+  isDismissed: boolean;
+  isMobile: boolean;
+  pathname: string;
+  queueLength: number;
+  skipAutoClampForTransitionRef: MutableRefObject<boolean>;
+}) {
+  const previousPathnameRef = useRef(pathname);
+  const [position, setPosition] = useState<Position | null>(null);
+  const [isReady, setIsReady] = useState(false);
+  const [isLauncherReadMoreAbove, setIsLauncherReadMoreAbove] = useState(false);
 
   useEffect(() => {
-    if (!queue.length || isMobile || position) return;
+    if (!queueLength || isMobile || position) {
+      return;
+    }
 
     const overlay = overlayRef.current;
-    if (!overlay) return;
+    if (!overlay) {
+      return;
+    }
 
-    const { width, height } = getPositioningRect(overlay);
+    const { visibleRect } = getVisibleOverlayMetrics(overlay, isDismissed, true);
 
     if (pathname.startsWith('/notes/')) {
-      setPosition(getDefaultDesktopPosition(width, height));
+      setPosition(getDefaultDesktopPosition(visibleRect.width, visibleRect.height));
       setIsReady(true);
       return;
     }
 
     const saved = window.localStorage.getItem(DESKTOP_MEDIA_POSITION_KEY);
-
     if (saved) {
       try {
-        const parsed = JSON.parse(saved) as { x: number; y: number };
-        setPosition(clampPosition(parsed.x, parsed.y, width, height));
+        const parsed = JSON.parse(saved) as Position;
+        setPosition(clampVisiblePosition(parsed.x, parsed.y, visibleRect.width, visibleRect.height));
         setIsReady(true);
         return;
       } catch {
@@ -209,9 +339,9 @@ export default function DesktopMediaOverlay() {
       }
     }
 
-    setPosition(getDefaultDesktopPosition(width, height));
+    setPosition(getDefaultDesktopPosition(visibleRect.width, visibleRect.height));
     setIsReady(true);
-  }, [isDismissed, isMobile, pathname, position, queue.length]);
+  }, [isDismissed, isMobile, overlayRef, pathname, position, queueLength]);
 
   useEffect(() => {
     if (isMobile || !isDismissed) {
@@ -226,7 +356,6 @@ export default function DesktopMediaOverlay() {
 
     const launcher = overlay.querySelector<HTMLElement>('.note-media-launcher');
     const readMore = overlay.querySelector<HTMLElement>('.note-media-launcher-readmore');
-
     if (!launcher || !readMore) {
       setIsLauncherReadMoreAbove(false);
       return;
@@ -238,10 +367,10 @@ export default function DesktopMediaOverlay() {
     const requiredSpace = readMoreRect.height + 8;
 
     setIsLauncherReadMoreAbove(spaceBelow < requiredSpace);
-  }, [isDismissed, isMobile, pathname, position, queue.length]);
+  }, [isDismissed, isMobile, overlayRef, pathname, position, queueLength]);
 
   useEffect(() => {
-    if (isMobile || !pathname.startsWith('/notes/') || !queue.length) {
+    if (isMobile || !pathname.startsWith('/notes/') || !queueLength) {
       previousPathnameRef.current = pathname;
       return;
     }
@@ -258,36 +387,52 @@ export default function DesktopMediaOverlay() {
       return;
     }
 
-    const { width, height } = getPositioningRect(overlay);
-    setPosition(getDefaultDesktopPosition(width, height));
-  }, [isMobile, pathname, position, queue.length]);
+    const { visibleRect } = getVisibleOverlayMetrics(overlay, isDismissed, true);
+    setPosition(getDefaultDesktopPosition(visibleRect.width, visibleRect.height));
+  }, [isDismissed, isMobile, overlayRef, pathname, position, queueLength]);
 
   useEffect(() => {
-    if (!position) return;
+    if (!position) {
+      return;
+    }
+
     window.localStorage.setItem(DESKTOP_MEDIA_POSITION_KEY, JSON.stringify(position));
   }, [position]);
 
   useEffect(() => {
-    if (!queue.length) return;
+    if (!queueLength) {
+      return;
+    }
 
     const handleResize = () => {
       const overlay = overlayRef.current;
-      if (!overlay) return;
+      if (!overlay) {
+        return;
+      }
 
-      const overlayRect = getPositioningRect(overlay);
-      const visibleRect = getVisibleOverlayRect(overlay, isDismissed);
+      const { visibleRect } = getVisibleOverlayMetrics(overlay, isDismissed, true);
       setPosition((current) => {
-        if (!current) return current;
-        return clampOverlayPosition(current.x, current.y, overlayRect, visibleRect);
+        if (!current) {
+          return current;
+        }
+
+        return clampVisiblePosition(current.x, current.y, visibleRect.width, visibleRect.height);
       });
     };
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [isDismissed, queue.length]);
+  }, [isDismissed, overlayRef, queueLength]);
 
   useEffect(() => {
-    if (!queue.length || !position) {
+    if (!queueLength || !position) {
+      return;
+    }
+
+    // Skip one steady-state clamp pass after expand/collapse so the stale
+    // pre-transition visible position cannot override the transition target.
+    if (skipAutoClampForTransitionRef.current) {
+      skipAutoClampForTransitionRef.current = false;
       return;
     }
 
@@ -296,19 +441,59 @@ export default function DesktopMediaOverlay() {
       return;
     }
 
-    const overlayRect = getPositioningRect(overlay);
-    const visibleRect = getVisibleOverlayRect(overlay, isDismissed);
-    const clamped = clampOverlayPosition(position.x, position.y, overlayRect, visibleRect);
+    const { visibleRect } = getVisibleOverlayMetrics(overlay, isDismissed, true);
+    const clamped = clampVisiblePosition(position.x, position.y, visibleRect.width, visibleRect.height);
 
     if (clamped.x !== position.x || clamped.y !== position.y) {
       setPosition(clamped);
     }
-  }, [isDismissed, position, queue.length]);
+  }, [isDismissed, overlayRef, position, queueLength, skipAutoClampForTransitionRef]);
+
+  return {
+    position,
+    setPosition,
+    isReady,
+    isLauncherReadMoreAbove,
+  };
+}
+
+function useDesktopMediaPlayback({
+  activeItem,
+  activeIndex,
+  isMuted,
+  isPlaying,
+  playbackTimes,
+  queueLength,
+  setActiveIndex,
+  setIsPlaying,
+  setPlaybackTime,
+}: {
+  activeItem: ActiveItem | null;
+  activeIndex: number;
+  isMuted: boolean;
+  isPlaying: boolean;
+  playbackTimes: Record<string, number>;
+  queueLength: number;
+  setActiveIndex: MediaQueueState['setActiveIndex'];
+  setIsPlaying: MediaQueueState['setIsPlaying'];
+  setPlaybackTime: MediaQueueState['setPlaybackTime'];
+}) {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const shouldResumeOnReturnRef = useRef(false);
+  const animationFrameRef = useRef<number | null>(null);
+  const livePlaybackTimesRef = useRef<Record<string, number>>({});
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    livePlaybackTimesRef.current = playbackTimes;
+  }, [playbackTimes]);
 
   useEffect(() => {
     const video = videoRef.current;
     const activeItemId = activeItem?.id;
-    if (!video || !activeItemId) return;
+    if (!video || !activeItemId) {
+      return;
+    }
 
     video.muted = isMuted;
 
@@ -327,11 +512,15 @@ export default function DesktopMediaOverlay() {
 
   useEffect(() => {
     const video = videoRef.current;
-    if (!video || !activeItem) return;
+    if (!video || !activeItem) {
+      return;
+    }
 
     const restorePlaybackTime = () => {
       const savedTime = livePlaybackTimesRef.current[activeItem.id] || 0;
-      if (!savedTime || !video.duration || Number.isNaN(video.duration)) return;
+      if (!savedTime || !video.duration || Number.isNaN(video.duration)) {
+        return;
+      }
 
       video.currentTime = Math.min(savedTime, Math.max(video.duration - 0.05, 0));
       setProgress(Math.min(video.currentTime / video.duration, 1));
@@ -351,7 +540,16 @@ export default function DesktopMediaOverlay() {
   useEffect(() => {
     const video = videoRef.current;
     const activeItemId = activeItem?.id;
-    if (!video || !activeItemId) return;
+    if (!video || !activeItemId) {
+      return;
+    }
+
+    const stopProgressLoop = () => {
+      if (animationFrameRef.current !== null) {
+        window.cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
+      }
+    };
 
     const updateProgress = () => {
       if (!video.duration || Number.isNaN(video.duration)) {
@@ -363,13 +561,6 @@ export default function DesktopMediaOverlay() {
 
       if (!video.paused && !video.ended) {
         animationFrameRef.current = window.requestAnimationFrame(updateProgress);
-      }
-    };
-
-    const stopProgressLoop = () => {
-      if (animationFrameRef.current !== null) {
-        window.cancelAnimationFrame(animationFrameRef.current);
-        animationFrameRef.current = null;
       }
     };
 
@@ -391,7 +582,7 @@ export default function DesktopMediaOverlay() {
       setPlaybackTime(activeItemId, 0);
       setProgress(1);
       setActiveIndex((currentIndex) => {
-        if (currentIndex >= queue.length - 1) {
+        if (currentIndex >= queueLength - 1) {
           setIsPlaying(false);
           return currentIndex;
         }
@@ -417,13 +608,16 @@ export default function DesktopMediaOverlay() {
       video.removeEventListener('loadedmetadata', handleLoadedMetadata);
       video.removeEventListener('ended', handleEnded);
     };
-  }, [activeItem?.id, queue.length, setActiveIndex, setIsPlaying, setPlaybackTime]);
+  }, [activeItem?.id, queueLength, setActiveIndex, setIsPlaying, setPlaybackTime]);
 
   useEffect(() => {
     const persistBeforeUnload = () => {
       const video = videoRef.current;
       const activeItemId = activeItem?.id;
-      if (!video || !activeItemId) return;
+      if (!video || !activeItemId) {
+        return;
+      }
+
       const time = video.currentTime;
       livePlaybackTimesRef.current[activeItemId] = time;
       window.localStorage.setItem(
@@ -443,7 +637,10 @@ export default function DesktopMediaOverlay() {
   useEffect(() => {
     const pausePlayback = () => {
       const video = videoRef.current;
-      if (!video || video.paused) return;
+      if (!video || video.paused) {
+        return;
+      }
+
       shouldResumeOnReturnRef.current = true;
       video.pause();
     };
@@ -489,12 +686,30 @@ export default function DesktopMediaOverlay() {
     };
   }, [setIsPlaying]);
 
-  useEffect(() => {
-    if (!feedback) return;
+  return {
+    videoRef,
+    progress,
+    setProgress,
+    livePlaybackTimesRef,
+  };
+}
 
-    const timeout = window.setTimeout(() => setFeedback(null), 560);
-    return () => window.clearTimeout(timeout);
-  }, [feedback]);
+function useOverlayDrag({
+  overlayRef,
+  isDismissed,
+  position,
+  setPosition,
+}: {
+  overlayRef: RefObject<HTMLElement | null>;
+  isDismissed: boolean;
+  position: Position | null;
+  setPosition: React.Dispatch<React.SetStateAction<Position | null>>;
+}) {
+  const dragStartRef = useRef<DragStart | null>(null);
+  const dragPointerIdRef = useRef<number | null>(null);
+  const dragCleanupRef = useRef<(() => void) | null>(null);
+  const didDragRef = useRef(false);
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -502,163 +717,22 @@ export default function DesktopMediaOverlay() {
     };
   }, []);
 
-  if (isMobile || !activeItem || !queue.length) {
-    return null;
-  }
-
-  const launcherWaveform = activeItem.waveform?.length
-    ? activeItem.waveform
-    : Array.from({ length: LAUNCHER_VISUALIZER_SEGMENTS }, () => 0.24);
-  const shouldShowLauncherReadMore = activeItem.sourceHref ? activeItem.sourceHref !== pathname : false;
-
-  const flashFeedback = (nextFeedback: FeedbackType) => {
-    setFeedback(null);
-    requestAnimationFrame(() => {
-      setFeedback(nextFeedback);
-    });
-  };
-
-  const toggleDismissed = (nextDismissed: boolean) => {
-    const overlay = overlayRef.current;
-    if (overlay) {
-      dismissTransitionRef.current = {
-        nextDismissed,
-        previousRect: getVisibleOverlayRect(overlay, isDismissed),
-      };
-    }
-
-    setIsLauncherHoverArmed(!nextDismissed);
-    setIsDismissed(nextDismissed);
-  };
-
-  const handleOverlayPointerLeave = () => {
-    if (isDismissed) {
-      setIsLauncherHoverArmed(true);
-    }
-  };
-
   const consumeDragClick = () => {
-    if (!didDragRef.current) return false;
+    if (!didDragRef.current) {
+      return false;
+    }
+
     didDragRef.current = false;
     return true;
   };
 
-  const goToPrevious = () => {
-    if (consumeDragClick() || activeIndex === 0) return;
-    if (activeItem) {
-      setPlaybackTime(activeItem.id, 0);
-    }
-    setActiveIndex((currentIndex) => Math.max(currentIndex - 1, 0));
-    setIsPlaying(true);
-    setProgress(0);
-  };
-
-  const goToNext = () => {
-    if (consumeDragClick() || activeIndex === queue.length - 1) return;
-    if (activeItem) {
-      setPlaybackTime(activeItem.id, 0);
-    }
-    setActiveIndex((currentIndex) => Math.min(currentIndex + 1, queue.length - 1));
-    setIsPlaying(true);
-    setProgress(0);
-  };
-
-  const replayQueue = () => {
-    if (consumeDragClick()) return;
-    resetPlaybackTimes();
-    setActiveIndex(0);
-    setProgress(0);
-    setIsPlaying(true);
-    setIsMuted(false);
-    flashFeedback('play');
-  };
-
-  const playFromLauncher = () => {
-    if (consumeDragClick()) return;
-
-    if (isMuted || !isPlaying) {
-      setIsMuted(false);
-      setIsPlaying(true);
-      flashFeedback('play');
-      return;
-    }
-
-    setIsPlaying(false);
-    flashFeedback('pause');
-  };
-
-  const openFromLauncher = () => {
-    if (consumeDragClick()) return;
-    toggleDismissed(false);
-  };
-
-  const seekLauncherProgress = (nextProgress: number) => {
-    const video = videoRef.current;
-    if (!video || !video.duration || Number.isNaN(video.duration)) return;
-
-    const ratio = Math.min(Math.max(nextProgress, 0), 1);
-    const nextTime = ratio >= 1 ? Math.max(video.duration - 0.05, 0) : video.duration * ratio;
-
-    video.currentTime = nextTime;
-    if (activeItem) {
-      livePlaybackTimesRef.current[activeItem.id] = nextTime;
-      setPlaybackTime(activeItem.id, nextTime);
-    }
-    setProgress(ratio);
-
-    if (!isPlaying || isMuted) {
-      setIsMuted(false);
-      setIsPlaying(true);
-      flashFeedback('play');
-    }
-  };
-
-  const handleLauncherRangeChange = (event: ChangeEvent<HTMLInputElement>) => {
-    if (consumeDragClick()) return;
-
-    seekLauncherProgress(Number(event.target.value) / 100);
-  };
-
-  const updateHoveredScrubSegment = (element: HTMLElement, clientX: number) => {
-    const segmentCount = activeItem?.waveform?.length || LAUNCHER_VISUALIZER_SEGMENTS;
-    const rect = element.getBoundingClientRect();
-    const ratio = Math.min(Math.max((clientX - rect.left) / rect.width, 0), 0.9999);
-    setHoveredScrubSegment(Math.floor(ratio * segmentCount));
-  };
-
-  const togglePlayback = () => {
-    if (consumeDragClick()) return;
-
-    const video = videoRef.current;
-    if (!video) return;
-
-    if (video.paused) {
-      const playPromise = video.play();
-      if (playPromise) {
-        playPromise.then(() => flashFeedback('play')).catch(() => setIsPlaying(false));
-      }
-      return;
-    }
-
-    video.pause();
-    flashFeedback('pause');
-  };
-
-  const toggleMuted = () => {
-    if (consumeDragClick()) return;
-    setIsMuted((current) => {
-      const nextValue = !current;
-      flashFeedback(nextValue ? 'muted' : 'unmuted');
-      return nextValue;
-    });
-  };
-
   const handlePointerDown = (event: ReactPointerEvent<HTMLElement>) => {
     const target = event.target as HTMLElement;
-    if ((isDismissed && target.closest('[data-no-drag="true"]')) || !position) return;
+    if ((isDismissed && target.closest('[data-no-drag="true"]')) || !position) {
+      return;
+    }
 
     dragCleanupRef.current?.();
-
     dragStartRef.current = {
       pointerX: event.clientX,
       pointerY: event.clientY,
@@ -669,27 +743,31 @@ export default function DesktopMediaOverlay() {
     didDragRef.current = false;
 
     const updateDragPosition = (clientX: number, clientY: number) => {
-      if (!dragStartRef.current) return;
+      if (!dragStartRef.current) {
+        return;
+      }
 
       const overlay = overlayRef.current;
-      if (!overlay) return;
+      if (!overlay) {
+        return;
+      }
 
       const dx = clientX - dragStartRef.current.pointerX;
       const dy = clientY - dragStartRef.current.pointerY;
-
       if (!didDragRef.current && Math.abs(dx) + Math.abs(dy) < 6) {
         return;
       }
 
       didDragRef.current = true;
       setIsDragging(true);
-      const overlayRect = getPositioningRect(overlay);
-      const visibleRect = getVisibleOverlayRect(overlay, isDismissed);
-      setPosition(clampOverlayPosition(dragStartRef.current.x + dx, dragStartRef.current.y + dy, overlayRect, visibleRect));
+      const { visibleRect } = getVisibleOverlayMetrics(overlay, isDismissed, true);
+      setPosition(clampVisiblePosition(dragStartRef.current.x + dx, dragStartRef.current.y + dy, visibleRect.width, visibleRect.height));
     };
 
     const finishDrag = (pointerId?: number) => {
-      if (pointerId !== undefined && pointerId !== dragPointerIdRef.current) return;
+      if (pointerId !== undefined && pointerId !== dragPointerIdRef.current) {
+        return;
+      }
 
       window.removeEventListener('pointermove', handleWindowPointerMove);
       window.removeEventListener('pointerup', handleWindowPointerUp);
@@ -704,7 +782,10 @@ export default function DesktopMediaOverlay() {
     };
 
     const handleWindowPointerMove = (moveEvent: PointerEvent) => {
-      if (moveEvent.pointerId !== dragPointerIdRef.current) return;
+      if (moveEvent.pointerId !== dragPointerIdRef.current) {
+        return;
+      }
+
       updateDragPosition(moveEvent.clientX, moveEvent.clientY);
     };
 
@@ -723,11 +804,15 @@ export default function DesktopMediaOverlay() {
   };
 
   const handlePointerMove = (event: ReactPointerEvent<HTMLElement>) => {
-    if (event.pointerId !== dragPointerIdRef.current) return;
+    if (event.pointerId !== dragPointerIdRef.current) {
+      return;
+    }
   };
 
   const handlePointerUp = (event: ReactPointerEvent<HTMLElement>) => {
-    if (event.pointerId !== dragPointerIdRef.current) return;
+    if (event.pointerId !== dragPointerIdRef.current) {
+      return;
+    }
   };
 
   const handleShellClickCapture = (event: ReactMouseEvent<HTMLElement>) => {
@@ -740,8 +825,562 @@ export default function DesktopMediaOverlay() {
     didDragRef.current = false;
   };
 
+  return {
+    isDragging,
+    consumeDragClick,
+    handlePointerDown,
+    handlePointerMove,
+    handlePointerUp,
+    handleShellClickCapture,
+  };
+}
+
+function DesktopExpandedView({
+  activeIndex,
+  activeItem,
+  centerHitAreaClassName,
+  feedback,
+  goToNext,
+  goToPrevious,
+  isDismissed,
+  isMuted,
+  isPlaying,
+  isQueueComplete,
+  handlePointerDown,
+  handlePointerMove,
+  handlePointerUp,
+  handleShellClickCapture,
+  onDismiss,
+  progress,
+  queue,
+  replayQueue,
+  t,
+  toggleMuted,
+  togglePlayback,
+  videoRef,
+}: {
+  activeIndex: number;
+  activeItem: ActiveItem;
+  centerHitAreaClassName: string;
+  feedback: FeedbackType;
+  goToNext: () => void;
+  goToPrevious: () => void;
+  isDismissed: boolean;
+  isMuted: boolean;
+  isPlaying: boolean;
+  isQueueComplete: boolean;
+  handlePointerDown: (event: ReactPointerEvent<HTMLElement>) => void;
+  handlePointerMove: (event: ReactPointerEvent<HTMLElement>) => void;
+  handlePointerUp: (event: ReactPointerEvent<HTMLElement>) => void;
+  handleShellClickCapture: (event: ReactMouseEvent<HTMLElement>) => void;
+  onDismiss: () => void;
+  progress: number;
+  queue: MediaQueueState['queue'];
+  replayQueue: () => void;
+  t: ReturnType<typeof useLanguage>['t'];
+  toggleMuted: () => void;
+  togglePlayback: () => void;
+  videoRef: RefObject<HTMLVideoElement | null>;
+}) {
+  return (
+    <div
+      className={`note-media-shell${isDismissed ? ' is-parked' : ''}`}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerUp}
+      onClickCapture={handleShellClickCapture}
+    >
+      <div className="note-media-video-wrap">
+        <video
+          key={activeItem.id}
+          ref={videoRef}
+          className="note-media-video"
+          src={activeItem.src}
+          poster={activeItem.poster}
+          playsInline
+          autoPlay
+          muted={isMuted}
+          preload="metadata"
+          aria-label={activeItem.title}
+        />
+
+        <ProgressBars queue={queue} activeIndex={activeIndex} progress={progress} />
+
+        {queue.length > 1 ? (
+          <button
+            type="button"
+            className="note-media-hit-area note-media-hit-area-left"
+            onClick={goToPrevious}
+            disabled={activeIndex === 0}
+            aria-label={t.mediaPlayer.previous}
+          >
+            <ChevronLeftIcon />
+          </button>
+        ) : null}
+
+        <button
+          type="button"
+          className={centerHitAreaClassName}
+          onClick={togglePlayback}
+          aria-label={isPlaying ? t.mediaPlayer.pause : t.mediaPlayer.play}
+        />
+
+        {queue.length > 1 ? (
+          <button
+            type="button"
+            className="note-media-hit-area note-media-hit-area-right"
+            onClick={goToNext}
+            disabled={activeIndex === queue.length - 1}
+            aria-label={t.mediaPlayer.next}
+          >
+            <ChevronRightIcon />
+          </button>
+        ) : null}
+
+        <button
+          type="button"
+          className="note-media-mute-toggle"
+          onClick={toggleMuted}
+          aria-label={isMuted ? t.mediaPlayer.unmute : t.mediaPlayer.mute}
+        >
+          {isMuted ? <VolumeOffIcon /> : <VolumeOnIcon />}
+        </button>
+
+        <div className={`note-media-feedback${feedback ? ' is-visible' : ''}`} aria-hidden="true">
+          {feedback === 'play' ? <PlayIcon /> : null}
+          {feedback === 'pause' ? <PauseIcon /> : null}
+          {feedback === 'muted' ? <VolumeOffIcon /> : null}
+          {feedback === 'unmuted' ? <VolumeOnIcon /> : null}
+        </div>
+
+        {isQueueComplete ? (
+          <button
+            type="button"
+            className="note-media-replay-overlay"
+            onClick={replayQueue}
+            aria-label={t.mediaPlayer.replay}
+          >
+            <span className="note-media-replay-overlay-icon">
+              <RotateCcw className="note-media-icon-svg" aria-hidden="true" strokeWidth={1.75} />
+            </span>
+          </button>
+        ) : null}
+      </div>
+
+      {!isDismissed ? (
+        <div className="note-media-chrome">
+          <div className="note-media-meta">
+            <p className="note-media-kicker">{t.mediaPlayer.readMore}</p>
+            {activeItem.sourceHref ? (
+              <Link to={activeItem.sourceHref} className="note-media-caption-link" draggable={false}>
+                {activeItem.sourceTitle}
+              </Link>
+            ) : (
+              <p className="note-media-caption">{activeItem.sourceTitle}</p>
+            )}
+          </div>
+        </div>
+      ) : null}
+
+      {!isDismissed ? (
+        <button
+          type="button"
+          className="note-media-dismiss"
+          onClick={onDismiss}
+          aria-label={t.mediaPlayer.close}
+        >
+          <Minimize2 className="note-media-icon-svg" aria-hidden="true" strokeWidth={1.75} />
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
+function DesktopLauncherView({
+  activeItem,
+  handleLauncherRangeChange,
+  handlePointerDown,
+  handlePointerMove,
+  handlePointerUp,
+  hoveredScrubSegment,
+  isLauncherReadMoreAbove,
+  isPlaying,
+  isQueueComplete,
+  onOpen,
+  playFromLauncher,
+  progress,
+  setHoveredScrubSegment,
+  shouldShowLauncherReadMore,
+  t,
+  updateHoveredScrubSegment,
+  waveform,
+  isMuted,
+}: {
+  activeItem: ActiveItem;
+  handleLauncherRangeChange: (event: ChangeEvent<HTMLInputElement>) => void;
+  handlePointerDown: (event: ReactPointerEvent<HTMLElement>) => void;
+  handlePointerMove: (event: ReactPointerEvent<HTMLElement>) => void;
+  handlePointerUp: (event: ReactPointerEvent<HTMLElement>) => void;
+  hoveredScrubSegment: number | null;
+  isLauncherReadMoreAbove: boolean;
+  isPlaying: boolean;
+  isQueueComplete: boolean;
+  onOpen: () => void;
+  playFromLauncher: () => void;
+  progress: number;
+  setHoveredScrubSegment: React.Dispatch<React.SetStateAction<number | null>>;
+  shouldShowLauncherReadMore: boolean;
+  t: ReturnType<typeof useLanguage>['t'];
+  updateHoveredScrubSegment: (element: HTMLElement, clientX: number) => void;
+  waveform: number[];
+  isMuted: boolean;
+}) {
+  return (
+    <div
+      className="note-media-launcher"
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerUp}
+    >
+      <button
+        type="button"
+        className="note-media-launcher-play"
+        onClick={playFromLauncher}
+        aria-label={isMuted || !isPlaying ? t.mediaPlayer.playWithSound : t.mediaPlayer.pause}
+      >
+        {isPlaying ? <Pause aria-hidden="true" className="note-media-icon-svg" strokeWidth={1.9} /> : <Play aria-hidden="true" className="note-media-icon-svg" strokeWidth={1.9} />}
+      </button>
+
+      <div
+        className="note-media-launcher-scrubber"
+        onPointerMove={(event) => updateHoveredScrubSegment(event.currentTarget, event.clientX)}
+        onPointerLeave={() => setHoveredScrubSegment(null)}
+        data-no-drag="true"
+      >
+        <input
+          type="range"
+          min={0}
+          max={100}
+          step={1}
+          value={Math.round(progress * 100)}
+          onChange={handleLauncherRangeChange}
+          className="note-media-launcher-range"
+          aria-label={`${activeItem.title} playback position`}
+          data-no-drag="true"
+        />
+        <span className="note-media-launcher-scrubber-content">
+          <LauncherVisualizer
+            waveform={waveform}
+            progress={progress}
+            hoveredScrubSegment={hoveredScrubSegment}
+            isPlaying={isPlaying}
+            isQueueComplete={isQueueComplete}
+          />
+        </span>
+      </div>
+
+      <button
+        type="button"
+        className="note-media-launcher-open"
+        onClick={onOpen}
+        aria-label={t.mediaPlayer.open}
+      >
+        <Maximize2 aria-hidden="true" className="note-media-icon-svg" strokeWidth={1.85} />
+      </button>
+
+      {shouldShowLauncherReadMore ? (
+        <div className={`note-media-launcher-readmore${isLauncherReadMoreAbove ? ' is-above' : ''}`}>
+          <p className="note-media-kicker">{t.mediaPlayer.readMore}</p>
+          <Link to={activeItem.sourceHref!} className="note-media-caption-link" data-no-drag="true">
+            {activeItem.sourceTitle}
+          </Link>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+export default function DesktopMediaOverlay() {
+  const isMobile = useIsMobile();
+  const { pathname } = useLocation();
+  const { t } = useLanguage();
+  const {
+    queue,
+    activeIndex,
+    activeItem,
+    playbackTimes,
+    isMuted,
+    isPlaying,
+    isDismissed,
+    setActiveIndex,
+    setIsDismissed,
+    setIsMuted,
+    setIsPlaying,
+    setPlaybackTime,
+    resetPlaybackTimes,
+  } = useMediaQueue();
+  const overlayRef = useRef<HTMLElement | null>(null);
+  const skipAutoClampForTransitionRef = useRef(false);
+  const pendingDismissTransitionRef = useRef<{
+    nextDismissed: boolean;
+    currentRect: DOMRectReadOnly;
+  } | null>(null);
+  const [feedback, setFeedback] = useState<FeedbackType>(null);
+  const [hoveredScrubSegment, setHoveredScrubSegment] = useState<number | null>(null);
+  const [isLauncherHoverArmed, setIsLauncherHoverArmed] = useState(true);
+  const [visibleOffset, setVisibleOffset] = useState<Position>({ x: 0, y: 0 });
+  const {
+    position,
+    setPosition,
+    isReady,
+    isLauncherReadMoreAbove,
+  } = useDesktopOverlayPosition({
+    overlayRef,
+    isDismissed,
+    isMobile,
+    pathname,
+    queueLength: queue.length,
+    skipAutoClampForTransitionRef,
+  });
+  const { videoRef, progress, setProgress, livePlaybackTimesRef } = useDesktopMediaPlayback({
+    activeItem,
+    activeIndex,
+    isMuted,
+    isPlaying,
+    playbackTimes,
+    queueLength: queue.length,
+    setActiveIndex,
+    setIsPlaying,
+    setPlaybackTime,
+  });
+  const {
+    isDragging,
+    consumeDragClick,
+    handlePointerDown,
+    handlePointerMove,
+    handlePointerUp,
+    handleShellClickCapture,
+  } = useOverlayDrag({
+    overlayRef,
+    isDismissed,
+    position,
+    setPosition,
+  });
+  const isQueueComplete = activeIndex === queue.length - 1 && !isPlaying && progress >= 1;
+
+  useLayoutEffect(() => {
+    const overlay = overlayRef.current;
+    if (!overlay) {
+      return;
+    }
+
+    const { visibleRect, offsetX, offsetY } = getVisibleOverlayMetrics(overlay, isDismissed, true);
+    setVisibleOffset((current) => {
+      if (current.x === offsetX && current.y === offsetY) {
+        return current;
+      }
+
+      return { x: offsetX, y: offsetY };
+    });
+
+    const pendingTransition = pendingDismissTransitionRef.current;
+    if (!pendingTransition || pendingTransition.nextDismissed !== isDismissed) {
+      return;
+    }
+
+    pendingDismissTransitionRef.current = null;
+    skipAutoClampForTransitionRef.current = true;
+
+    const transitionPlan = getVisibleTransitionPlan(pendingTransition.currentRect, visibleRect);
+
+    setPosition(transitionPlan.clampedPosition);
+  }, [isDismissed, setPosition, queue.length]);
+
+  useEffect(() => {
+    if (!feedback) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => setFeedback(null), 560);
+    return () => window.clearTimeout(timeout);
+  }, [feedback]);
+
+  if (isMobile || !activeItem || !queue.length) {
+    return null;
+  }
+
+  const launcherWaveform = getWaveform(activeItem);
+  const shouldShowLauncherReadMore = activeItem.sourceHref ? activeItem.sourceHref !== pathname : false;
+
+  const flashFeedback = (nextFeedback: FeedbackType) => {
+    setFeedback(null);
+    requestAnimationFrame(() => {
+      setFeedback(nextFeedback);
+    });
+  };
+
+  const toggleDismissed = (nextDismissed: boolean) => {
+    const overlay = overlayRef.current;
+
+    if (overlay && position && nextDismissed !== isDismissed) {
+      const currentRect = getRectForOverlayState(overlay, isDismissed, true);
+
+      pendingDismissTransitionRef.current = {
+        nextDismissed,
+        currentRect,
+      };
+    }
+
+    setIsLauncherHoverArmed(!nextDismissed);
+    setIsDismissed(nextDismissed);
+  };
+
+  const handleOverlayPointerLeave = () => {
+    if (isDismissed) {
+      setIsLauncherHoverArmed(true);
+    }
+  };
+
+  const resetCurrentItemAndPlay = () => {
+    setPlaybackTime(activeItem.id, 0);
+    setIsPlaying(true);
+    setProgress(0);
+  };
+
+  const goToPrevious = () => {
+    if (consumeDragClick() || activeIndex === 0) {
+      return;
+    }
+
+    resetCurrentItemAndPlay();
+    setActiveIndex((currentIndex) => Math.max(currentIndex - 1, 0));
+  };
+
+  const goToNext = () => {
+    if (consumeDragClick() || activeIndex === queue.length - 1) {
+      return;
+    }
+
+    resetCurrentItemAndPlay();
+    setActiveIndex((currentIndex) => Math.min(currentIndex + 1, queue.length - 1));
+  };
+
+  const replayQueue = () => {
+    if (consumeDragClick()) {
+      return;
+    }
+
+    resetPlaybackTimes();
+    setActiveIndex(0);
+    setProgress(0);
+    setIsPlaying(true);
+    setIsMuted(false);
+    flashFeedback('play');
+  };
+
+  const playFromLauncher = () => {
+    if (consumeDragClick()) {
+      return;
+    }
+
+    if (isMuted || !isPlaying) {
+      setIsMuted(false);
+      setIsPlaying(true);
+      flashFeedback('play');
+      return;
+    }
+
+    setIsPlaying(false);
+    flashFeedback('pause');
+  };
+
+  const openFromLauncher = () => {
+    if (consumeDragClick()) {
+      return;
+    }
+
+    toggleDismissed(false);
+  };
+
+  const seekLauncherProgress = (nextProgress: number) => {
+    const video = videoRef.current;
+    if (!video || !video.duration || Number.isNaN(video.duration)) {
+      return;
+    }
+
+    const ratio = Math.min(Math.max(nextProgress, 0), 1);
+    const nextTime = ratio >= 1 ? Math.max(video.duration - 0.05, 0) : video.duration * ratio;
+
+    video.currentTime = nextTime;
+    livePlaybackTimesRef.current[activeItem.id] = nextTime;
+    setPlaybackTime(activeItem.id, nextTime);
+    setProgress(ratio);
+
+    if (!isPlaying || isMuted) {
+      setIsMuted(false);
+      setIsPlaying(true);
+      flashFeedback('play');
+    }
+  };
+
+  const handleLauncherRangeChange = (event: ChangeEvent<HTMLInputElement>) => {
+    if (consumeDragClick()) {
+      return;
+    }
+
+    seekLauncherProgress(Number(event.target.value) / 100);
+  };
+
+  const updateHoveredScrubSegment = (element: HTMLElement, clientX: number) => {
+    const segmentCount = activeItem.waveform?.length || LAUNCHER_VISUALIZER_SEGMENTS;
+    const rect = element.getBoundingClientRect();
+    const ratio = Math.min(Math.max((clientX - rect.left) / rect.width, 0), 0.9999);
+    setHoveredScrubSegment(Math.floor(ratio * segmentCount));
+  };
+
+  const togglePlayback = () => {
+    if (consumeDragClick()) {
+      return;
+    }
+
+    const video = videoRef.current;
+    if (!video) {
+      return;
+    }
+
+    if (video.paused) {
+      const playPromise = video.play();
+      if (playPromise) {
+        playPromise.then(() => flashFeedback('play')).catch(() => setIsPlaying(false));
+      }
+      return;
+    }
+
+    video.pause();
+    flashFeedback('pause');
+  };
+
+  const toggleMuted = () => {
+    if (consumeDragClick()) {
+      return;
+    }
+
+    setIsMuted((current) => {
+      const nextValue = !current;
+      flashFeedback(nextValue ? 'muted' : 'unmuted');
+      return nextValue;
+    });
+  };
+
   const desktopStyle = position
-    ? { left: `${position.x}px`, top: `${position.y}px`, right: 'auto', bottom: 'auto' }
+    ? {
+        left: `${position.x - visibleOffset.x}px`,
+        top: `${position.y - visibleOffset.y}px`,
+        right: 'auto',
+        bottom: 'auto',
+      }
     : undefined;
 
   const centerHitAreaClassName = [
@@ -761,215 +1400,55 @@ export default function DesktopMediaOverlay() {
       data-ready={isReady ? 'true' : 'false'}
       onPointerLeave={handleOverlayPointerLeave}
     >
-      <div
-        className={`note-media-shell${isDismissed ? ' is-parked' : ''}`}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerCancel={handlePointerUp}
-        onClickCapture={handleShellClickCapture}
-      >
-            <div className="note-media-video-wrap">
-              <video
-                key={activeItem.id}
-                ref={videoRef}
-                className="note-media-video"
-                src={activeItem.src}
-                poster={activeItem.poster}
-                playsInline
-                autoPlay
-                muted={isMuted}
-                preload="metadata"
-                aria-label={activeItem.title}
-              />
-
-              <div className="note-media-progress" aria-hidden="true">
-                {queue.map((mediaItem, index) => {
-                  const fill = index < activeIndex ? 1 : index === activeIndex ? progress : 0;
-
-                  return (
-                    <span key={mediaItem.id} className="note-media-progress-bar">
-                      <span className="note-media-progress-fill" style={{ transform: `scaleX(${fill})` }} />
-                    </span>
-                  );
-                })}
-              </div>
-
-              {queue.length > 1 ? (
-              <button
-                type="button"
-                  className="note-media-hit-area note-media-hit-area-left"
-                  onClick={goToPrevious}
-                  disabled={activeIndex === 0}
-                  aria-label={t.mediaPlayer.previous}
-                >
-                <ChevronLeftIcon />
-              </button>
-              ) : null}
-
-              <button
-                type="button"
-                className={centerHitAreaClassName}
-                onClick={togglePlayback}
-                aria-label={isPlaying ? t.mediaPlayer.pause : t.mediaPlayer.play}
-              />
-
-              {queue.length > 1 ? (
-              <button
-                type="button"
-                  className="note-media-hit-area note-media-hit-area-right"
-                  onClick={goToNext}
-                  disabled={activeIndex === queue.length - 1}
-                  aria-label={t.mediaPlayer.next}
-                >
-                <ChevronRightIcon />
-              </button>
-              ) : null}
-
-              <button
-                type="button"
-                className="note-media-mute-toggle"
-                onClick={toggleMuted}
-                aria-label={isMuted ? t.mediaPlayer.unmute : t.mediaPlayer.mute}
-              >
-                {isMuted ? <VolumeOffIcon /> : <VolumeOnIcon />}
-              </button>
-
-              <div className={`note-media-feedback${feedback ? ' is-visible' : ''}`} aria-hidden="true">
-                {feedback === 'play' ? <PlayIcon /> : null}
-                {feedback === 'pause' ? <PauseIcon /> : null}
-                {feedback === 'muted' ? <VolumeOffIcon /> : null}
-                {feedback === 'unmuted' ? <VolumeOnIcon /> : null}
-              </div>
-
-              {isQueueComplete ? (
-                <button
-                  type="button"
-                  className="note-media-replay-overlay"
-                  onClick={replayQueue}
-                  aria-label={t.mediaPlayer.replay}
-                >
-                  <span className="note-media-replay-overlay-icon">
-                    <RotateCcw className="note-media-icon-svg" aria-hidden="true" strokeWidth={1.75} />
-                  </span>
-                </button>
-              ) : null}
-            </div>
-
-            {!isDismissed ? (
-            <div className="note-media-chrome">
-              <div className="note-media-meta">
-                <p className="note-media-kicker">{t.mediaPlayer.readMore}</p>
-                {activeItem.sourceHref ? (
-                  <Link to={activeItem.sourceHref} className="note-media-caption-link" draggable={false}>
-                    {activeItem.sourceTitle}
-                  </Link>
-                ) : (
-                  <p className="note-media-caption">{activeItem.sourceTitle}</p>
-                )}
-              </div>
-            </div>
-            ) : null}
-
-            {!isDismissed ? (
-              <button
-                type="button"
-                className="note-media-dismiss"
-                onClick={() => toggleDismissed(true)}
-                aria-label={t.mediaPlayer.close}
-              >
-                <Minimize2 className="note-media-icon-svg" aria-hidden="true" strokeWidth={1.75} />
-              </button>
-            ) : null}
-          </div>
+      <DesktopExpandedView
+        activeIndex={activeIndex}
+        activeItem={activeItem}
+        centerHitAreaClassName={centerHitAreaClassName}
+        feedback={feedback}
+        goToNext={goToNext}
+        goToPrevious={goToPrevious}
+        handlePointerDown={handlePointerDown}
+        handlePointerMove={handlePointerMove}
+        handlePointerUp={handlePointerUp}
+        handleShellClickCapture={handleShellClickCapture}
+        isDismissed={isDismissed}
+        isMuted={isMuted}
+        isPlaying={isPlaying}
+        isQueueComplete={isQueueComplete}
+        onDismiss={() => toggleDismissed(true)}
+        progress={progress}
+        queue={queue}
+        replayQueue={replayQueue}
+        t={t}
+        toggleMuted={toggleMuted}
+        togglePlayback={togglePlayback}
+        videoRef={videoRef}
+      />
 
       {isDismissed ? (
-        <div
-          className="note-media-launcher"
-          onPointerDown={handlePointerDown}
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerUp}
-          onPointerCancel={handlePointerUp}
-        >
-          <button
-            type="button"
-            className="note-media-launcher-play"
-            onClick={playFromLauncher}
-            aria-label={isMuted || !isPlaying ? t.mediaPlayer.playWithSound : t.mediaPlayer.pause}
-          >
-            {isPlaying ? <Pause aria-hidden="true" className="note-media-icon-svg" strokeWidth={1.9} /> : <Play aria-hidden="true" className="note-media-icon-svg" strokeWidth={1.9} />}
-          </button>
-          <div
-            className="note-media-launcher-scrubber"
-            onPointerMove={(event) => updateHoveredScrubSegment(event.currentTarget, event.clientX)}
-            onPointerLeave={() => setHoveredScrubSegment(null)}
-            data-no-drag="true"
-          >
-            <input
-              type="range"
-              min={0}
-              max={100}
-              step={1}
-              value={Math.round(progress * 100)}
-              onChange={handleLauncherRangeChange}
-              className="note-media-launcher-range"
-              aria-label={`${activeItem.title} playback position`}
-              data-no-drag="true"
-            />
-            <span className="note-media-launcher-scrubber-content">
-              <span className={`note-media-launcher-visualizer${isPlaying ? ' is-playing' : ''}`} aria-hidden="true">
-                {launcherWaveform.map((level, index) => {
-                  const segmentCount = launcherWaveform.length;
-                  const segmentProgress = (index + 1) / segmentCount;
-                  const currentSegmentIndex = Math.min(Math.floor(progress * segmentCount), segmentCount - 1);
-                  const isHoverPreview = !isPlaying && hoveredScrubSegment !== null;
-                  const isActive = !isHoverPreview && progress >= segmentProgress;
-                  const isHoveredRange = isHoverPreview && index <= hoveredScrubSegment;
-                  const isHovered = !isPlaying && hoveredScrubSegment === index;
-                  const isHoveredNeighbor = !isPlaying && hoveredScrubSegment !== null && index === hoveredScrubSegment - 1;
-                  const isCurrentResting = hoveredScrubSegment === null && !isQueueComplete && index === currentSegmentIndex;
-                  const isCurrentPlaying = isPlaying && index === currentSegmentIndex;
-                  const shouldAnimate = isPlaying && !isCurrentPlaying && !isActive;
-                  const animationStyle = shouldAnimate
-                    ? {
-                        ['--segment-level' as string]: String(level),
-                        animationName: 'note-media-launcher-bar',
-                        animationDuration: `${720 + (index % 7) * 35}ms`,
-                        animationDelay: `${(index % 6) * 28}ms`,
-                        animationTimingFunction: 'ease-in-out',
-                        animationIterationCount: 'infinite',
-                      }
-                    : { ['--segment-level' as string]: String(level) };
-
-                  return <span key={index} style={animationStyle} className={`${isActive ? 'is-active' : ''}${isHoveredRange ? ' is-hovered-range' : ''}${isHoveredNeighbor ? ' is-hovered-neighbor' : ''}${isHovered ? ' is-hovered' : ''}${isCurrentResting ? ' is-current-resting' : ''}${isCurrentPlaying ? ' is-current-playing' : ''}`} />;
-                })}
-              </span>
-            </span>
-          </div>
-          <button
-            type="button"
-            className="note-media-launcher-open"
-            onClick={openFromLauncher}
-            aria-label={t.mediaPlayer.open}
-          >
-            <Maximize2 aria-hidden="true" className="note-media-icon-svg" strokeWidth={1.85} />
-          </button>
-
-          {shouldShowLauncherReadMore ? (
-            <div className={`note-media-launcher-readmore${isLauncherReadMoreAbove ? ' is-above' : ''}`}>
-              <p className="note-media-kicker">{t.mediaPlayer.readMore}</p>
-              <Link to={activeItem.sourceHref!} className="note-media-caption-link" data-no-drag="true">
-                {activeItem.sourceTitle}
-              </Link>
-            </div>
-          ) : null}
-        </div>
-      ) : (
-        <>
-          {queue.length > 1 ? <p className="note-media-count">{activeIndex + 1} {t.mediaPlayer.of} {queue.length}</p> : null}
-        </>
-      )}
-
+        <DesktopLauncherView
+          activeItem={activeItem}
+          handleLauncherRangeChange={handleLauncherRangeChange}
+          handlePointerDown={handlePointerDown}
+          handlePointerMove={handlePointerMove}
+          handlePointerUp={handlePointerUp}
+          hoveredScrubSegment={hoveredScrubSegment}
+          isLauncherReadMoreAbove={isLauncherReadMoreAbove}
+          isMuted={isMuted}
+          isPlaying={isPlaying}
+          isQueueComplete={isQueueComplete}
+          onOpen={openFromLauncher}
+          playFromLauncher={playFromLauncher}
+          progress={progress}
+          setHoveredScrubSegment={setHoveredScrubSegment}
+          shouldShowLauncherReadMore={shouldShowLauncherReadMore}
+          t={t}
+          updateHoveredScrubSegment={updateHoveredScrubSegment}
+          waveform={launcherWaveform}
+        />
+      ) : queue.length > 1 ? (
+        <p className="note-media-count">{activeIndex + 1} {t.mediaPlayer.of} {queue.length}</p>
+      ) : null}
     </aside>
   );
 }
