@@ -8,8 +8,10 @@ import type {
 } from 'react';
 import { Link, useParams } from 'react-router';
 import { getNoteBySlug } from '@/data/notes';
+import { getNoteMedia } from '@/data/noteMedia';
 import NewsletterSignup from '@/components/NewsletterSignup';
 import { useLanguage } from '@/hooks/useLanguage';
+import { useMediaQueue } from '@/hooks/useMediaQueue';
 
 const mdxComponents = {
   h1: (props: HTMLAttributes<HTMLHeadingElement>) => <h1 className="font-serif text-3xl-custom mb-4 mt-8" style={{ color: 'var(--color-ink)' }} {...props} />,
@@ -24,18 +26,25 @@ const mdxComponents = {
   code: (props: HTMLAttributes<HTMLElement>) => <code className="font-mono text-xs-custom px-1 py-0.5" style={{ backgroundColor: 'var(--color-editor-bg)', borderRadius: '4px' }} {...props} />,
   pre: (props: HTMLAttributes<HTMLPreElement>) => <pre className="p-4 mb-5 overflow-x-auto" style={{ backgroundColor: 'var(--color-editor-bg)', border: '1px solid var(--color-border-brutalist)', borderRadius: 'var(--radius-soft)' }} {...props} />,
   img: (props: HTMLAttributes<HTMLImageElement>) => <img className="note-img" {...props} />,
-  figure: (props: HTMLAttributes<HTMLElement>) => <figure className="note-figure" {...props} />,
+  figure: ({ className, ...props }: HTMLAttributes<HTMLElement>) => <figure className={className ? `note-figure ${className}` : 'note-figure'} {...props} />,
   figcaption: (props: HTMLAttributes<HTMLElement>) => <figcaption className="note-figcaption" {...props} />,
 };
 
 export default function NoteDetail() {
   const { t, lang } = useLanguage();
+  const { enqueueSource } = useMediaQueue();
   const { slug } = useParams();
   const note = slug ? getNoteBySlug(slug) : undefined;
+  const mediaItems = useMemo(() => (slug ? getNoteMedia(slug) : []), [slug]);
   const [MdxContent, setMdxContent] = useState<ComponentType<{ components?: typeof mdxComponents }> | null>(null);
   const [renderError, setRenderError] = useState<string | null>(null);
 
   const content = useMemo(() => note?.body || '', [note?.body]);
+
+  useEffect(() => {
+    if (!slug || !note || !mediaItems.length) return;
+    enqueueSource(slug, note.title, mediaItems, `/notes/${slug}`);
+  }, [enqueueSource, note, mediaItems, slug]);
 
   useEffect(() => {
     let cancelled = false;

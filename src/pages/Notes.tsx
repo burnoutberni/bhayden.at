@@ -121,14 +121,15 @@ export default function Notes() {
                   <p className="font-grotesk text-sm-custom line-clamp-3 mb-3" style={{ color: 'var(--color-ink-muted)' }}>
                     {lang === 'de' && note.summaryDe ? note.summaryDe : note.summary}
                   </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {note.topics.map((topic) => (
-                    <span
+                  <div className="flex flex-wrap gap-1.5">
+                    {note.topics.map((topic) => (
+                    <button
+                      type="button"
                       key={topic}
                       className="pill-badge pill-badge-contextual"
+                      aria-pressed={topicFilter !== 'all' && topicFilter === topic}
                       onClick={() => setTopicFilter((prev) => (prev === topic ? 'all' : topic))}
                       style={{
-                        cursor: 'pointer',
                         ['--badge-base-border' as string]: 'var(--color-page-accent)',
                         ['--badge-base-fg' as string]: 'var(--color-page-accent)',
                         ['--badge-hover-bg' as string]: 'var(--color-page-accent)',
@@ -139,7 +140,7 @@ export default function Notes() {
                       }}
                     >
                       {topic}
-                    </span>
+                    </button>
                   ))}
                 </div>
               </article>

@@ -1,4 +1,5 @@
 import { useEffect, useId, useMemo, useState, type ReactNode } from 'react';
+import { useLanguage } from '@/hooks/useLanguage';
 
 type FilterOption = {
   key: string;
@@ -31,6 +32,7 @@ export default function FilterToolbar({
   leading,
   accentColor = 'var(--color-page-accent)',
 }: FilterToolbarProps) {
+  const { t } = useLanguage();
   const optionsId = useId();
   const [isMobile, setIsMobile] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -128,9 +130,9 @@ export default function FilterToolbar({
           aria-controls={optionsId}
         >
           <span className="flex min-w-0 flex-1 items-center gap-2">
-            <span className="font-mono text-xs-custom uppercase tracking-[0.08em]" style={{ color: 'var(--color-ink-muted)' }}>
-              Filters
-            </span>
+              <span className="font-mono text-xs-custom uppercase tracking-[0.08em]" style={{ color: 'var(--color-ink-muted)' }}>
+              {t.common.filters}
+              </span>
             <span className="flex min-w-0 flex-1 gap-1 overflow-hidden">
               {activeLabels.length > 0 ? activeLabels.slice(0, 2).map((label, index) => (
                 <span
@@ -145,7 +147,7 @@ export default function FilterToolbar({
                 </span>
               )) : (
                 <span className="truncate font-mono text-xs-custom uppercase" style={{ color: 'var(--color-ink-muted)' }}>
-                  All
+                  {t.work.filters.all}
                 </span>
               )}
               {activeLabels.length > 2 ? (
@@ -156,7 +158,7 @@ export default function FilterToolbar({
             </span>
           </span>
           <span className="font-mono text-xs-custom uppercase" style={{ color: 'var(--color-ink)' }}>
-            {isCollapsed ? 'Show' : 'Hide'}
+            {isCollapsed ? t.common.show : t.common.hide}
           </span>
         </button>
 
