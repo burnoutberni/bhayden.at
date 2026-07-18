@@ -4,8 +4,6 @@ import { mediaWaveforms } from '@/generated/mediaWaveforms';
 export interface NoteMediaItem {
   src: string;
   poster?: string;
-  title: string;
-  caption?: string;
   waveform?: number[];
 }
 
@@ -23,8 +21,6 @@ const noteMedia: Record<string, { mediaItems: NoteMediaItem[]; includeInDefaultQ
     mediaItems: [
       {
         src: '/static/taborstrasse/reel.mp4',
-        title: 'Taborstrasse media clip',
-        caption: 'Taborstrasse',
         waveform: mediaWaveforms['/static/taborstrasse/reel.mp4'],
       },
     ],

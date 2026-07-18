@@ -187,10 +187,10 @@ function getVisibleOverlayMetrics(overlay: HTMLElement, isDismissed: boolean, us
 }
 
 function getDefaultDesktopPosition(width: number, height: number) {
-  const x = Math.max(0, Math.min((window.innerWidth + 800) / 2 + 16, window.innerWidth - width));
+  const x = Math.max(0, Math.min((window.innerWidth + 800) / 2 + 16, window.innerWidth - width - DEFAULT_DESKTOP_BOTTOM_GAP));
   const y = window.innerHeight - height - DEFAULT_DESKTOP_BOTTOM_GAP;
 
-  return clampPosition(x, y, width, height);
+  return clampPosition(x, y, width, height, DEFAULT_DESKTOP_BOTTOM_GAP);
 }
 
 function getHomeDesktopPosition(width: number, height: number) {
@@ -891,6 +891,7 @@ function DesktopExpandedView({
   progress,
   queue,
   replayQueue,
+  shouldShowSourceLink,
   t,
   toggleMuted,
   togglePlayback,
@@ -914,6 +915,7 @@ function DesktopExpandedView({
   progress: number;
   queue: MediaQueueState['queue'];
   replayQueue: () => void;
+  shouldShowSourceLink: boolean;
   t: ReturnType<typeof useLanguage>['t'];
   toggleMuted: () => void;
   togglePlayback: () => void;
@@ -939,7 +941,7 @@ function DesktopExpandedView({
           autoPlay
           muted={isMuted}
           preload="metadata"
-          aria-label={activeItem.title}
+          aria-label={activeItem.sourceTitle}
         />
 
         <ProgressBars queue={queue} activeIndex={activeIndex} progress={progress} />
@@ -1008,8 +1010,10 @@ function DesktopExpandedView({
       {!isDismissed ? (
         <div className="note-media-chrome">
           <div className="note-media-meta">
-            <p className="note-media-kicker">{t.mediaPlayer.readMore}</p>
-            {activeItem.sourceHref ? (
+            <p className={`note-media-kicker${!shouldShowSourceLink ? ' is-source-note' : ''}`}>
+              {shouldShowSourceLink ? t.mediaPlayer.readMore : t.mediaPlayer.fromThisNote}
+            </p>
+            {shouldShowSourceLink && activeItem.sourceHref ? (
               <Link to={activeItem.sourceHref} className="note-media-caption-link" draggable={false}>
                 {activeItem.sourceTitle}
               </Link>
@@ -1104,7 +1108,7 @@ function DesktopLauncherView({
           value={Math.round(progress * 100)}
           onChange={handleLauncherRangeChange}
           className="note-media-launcher-range"
-          aria-label={`${activeItem.title} ${t.mediaPlayer.playbackPosition}`}
+          aria-label={`${activeItem.sourceTitle} ${t.mediaPlayer.playbackPosition}`}
           data-no-drag="true"
         />
         <span className="note-media-launcher-scrubber-content">
@@ -1275,6 +1279,7 @@ export default function DesktopMediaOverlay() {
 
   const launcherWaveform = getWaveform(activeItem);
   const shouldShowLauncherReadMore = activeItem.sourceHref ? activeItem.sourceHref !== pathname : false;
+  const shouldShowSourceLink = activeItem.sourceHref ? activeItem.sourceHref !== pathname : false;
 
   const flashFeedback = (nextFeedback: FeedbackType) => {
     setFeedback(null);
@@ -1481,6 +1486,7 @@ export default function DesktopMediaOverlay() {
         progress={progress}
         queue={queue}
         replayQueue={replayQueue}
+        shouldShowSourceLink={shouldShowSourceLink}
         t={t}
         toggleMuted={toggleMuted}
         togglePlayback={togglePlayback}

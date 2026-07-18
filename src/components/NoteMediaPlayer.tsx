@@ -359,7 +359,7 @@ export default function NoteMediaPlayer({ mediaItems, noteTitle }: NoteMediaPlay
               autoPlay
               muted={isMuted}
               preload="metadata"
-              aria-label={activeMediaItem.title}
+              aria-label={noteTitle}
             />
 
             <div className="note-media-progress" aria-hidden="true">
@@ -424,8 +424,8 @@ export default function NoteMediaPlayer({ mediaItems, noteTitle }: NoteMediaPlay
 
           <div className="note-media-chrome">
             <div className="note-media-meta">
-              <p className="note-media-kicker">{t.mediaPlayer.fromThisNote}</p>
-              <p className="note-media-caption">{activeMediaItem.caption || noteTitle}</p>
+              <p className="note-media-kicker is-source-note">{t.mediaPlayer.fromThisNote}</p>
+              <p className="note-media-caption">{noteTitle}</p>
             </div>
           </div>
         </div>

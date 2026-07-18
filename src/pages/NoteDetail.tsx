@@ -10,7 +10,6 @@ import { Link, useParams } from 'react-router';
 import { getNoteBySlug } from '@/data/notes';
 import { getNoteMedia } from '@/data/noteMedia';
 import NewsletterSignup from '@/components/NewsletterSignup';
-import NoteMediaPlayer from '@/components/NoteMediaPlayer';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useMediaQueue } from '@/hooks/useMediaQueue';
 
@@ -130,7 +129,6 @@ export default function NoteDetail() {
 
       <section className="px-6 py-12">
         <article className="max-w-[800px] mx-auto">
-          {mediaItems.length ? <NoteMediaPlayer mediaItems={mediaItems} noteTitle={note.title} /> : null}
           {renderError ? (
             <p className="font-grotesk text-sm-custom" style={{ color: 'var(--color-ink-muted)' }}>
               {renderError}

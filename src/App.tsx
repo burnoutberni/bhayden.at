@@ -6,6 +6,7 @@ import { MediaQueueProvider } from '@/hooks/useMediaQueue';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import DesktopMediaOverlay from '@/components/DesktopMediaOverlay';
+import MobileMediaOverlay from '@/components/MobileMediaOverlay';
 
 const Home = lazy(() => import('@/pages/Home'));
 const Work = lazy(() => import('@/pages/Work'));
@@ -88,6 +89,7 @@ export default function App() {
               ['--accent-highlight-icon-padding' as string]: '0',
               ['--highlight-invert-hover-bg' as string]: isLimeAccent ? 'var(--color-dark-void)' : 'transparent',
               ['--highlight-invert-hover-fg' as string]: isLimeAccent ? ACCENT.lime : 'var(--accent-highlight-fg)',
+              ['--note-media-launcher-played-segment' as string]: isLimeAccent ? 'color-mix(in srgb, var(--color-dark-void) 68%, var(--color-page-accent) 32%)' : '#ffffff',
             }}
           >
             <ScrollToTop />
@@ -124,6 +126,7 @@ export default function App() {
             </main>
             <Footer />
             <DesktopMediaOverlay />
+            <MobileMediaOverlay />
           </div>
         </MediaQueueProvider>
       </LanguageProvider>
