@@ -619,7 +619,10 @@ function useDesktopMediaPlayback({
         if (shouldStop) {
           requestAnimationFrame(() => setIsPlaying(false));
         } else {
-          requestAnimationFrame(() => setProgress(0));
+          requestAnimationFrame(() => {
+            setProgress(0);
+            setIsPlaying(true);
+          });
         }
 
         return nextIndex;
