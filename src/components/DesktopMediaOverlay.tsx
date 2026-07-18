@@ -1023,7 +1023,7 @@ function DesktopExpandedView({
       {!isDismissed ? (
         <button
           type="button"
-          className="note-media-dismiss"
+          className="note-media-corner-control note-media-dismiss"
           onClick={onDismiss}
           aria-label={t.mediaPlayer.close}
         >
@@ -1120,7 +1120,7 @@ function DesktopLauncherView({
 
       <button
         type="button"
-        className="note-media-launcher-open"
+        className="note-media-corner-control note-media-launcher-open"
         onClick={onOpen}
         aria-label={t.mediaPlayer.open}
       >
@@ -1167,6 +1167,7 @@ export default function DesktopMediaOverlay() {
   const [feedback, setFeedback] = useState<FeedbackType>(null);
   const [hoveredScrubSegment, setHoveredScrubSegment] = useState<number | null>(null);
   const [isLauncherHoverArmed, setIsLauncherHoverArmed] = useState(true);
+  const previousIsDraggingRef = useRef(false);
   const [visibleOffset, setVisibleOffset] = useState<Position>({ x: 0, y: 0 });
   const {
     position,
@@ -1248,7 +1249,25 @@ export default function DesktopMediaOverlay() {
     if (isMobile && videoRef.current && !videoRef.current.paused) {
       videoRef.current.pause();
     }
-  }, [isMobile]);
+  }, [isMobile, videoRef]);
+
+  useEffect(() => {
+    if (isDragging) {
+      setIsLauncherHoverArmed(false);
+      setHoveredScrubSegment(null);
+      previousIsDraggingRef.current = true;
+      return;
+    }
+
+    if (previousIsDraggingRef.current) {
+      const activeElement = document.activeElement;
+      if (activeElement instanceof HTMLElement && overlayRef.current?.contains(activeElement)) {
+        activeElement.blur();
+      }
+    }
+
+    previousIsDraggingRef.current = false;
+  }, [isDragging]);
 
   if (isMobile || !activeItem || !queue.length) {
     return null;

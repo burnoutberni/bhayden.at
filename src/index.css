@@ -1533,20 +1533,18 @@
     transform: scale(0.97);
   }
 
-  .note-media-player-desktop.is-dismissed .note-media-launcher {
+  .note-media-player-desktop .note-media-launcher {
     position: absolute;
     left: 0;
     right: 0;
     bottom: 0;
-    pointer-events: auto;
   }
 
   .note-media-player-desktop.is-dismissed.is-hover-armed:hover .note-media-launcher-readmore,
-  .note-media-player-desktop.is-dismissed .note-media-launcher:focus-within .note-media-launcher-readmore,
-  .note-media-player-desktop.is-dismissed.is-dragging .note-media-launcher-readmore {
+  .note-media-player-desktop.is-dismissed .note-media-launcher:focus-within .note-media-launcher-readmore {
     visibility: visible;
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scaleY(1);
     pointer-events: auto;
   }
 
@@ -1590,7 +1588,7 @@
   .note-media-progress-fill {
     position: absolute;
     inset: 0;
-    background: var(--color-page-accent);
+    background: color-mix(in srgb, white 94%, var(--color-page-accent) 6%);
     transform-origin: left center;
     transform: scaleX(0);
     will-change: transform;
@@ -1652,6 +1650,12 @@
   .note-media-launcher:focus-within {
     background: color-mix(in srgb, var(--color-cream) 82%, white 18%);
     border-color: color-mix(in srgb, var(--color-border-brutalist) 70%, var(--color-page-accent) 30%);
+  }
+
+  html:not([data-theme='dark']) .note-media-player-desktop.is-dismissed .note-media-launcher:hover,
+  html:not([data-theme='dark']) .note-media-player-desktop.is-dismissed .note-media-launcher:focus-within {
+    background: var(--color-page-accent);
+    border-color: color-mix(in srgb, var(--color-page-accent) 82%, var(--color-dark-void) 18%);
   }
 
   .note-media-hit-area {
@@ -1846,21 +1850,26 @@
     height: 1.65rem;
   }
 
-  .note-media-dismiss {
+  .note-media-corner-control {
     position: absolute;
     right: var(--note-media-corner-control-right);
-    bottom: 0.2rem;
+    bottom: var(--note-media-corner-control-bottom);
     width: var(--note-media-corner-control-size);
     height: var(--note-media-corner-control-size);
     display: grid;
     place-items: center;
+    padding: 0;
+    border-radius: 9999px;
+    aspect-ratio: 1 / 1;
+  }
+
+  .note-media-dismiss {
     padding: 0;
     background: rgb(17 17 17 / 0.24);
     color: white;
     border-color: rgb(255 255 255 / 0.14);
     opacity: 0.72;
     margin: 0;
-    border-radius: 9999px;
     transition:
       background-color 180ms ease,
       color 180ms ease,
@@ -1874,16 +1883,27 @@
   }
 
   .note-media-launcher {
+    --note-media-launcher-bg: color-mix(in srgb, var(--color-cream) 88%, white 12%);
+    --note-media-launcher-border: var(--color-border-brutalist);
+    --note-media-launcher-fg: var(--color-ink);
+    --note-media-launcher-hover-bg: color-mix(in srgb, var(--color-page-accent) 72%, white 28%);
+    --note-media-launcher-hover-fg: var(--color-dark-void);
+    --note-media-launcher-idle-bar: color-mix(in srgb, var(--color-ink) 18%, transparent 82%);
+    --note-media-launcher-active-bar: var(--color-page-accent);
+    --note-media-launcher-active-bar-shadow:
+      inset 0 0 0 1px rgb(17 17 17 / 0.12),
+      0 0 0 0.5px rgb(17 17 17 / 0.08);
     width: 100%;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 0.32rem;
-    padding: 0.28rem calc(var(--note-media-corner-control-size) + var(--note-media-corner-control-right) + 0.14rem) 0.28rem 0.32rem;
-    background: color-mix(in srgb, var(--color-cream) 88%, white 12%);
+    padding: 0.28rem calc(var(--note-media-corner-control-size) + var(--note-media-corner-control-right) + 0.32rem) 0.28rem 0.32rem;
+    background: var(--note-media-launcher-bg);
     box-shadow: 0 12px 30px rgb(0 0 0 / 0.14);
-    border: 1px solid var(--color-border-brutalist);
+    border: 1px solid var(--note-media-launcher-border);
     border-radius: 999px;
+    color: var(--note-media-launcher-fg);
     transform-origin: bottom right;
     transition:
       opacity 220ms ease,
@@ -1898,11 +1918,20 @@
     box-shadow: none;
   }
 
+  html:not([data-theme='dark']) .note-media-player-desktop.is-dismissed .note-media-launcher {
+    --note-media-launcher-bg: var(--color-page-accent);
+    --note-media-launcher-border: color-mix(in srgb, var(--color-page-accent) 82%, var(--color-dark-void) 18%);
+    --note-media-launcher-fg: var(--color-page-accent-text);
+    --note-media-launcher-hover-bg: color-mix(in srgb, white 88%, var(--color-page-accent) 12%);
+    --note-media-launcher-hover-fg: var(--color-dark-void);
+    --note-media-launcher-idle-bar: color-mix(in srgb, var(--color-page-accent-text) 26%, transparent 74%);
+    --note-media-launcher-active-bar: var(--note-media-launcher-played-segment, #ffffff);
+    --note-media-launcher-active-bar-shadow:
+      inset 0 0 0 1px rgb(17 17 17 / 0.08),
+      0 0 0 0.5px rgb(17 17 17 / 0.05);
+  }
+
   .note-media-player-desktop:not(.is-dismissed) .note-media-launcher {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
     opacity: 0;
     transform: scale(0.97);
     pointer-events: none;
@@ -1911,6 +1940,7 @@
   .note-media-player-desktop.is-dismissed .note-media-launcher {
     opacity: 1;
     transform: scale(1);
+    pointer-events: auto;
   }
 
   .note-media-launcher-play,
@@ -1918,7 +1948,7 @@
   .note-media-launcher-open {
     border: 0;
     background: transparent;
-    color: var(--color-ink);
+    color: inherit;
     padding: 0;
     cursor: pointer;
   }
@@ -1942,22 +1972,13 @@
   .note-media-launcher-play:focus-visible,
   .note-media-launcher-open:hover,
   .note-media-launcher-open:focus-visible {
-    color: var(--color-dark-void);
-    background: color-mix(in srgb, var(--color-page-accent) 72%, white 28%);
+    color: var(--note-media-launcher-hover-fg);
+    background: var(--note-media-launcher-hover-bg);
     box-shadow: none;
   }
 
   .note-media-launcher-open {
-    position: absolute;
-    right: var(--note-media-corner-control-right);
-    bottom: var(--note-media-corner-control-bottom);
-    height: var(--note-media-corner-control-size);
-    width: var(--note-media-corner-control-size);
     min-width: 2rem;
-    display: grid;
-    place-items: center;
-    border-radius: 9999px;
-    aspect-ratio: 1 / 1;
     transition:
       background-color 180ms ease,
       color 180ms ease,
@@ -1965,10 +1986,12 @@
   }
 
   .note-media-launcher-readmore {
+    --note-media-launcher-readmore-offset: -0.2rem;
     position: absolute;
     left: 0;
     right: 0;
     top: 100%;
+    bottom: auto;
     width: 100%;
     padding: 0.7rem 0.85rem 0.85rem;
     border: 1px solid var(--color-border-brutalist);
@@ -1978,7 +2001,7 @@
     backdrop-filter: blur(18px);
     visibility: hidden;
     opacity: 0;
-    transform: translateY(-0.2rem) scaleY(0.96);
+    transform: translateY(var(--note-media-launcher-readmore-offset)) scaleY(0.96);
     transform-origin: top center;
     pointer-events: none;
     transition:
@@ -1987,16 +2010,10 @@
   }
 
   .note-media-launcher-readmore.is-above {
+    --note-media-launcher-readmore-offset: 0.2rem;
     top: auto;
     bottom: 100%;
-    transform: translateY(0.2rem) scaleY(0.96);
     transform-origin: bottom center;
-  }
-
-  .note-media-player-desktop.is-dismissed.is-hover-armed:hover .note-media-launcher-readmore.is-above,
-  .note-media-player-desktop.is-dismissed .note-media-launcher:focus-within .note-media-launcher-readmore.is-above,
-  .note-media-player-desktop.is-dismissed.is-dragging .note-media-launcher-readmore.is-above {
-    transform: translateY(0) scaleY(1);
   }
 
   .note-media-launcher-readmore .note-media-kicker {
@@ -2052,7 +2069,7 @@
     flex: 1 1 0;
     height: calc(0.14rem + (var(--segment-level, 0.2) * 1rem));
     border-radius: 999px;
-    background: color-mix(in srgb, var(--color-ink) 18%, transparent 82%);
+    background: var(--note-media-launcher-idle-bar);
     opacity: 0.42;
     transform-origin: center center;
     transition:
@@ -2063,19 +2080,15 @@
   }
 
   .note-media-launcher-visualizer span.is-active {
-    background: var(--color-page-accent);
+    background: var(--note-media-launcher-active-bar);
     opacity: 0.9;
-    box-shadow:
-      inset 0 0 0 1px rgb(17 17 17 / 0.12),
-      0 0 0 0.5px rgb(17 17 17 / 0.08);
+    box-shadow: var(--note-media-launcher-active-bar-shadow);
   }
 
   .note-media-launcher-visualizer span.is-hovered-range {
-    background: var(--color-page-accent);
+    background: var(--note-media-launcher-active-bar);
     opacity: 0.9;
-    box-shadow:
-      inset 0 0 0 1px rgb(17 17 17 / 0.12),
-      0 0 0 0.5px rgb(17 17 17 / 0.08);
+    box-shadow: var(--note-media-launcher-active-bar-shadow);
   }
 
   .note-media-launcher-visualizer span.is-hovered-neighbor {
@@ -2086,19 +2099,15 @@
   .note-media-launcher-visualizer span.is-current-resting {
     height: 42%;
     opacity: 0.95;
-    background: var(--color-page-accent);
-    box-shadow:
-      inset 0 0 0 1px rgb(17 17 17 / 0.12),
-      0 0 0 0.5px rgb(17 17 17 / 0.08);
+    background: var(--note-media-launcher-active-bar);
+    box-shadow: var(--note-media-launcher-active-bar-shadow);
   }
 
   .note-media-launcher-visualizer span.is-current-playing {
     height: 42%;
     opacity: 1;
-    background: var(--color-page-accent);
-    box-shadow:
-      inset 0 0 0 1px rgb(17 17 17 / 0.12),
-      0 0 0 0.5px rgb(17 17 17 / 0.08);
+    background: var(--note-media-launcher-active-bar);
+    box-shadow: var(--note-media-launcher-active-bar-shadow);
     animation: none !important;
     transform: scaleY(1);
   }
