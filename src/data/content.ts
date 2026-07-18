@@ -313,7 +313,7 @@ export const translations = {
     footer: {
       cta: 'Ping me',
       email: 'ping@bhayden.at',
-      finePrint: 'No tracking. No cookies. Just a website.',
+      finePrint: 'Minimal analytics. No cookies. Just a website.',
       copyrightName: '2026 Bernhard Hayden',
       copyrightLicensePrefix: 'Content licensed under',
       copyrightLicenseSuffix: 'unless noted otherwise.',
@@ -344,7 +344,7 @@ export const translations = {
       newsletter: 'Get occasional notes by email:',
       allLanguages: 'all languages',
       noMatches: 'No notes match this topic.',
-      privacy: 'No spam. No tracking. Unsubscribe anytime.',
+      privacy: 'No spam. Privacy-friendly. Unsubscribe anytime.',
       subscribe: 'Subscribe',
       disabled: 'Newsletter signup is temporarily disabled.',
     },
@@ -420,6 +420,10 @@ export const translations = {
     common: {
       light: 'Light',
       dark: 'Dark',
+      filters: 'Filters',
+      show: 'Show',
+      hide: 'Hide',
+      emailAddress: 'Email address',
     },
   },
   de: {
@@ -447,7 +451,7 @@ export const translations = {
     footer: {
       cta: 'Schreib mir',
       email: 'ping@bhayden.at',
-      finePrint: 'Kein Tracking. Keine Cookies. Nur eine Website.',
+      finePrint: 'Minimale Analytics. Keine Cookies. Nur eine Website.',
       copyrightName: '2026 Bernhard Hayden',
       copyrightLicensePrefix: 'Inhalte sind unter',
       copyrightLicenseSuffix: 'lizenziert, sofern nicht anders angegeben.',
@@ -478,7 +482,7 @@ export const translations = {
       newsletter: 'Gelegentliche Notizen per E-Mail:',
       allLanguages: 'alle Sprachen',
       noMatches: 'Keine Notizen passen zu diesem Thema.',
-      privacy: 'Kein Spam. Kein Tracking. Jederzeit abbestellbar.',
+      privacy: 'Kein Spam. Datenschutzfreundlich. Jederzeit abbestellbar.',
       subscribe: 'Abonnieren',
       disabled: 'Die Newsletter-Anmeldung ist vorübergehend deaktiviert.',
     },
@@ -554,6 +558,10 @@ export const translations = {
     common: {
       light: 'Hell',
       dark: 'Dunkel',
+      filters: 'Filter',
+      show: 'Anzeigen',
+      hide: 'Ausblenden',
+      emailAddress: 'E-Mail-Adresse',
     },
   },
 };

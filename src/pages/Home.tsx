@@ -592,7 +592,7 @@ export default function Home() {
                 }}
               >
                 <Link
-                  to={`/archive#${entry.id}`}
+                  to={`/archive#project-${entry.id}`}
                   className="archive-preview-link inline-block"
                   style={{ textUnderlineOffset: '3px' }}
                 >

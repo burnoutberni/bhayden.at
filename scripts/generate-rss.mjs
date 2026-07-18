@@ -98,7 +98,7 @@ function renderRss(notes) {
     '    <title>bhayden.at notes</title>',
     `    <link>${SITE_URL}/notes</link>`,
     '    <description>Essays, project updates, campaign reflections, and reading notes.</description>',
-    '    <language>en</language>',
+    '    <language>mul</language>',
     `    <lastBuildDate>${lastBuildDate}</lastBuildDate>`,
     '',
     items,

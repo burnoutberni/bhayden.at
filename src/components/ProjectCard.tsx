@@ -76,6 +76,7 @@ export default function ProjectCard({
         tabIndex: 0,
         onClick: handleCardActivate,
         onKeyDown: (event: KeyboardEvent<HTMLElement>) => {
+          if (event.target !== event.currentTarget) return;
           if (event.key === 'Enter' || event.key === ' ') {
             event.preventDefault();
             handleCardActivate();

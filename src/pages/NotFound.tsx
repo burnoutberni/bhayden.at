@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router';
 
-const defaultTitle = 'Bernhard Hayden - Activism, civic tech, open knowledge & digital rights';
+const defaultTitle = 'Bernhard Hayden — Activism, civic tech, open knowledge & digital rights';
 
 export default function NotFound() {
   useEffect(() => {

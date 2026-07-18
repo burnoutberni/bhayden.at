@@ -27,7 +27,7 @@ const mdxComponents = {
   code: (props: HTMLAttributes<HTMLElement>) => <code className="font-mono text-xs-custom px-1 py-0.5" style={{ backgroundColor: 'var(--color-editor-bg)', borderRadius: '4px' }} {...props} />,
   pre: (props: HTMLAttributes<HTMLPreElement>) => <pre className="p-4 mb-5 overflow-x-auto" style={{ backgroundColor: 'var(--color-editor-bg)', border: '1px solid var(--color-border-brutalist)', borderRadius: 'var(--radius-soft)' }} {...props} />,
   img: (props: HTMLAttributes<HTMLImageElement>) => <img className="note-img" {...props} />,
-  figure: (props: HTMLAttributes<HTMLElement>) => <figure className="note-figure" {...props} />,
+  figure: ({ className, ...props }: HTMLAttributes<HTMLElement>) => <figure className={className ? `note-figure ${className}` : 'note-figure'} {...props} />,
   figcaption: (props: HTMLAttributes<HTMLElement>) => <figcaption className="note-figcaption" {...props} />,
 };
 

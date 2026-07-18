@@ -6,6 +6,7 @@ type NewsletterSignupProps = {
 
 export default function NewsletterSignup({ borderedTop = true }: NewsletterSignupProps) {
   const { t } = useLanguage();
+  const emailInputId = 'newsletter-email';
 
   return (
     <section
@@ -18,7 +19,11 @@ export default function NewsletterSignup({ borderedTop = true }: NewsletterSignu
         </p>
 
         <form className="flex flex-wrap gap-2 justify-center" onSubmit={(event) => event.preventDefault()}>
+          <label htmlFor={emailInputId} className="sr-only">
+            {t.common.emailAddress}
+          </label>
           <input
+            id={emailInputId}
             type="email"
             name="email"
             placeholder="your@email.com"
