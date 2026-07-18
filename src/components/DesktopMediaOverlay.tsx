@@ -27,6 +27,8 @@ const MEDIA_PLAYER_PLAYBACK_TIMES_KEY = 'media-player-playback-times-v1';
 const LAUNCHER_VISUALIZER_SEGMENTS = 28;
 const DRAG_VIEWPORT_MARGIN = 0;
 const DEFAULT_DESKTOP_BOTTOM_GAP = 16;
+const HOME_DESKTOP_LEFT_SHIFT = 64;
+const HOME_DESKTOP_BOTTOM_GAP = 64;
 
 function PlayIcon() {
   return (
@@ -191,6 +193,17 @@ function getDefaultDesktopPosition(width: number, height: number) {
   return clampPosition(x, y, width, height);
 }
 
+function getHomeDesktopPosition(width: number, height: number) {
+  const defaultPosition = getDefaultDesktopPosition(width, height);
+
+  return clampPosition(
+    defaultPosition.x - HOME_DESKTOP_LEFT_SHIFT,
+    window.innerHeight - height - HOME_DESKTOP_BOTTOM_GAP,
+    width,
+    height,
+  );
+}
+
 function getWaveform(activeItem: ActiveItem) {
   return activeItem.waveform?.length
     ? activeItem.waveform
@@ -339,7 +352,11 @@ function useDesktopOverlayPosition({
       }
     }
 
-    setPosition(getDefaultDesktopPosition(visibleRect.width, visibleRect.height));
+    setPosition(
+      pathname === '/'
+        ? getHomeDesktopPosition(visibleRect.width, visibleRect.height)
+        : getDefaultDesktopPosition(visibleRect.width, visibleRect.height),
+    );
     setIsReady(true);
   }, [isDismissed, isMobile, overlayRef, pathname, position, queueLength]);
 
