@@ -40,22 +40,37 @@ export function MediaQueueProvider({ children }: { children: ReactNode }) {
       return 0;
     }
 
-    const stored = window.localStorage.getItem(MEDIA_PLAYER_ACTIVE_INDEX_KEY);
-    const parsed = stored ? Number.parseInt(stored, 10) : 0;
-    return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
+    try {
+      const stored = window.localStorage.getItem(MEDIA_PLAYER_ACTIVE_INDEX_KEY);
+      const parsed = stored ? Number.parseInt(stored, 10) : 0;
+      return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
+    } catch {
+      return 0;
+    }
   });
   const [playbackTimes, setPlaybackTimes] = useState<Record<string, number>>(() => {
     if (typeof window === 'undefined') {
       return {};
     }
 
-    const stored = window.localStorage.getItem(MEDIA_PLAYER_PLAYBACK_TIMES_KEY);
-    if (!stored) {
-      return {};
-    }
-
     try {
-      return JSON.parse(stored) as Record<string, number>;
+      const stored = window.localStorage.getItem(MEDIA_PLAYER_PLAYBACK_TIMES_KEY);
+      if (!stored) {
+        return {};
+      }
+
+      const parsed = JSON.parse(stored);
+      if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+        return {};
+      }
+
+      const validated: Record<string, number> = {};
+      for (const [key, value] of Object.entries(parsed)) {
+        if (typeof value === 'number' && Number.isFinite(value) && value >= 0) {
+          validated[key] = value;
+        }
+      }
+      return validated;
     } catch {
       return {};
     }
@@ -65,23 +80,34 @@ export function MediaQueueProvider({ children }: { children: ReactNode }) {
       return true;
     }
 
-    return window.localStorage.getItem(MEDIA_PLAYER_MUTED_KEY) === 'false' ? false : true;
+    try {
+      return window.localStorage.getItem(MEDIA_PLAYER_MUTED_KEY) === 'false' ? false : true;
+    } catch {
+      return true;
+    }
   });
   const [isPlaying, setIsPlaying] = useState(() => {
     if (typeof window === 'undefined') {
       return true;
     }
 
-    const storedPlaying = window.localStorage.getItem(MEDIA_PLAYER_PLAYING_KEY);
-
-    return storedPlaying === 'false' ? false : true;
+    try {
+      const storedPlaying = window.localStorage.getItem(MEDIA_PLAYER_PLAYING_KEY);
+      return storedPlaying === 'false' ? false : true;
+    } catch {
+      return true;
+    }
   });
   const [isDismissed, setIsDismissed] = useState(() => {
     if (typeof window === 'undefined') {
       return false;
     }
 
-    return window.localStorage.getItem(MEDIA_PLAYER_DISMISSED_KEY) === 'true';
+    try {
+      return window.localStorage.getItem(MEDIA_PLAYER_DISMISSED_KEY) === 'true';
+    } catch {
+      return false;
+    }
   });
   const activeIndexRef = useRef(activeIndex);
   const isPlayingRef = useRef(isPlaying);
@@ -95,23 +121,43 @@ export function MediaQueueProvider({ children }: { children: ReactNode }) {
   }, [isPlaying]);
 
   useEffect(() => {
-    window.localStorage.setItem(MEDIA_PLAYER_DISMISSED_KEY, String(isDismissed));
+    try {
+      window.localStorage.setItem(MEDIA_PLAYER_DISMISSED_KEY, String(isDismissed));
+    } catch {
+      // Ignore storage errors
+    }
   }, [isDismissed]);
 
   useEffect(() => {
-    window.localStorage.setItem(MEDIA_PLAYER_PLAYING_KEY, String(isPlaying));
+    try {
+      window.localStorage.setItem(MEDIA_PLAYER_PLAYING_KEY, String(isPlaying));
+    } catch {
+      // Ignore storage errors
+    }
   }, [isPlaying]);
 
   useEffect(() => {
-    window.localStorage.setItem(MEDIA_PLAYER_MUTED_KEY, String(isMuted));
+    try {
+      window.localStorage.setItem(MEDIA_PLAYER_MUTED_KEY, String(isMuted));
+    } catch {
+      // Ignore storage errors
+    }
   }, [isMuted]);
 
   useEffect(() => {
-    window.localStorage.setItem(MEDIA_PLAYER_ACTIVE_INDEX_KEY, String(activeIndex));
+    try {
+      window.localStorage.setItem(MEDIA_PLAYER_ACTIVE_INDEX_KEY, String(activeIndex));
+    } catch {
+      // Ignore storage errors
+    }
   }, [activeIndex]);
 
   useEffect(() => {
-    window.localStorage.setItem(MEDIA_PLAYER_PLAYBACK_TIMES_KEY, JSON.stringify(playbackTimes));
+    try {
+      window.localStorage.setItem(MEDIA_PLAYER_PLAYBACK_TIMES_KEY, JSON.stringify(playbackTimes));
+    } catch {
+      // Ignore storage errors
+    }
   }, [playbackTimes]);
 
   useEffect(() => {
@@ -124,6 +170,9 @@ export function MediaQueueProvider({ children }: { children: ReactNode }) {
 
   const enqueueSource = useCallback((sourceKey: string, sourceTitle: string, mediaItems: NoteMediaItem[], sourceHref?: string) => {
     if (!mediaItems.length) return;
+
+    let shouldActivateNewItem = false;
+    let newActiveIndex = 0;
 
     setQueue((currentQueue) => {
       const seenIds = new Set(currentQueue.map((item) => item.id));
@@ -146,12 +195,17 @@ export function MediaQueueProvider({ children }: { children: ReactNode }) {
         activeIndexRef.current >= currentQueue.length - 1 &&
         !isPlayingRef.current
       ) {
-        setActiveIndex(currentQueue.length);
-        setIsPlaying(true);
+        shouldActivateNewItem = true;
+        newActiveIndex = currentQueue.length;
       }
 
       return [...currentQueue, ...nextItems];
     });
+
+    if (shouldActivateNewItem) {
+      setActiveIndex(newActiveIndex);
+      setIsPlaying(true);
+    }
   }, []);
 
   const setPlaybackTime = useCallback((id: string, time: number) => {

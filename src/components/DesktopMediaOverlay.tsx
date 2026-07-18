@@ -340,16 +340,25 @@ function useDesktopOverlayPosition({
       return;
     }
 
-    const saved = window.localStorage.getItem(DESKTOP_MEDIA_POSITION_KEY);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved) as Position;
-        setPosition(clampVisiblePosition(parsed.x, parsed.y, visibleRect.width, visibleRect.height));
-        setIsReady(true);
-        return;
-      } catch {
-        window.localStorage.removeItem(DESKTOP_MEDIA_POSITION_KEY);
+    try {
+      const saved = window.localStorage.getItem(DESKTOP_MEDIA_POSITION_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (
+          parsed &&
+          typeof parsed === 'object' &&
+          typeof parsed.x === 'number' &&
+          typeof parsed.y === 'number' &&
+          Number.isFinite(parsed.x) &&
+          Number.isFinite(parsed.y)
+        ) {
+          setPosition(clampVisiblePosition(parsed.x, parsed.y, visibleRect.width, visibleRect.height));
+          setIsReady(true);
+          return;
+        }
       }
+    } catch {
+      // Ignore storage errors
     }
 
     setPosition(
@@ -413,7 +422,11 @@ function useDesktopOverlayPosition({
       return;
     }
 
-    window.localStorage.setItem(DESKTOP_MEDIA_POSITION_KEY, JSON.stringify(position));
+    try {
+      window.localStorage.setItem(DESKTOP_MEDIA_POSITION_KEY, JSON.stringify(position));
+    } catch {
+      // Ignore storage errors
+    }
   }, [position]);
 
   useEffect(() => {
@@ -599,13 +612,16 @@ function useDesktopMediaPlayback({
       setPlaybackTime(activeItemId, 0);
       setProgress(1);
       setActiveIndex((currentIndex) => {
-        if (currentIndex >= queueLength - 1) {
-          setIsPlaying(false);
-          return currentIndex;
+        const nextIndex = currentIndex >= queueLength - 1 ? currentIndex : currentIndex + 1;
+        const shouldStop = currentIndex >= queueLength - 1;
+
+        if (shouldStop) {
+          requestAnimationFrame(() => setIsPlaying(false));
+        } else {
+          requestAnimationFrame(() => setProgress(0));
         }
 
-        setProgress(0);
-        return currentIndex + 1;
+        return nextIndex;
       });
     };
 
@@ -637,13 +653,17 @@ function useDesktopMediaPlayback({
 
       const time = video.currentTime;
       livePlaybackTimesRef.current[activeItemId] = time;
-      window.localStorage.setItem(
-        MEDIA_PLAYER_PLAYBACK_TIMES_KEY,
-        JSON.stringify({
-          ...livePlaybackTimesRef.current,
-          [activeItemId]: time,
-        }),
-      );
+      try {
+        window.localStorage.setItem(
+          MEDIA_PLAYER_PLAYBACK_TIMES_KEY,
+          JSON.stringify({
+            ...livePlaybackTimesRef.current,
+            [activeItemId]: time,
+          }),
+        );
+      } catch {
+        // Ignore storage errors
+      }
       setPlaybackTime(activeItemId, time);
     };
 
@@ -1084,7 +1104,7 @@ function DesktopLauncherView({
           value={Math.round(progress * 100)}
           onChange={handleLauncherRangeChange}
           className="note-media-launcher-range"
-          aria-label={`${activeItem.title} playback position`}
+          aria-label={`${activeItem.title} ${t.mediaPlayer.playbackPosition}`}
           data-no-drag="true"
         />
         <span className="note-media-launcher-scrubber-content">
@@ -1223,6 +1243,12 @@ export default function DesktopMediaOverlay() {
     const timeout = window.setTimeout(() => setFeedback(null), 560);
     return () => window.clearTimeout(timeout);
   }, [feedback]);
+
+  useEffect(() => {
+    if (isMobile && videoRef.current && !videoRef.current.paused) {
+      videoRef.current.pause();
+    }
+  }, [isMobile]);
 
   if (isMobile || !activeItem || !queue.length) {
     return null;
@@ -1386,7 +1412,7 @@ export default function DesktopMediaOverlay() {
 
     setIsMuted((current) => {
       const nextValue = !current;
-      flashFeedback(nextValue ? 'muted' : 'unmuted');
+      requestAnimationFrame(() => flashFeedback(nextValue ? 'muted' : 'unmuted'));
       return nextValue;
     });
   };
@@ -1413,7 +1439,7 @@ export default function DesktopMediaOverlay() {
       ref={overlayRef}
       className={`note-media-player note-media-player-desktop${isDismissed ? ' is-dismissed' : ''}${isDragging ? ' is-dragging' : ''}${isLauncherHoverArmed ? ' is-hover-armed' : ''}`}
       style={desktopStyle}
-      aria-label={`${activeItem.sourceTitle} media`}
+      aria-label={`${activeItem.sourceTitle} ${t.mediaPlayer.media}`}
       data-ready={isReady ? 'true' : 'false'}
       onPointerLeave={handleOverlayPointerLeave}
     >

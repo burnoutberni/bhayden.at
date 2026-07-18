@@ -34,7 +34,18 @@ function runFfmpeg(filePath) {
 
     const chunks = [];
     ffmpeg.stdout.on('data', (chunk) => chunks.push(chunk));
-    ffmpeg.on('error', reject);
+    ffmpeg.on('error', (error) => {
+      if (error.code === 'ENOENT') {
+        reject(new Error(
+          'ffmpeg executable not found. Please install ffmpeg:\n' +
+          '  - macOS: brew install ffmpeg\n' +
+          '  - Ubuntu/Debian: apt-get install ffmpeg\n' +
+          '  - Windows: Download from https://ffmpeg.org/download.html'
+        ));
+        return;
+      }
+      reject(error);
+    });
     ffmpeg.on('close', (code) => {
       if (code !== 0) {
         reject(new Error(`ffmpeg failed for ${filePath} with exit code ${code}`));

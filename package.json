@@ -5,7 +5,7 @@
   "license": "AGPL-3.0",
   "type": "module",
   "scripts": {
-    "dev": "npm run generate:rss && npm run generate:reels && node scripts/watch-rss.mjs & vite",
+    "dev": "npm run generate:rss && npm run generate:reels && (node scripts/watch-rss.mjs &) && vite",
     "generate:rss": "node scripts/generate-rss.mjs",
     "generate:reels": "node scripts/generate-media-waveforms.mjs",
     "build": "npm run generate:rss && npm run generate:reels && tsc -b && vite build && node scripts/prerender.cjs",

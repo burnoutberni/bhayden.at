@@ -368,6 +368,7 @@ export const translations = {
       readMore: 'Read more',
       replay: 'Replay queued media',
       of: 'of',
+      playbackPosition: 'playback position',
     },
     about: {
       whoIAm: 'Who I am',
@@ -506,6 +507,7 @@ export const translations = {
       readMore: 'Weiterlesen',
       replay: 'Medien-Warteschlange neu starten',
       of: 'von',
+      playbackPosition: 'Wiedergabeposition',
     },
     about: {
       whoIAm: 'Wer ich bin',

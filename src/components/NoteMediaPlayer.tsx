@@ -140,13 +140,16 @@ export default function NoteMediaPlayer({ mediaItems, noteTitle }: NoteMediaPlay
       stopProgressLoop();
       setProgress(1);
       setActiveIndex((currentIndex) => {
-        if (currentIndex >= mediaItems.length - 1) {
-          setIsPlaying(false);
-          return currentIndex;
+        const nextIndex = currentIndex >= mediaItems.length - 1 ? currentIndex : currentIndex + 1;
+        const shouldStop = currentIndex >= mediaItems.length - 1;
+
+        if (shouldStop) {
+          requestAnimationFrame(() => setIsPlaying(false));
+        } else {
+          requestAnimationFrame(() => setProgress(0));
         }
 
-        setProgress(0);
-        return currentIndex + 1;
+        return nextIndex;
       });
     };
 
@@ -175,7 +178,7 @@ export default function NoteMediaPlayer({ mediaItems, noteTitle }: NoteMediaPlay
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
+        if (entry.intersectionRatio >= 0.6) {
           if (shouldResumeOnVisibleRef.current) {
             const playPromise = video.play();
             if (playPromise) {
@@ -195,7 +198,12 @@ export default function NoteMediaPlayer({ mediaItems, noteTitle }: NoteMediaPlay
     );
 
     observer.observe(container);
-    return () => observer.disconnect();
+    return () => {
+      if (video && !video.paused) {
+        video.pause();
+      }
+      observer.disconnect();
+    };
   }, [activeIndex, isMobile]);
 
   useEffect(() => {
@@ -321,7 +329,7 @@ export default function NoteMediaPlayer({ mediaItems, noteTitle }: NoteMediaPlay
   const toggleMuted = () => {
     setIsMuted((current) => {
       const nextValue = !current;
-      flashFeedback(nextValue ? 'muted' : 'unmuted');
+      requestAnimationFrame(() => flashFeedback(nextValue ? 'muted' : 'unmuted'));
       return nextValue;
     });
   };
@@ -337,7 +345,7 @@ export default function NoteMediaPlayer({ mediaItems, noteTitle }: NoteMediaPlay
   ].filter(Boolean).join(' ');
 
   return (
-    <aside ref={containerRef} className={containerClassName} aria-label={`${noteTitle} media`}>
+    <aside ref={containerRef} className={containerClassName} aria-label={`${noteTitle} ${t.mediaPlayer.media}`}>
       <>
         <div className="note-media-shell">
           <div className="note-media-video-wrap">
