@@ -183,6 +183,7 @@ function useMobileMediaPlayback({
     const handleLoadedMetadata = () => updateProgress();
     const handleEnded = () => {
       stopProgressLoop();
+      video.currentTime = 0;
       livePlaybackTimesRef.current[activeItemId] = 0;
       setPlaybackTime(activeItemId, 0);
       setProgress(1);
@@ -457,6 +458,10 @@ export default function MobileMediaOverlay() {
   };
 
   const resetCurrentItemAndPlay = () => {
+    const video = videoRef.current;
+    if (video) {
+      video.currentTime = 0;
+    }
     setPlaybackTime(activeItem.id, 0);
     setIsPlaying(true);
     setProgress(0);
@@ -483,6 +488,10 @@ export default function MobileMediaOverlay() {
   };
 
   const replayQueue = () => {
+    const video = videoRef.current;
+    if (video) {
+      video.currentTime = 0;
+    }
     resetPlaybackTimes();
     setActiveIndex(0);
     setProgress(0);

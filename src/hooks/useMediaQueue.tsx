@@ -171,9 +171,6 @@ export function MediaQueueProvider({ children }: { children: ReactNode }) {
   const enqueueSource = useCallback((sourceKey: string, sourceTitle: string, mediaItems: NoteMediaItem[], sourceHref?: string) => {
     if (!mediaItems.length) return;
 
-    let shouldActivateNewItem = false;
-    let newActiveIndex = 0;
-
     setQueue((currentQueue) => {
       const seenIds = new Set(currentQueue.map((item) => item.id));
       const nextItems = mediaItems
@@ -190,22 +187,21 @@ export function MediaQueueProvider({ children }: { children: ReactNode }) {
         return currentQueue;
       }
 
+      const updatedQueue = [...currentQueue, ...nextItems];
+
       if (
         currentQueue.length > 0 &&
         activeIndexRef.current >= currentQueue.length - 1 &&
         !isPlayingRef.current
       ) {
-        shouldActivateNewItem = true;
-        newActiveIndex = currentQueue.length;
+        requestAnimationFrame(() => {
+          setActiveIndex(currentQueue.length);
+          setIsPlaying(true);
+        });
       }
 
-      return [...currentQueue, ...nextItems];
+      return updatedQueue;
     });
-
-    if (shouldActivateNewItem) {
-      setActiveIndex(newActiveIndex);
-      setIsPlaying(true);
-    }
   }, []);
 
   const setPlaybackTime = useCallback((id: string, time: number) => {

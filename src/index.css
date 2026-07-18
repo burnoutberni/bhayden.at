@@ -1490,6 +1490,7 @@
     --note-media-corner-control-size: 2rem;
     --note-media-corner-control-right: 0.34rem;
     --note-media-corner-control-bottom: 0.28rem;
+
     position: fixed;
     right: max(1rem, calc((100vw - 800px) / 2 - 13.5rem - 1rem));
     bottom: 1rem;
@@ -1824,7 +1825,7 @@
   .note-media-caption-link:hover,
   .note-media-caption-link:focus-visible {
     color: var(--color-page-accent);
-    text-decoration-color: currentColor;
+    text-decoration-color: currentcolor;
   }
 
   .note-media-replay-overlay {
@@ -1905,6 +1906,7 @@
     --note-media-launcher-active-bar-shadow:
       inset 0 0 0 1px rgb(17 17 17 / 0.12),
       0 0 0 0.5px rgb(17 17 17 / 0.08);
+
     width: 100%;
     display: flex;
     align-items: center;
@@ -1999,6 +2001,7 @@
 
   .note-media-launcher-readmore {
     --note-media-launcher-readmore-offset: -0.2rem;
+
     position: absolute;
     left: 0;
     right: 0;
@@ -2023,6 +2026,7 @@
 
   .note-media-launcher-readmore.is-above {
     --note-media-launcher-readmore-offset: 0.2rem;
+
     top: auto;
     bottom: 100%;
     transform-origin: bottom center;
@@ -2186,6 +2190,7 @@
       --note-media-corner-control-size: 2rem;
       --note-media-corner-control-right: 0.34rem;
       --note-media-corner-control-bottom: 0.28rem;
+
       position: absolute;
       right: 0.75rem;
       bottom: calc(0.75rem + env(safe-area-inset-bottom));

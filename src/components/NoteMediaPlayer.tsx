@@ -167,7 +167,7 @@ export default function NoteMediaPlayer({ mediaItems, noteTitle }: NoteMediaPlay
       video.removeEventListener('loadedmetadata', handleLoadedMetadata);
       video.removeEventListener('ended', handleEnded);
     };
-  }, [mediaItems.length]);
+  }, [activeMediaItem.src, mediaItems.length]);
 
   useEffect(() => {
     if (!isMobile) return;

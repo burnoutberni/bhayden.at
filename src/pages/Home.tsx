@@ -653,7 +653,7 @@ export default function Home() {
                     </h3>
                   </Link>
                   <p className="font-grotesk text-sm-custom line-clamp-2 mb-3" style={{ color: 'var(--color-ink-muted)' }}>
-                    {note.summary}
+                    {lang === 'de' && note.summaryDe ? note.summaryDe : note.summary}
                   </p>
                   <div className="flex flex-wrap gap-1.5">
                     {note.topics.slice(0, 3).map((tag) => (
