@@ -2,8 +2,10 @@ import { Suspense, lazy, useEffect } from 'react';
 import { Routes, Route, useLocation } from 'react-router';
 import { ThemeProvider } from '@/hooks/useTheme';
 import { LanguageProvider } from '@/hooks/useLanguage';
+import { MediaQueueProvider } from '@/hooks/useMediaQueue';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
+import DesktopMediaOverlay from '@/components/DesktopMediaOverlay';
 
 const Home = lazy(() => import('@/pages/Home'));
 const Work = lazy(() => import('@/pages/Work'));
@@ -73,54 +75,57 @@ export default function App() {
   return (
     <ThemeProvider>
       <LanguageProvider>
-        <div
-          className="min-h-screen"
-          style={{
-            backgroundColor: 'var(--color-cream)',
-            color: 'var(--color-ink)',
-            ['--color-page-accent' as string]: pageAccent,
-            ['--accent-highlight-fg' as string]: isLimeAccent ? 'var(--color-dark-void)' : 'var(--color-page-accent)',
-            ['--accent-highlight-bg' as string]: isLimeAccent ? 'var(--color-page-accent)' : 'transparent',
-            ['--accent-highlight-padding' as string]: '0',
-            ['--accent-highlight-icon-padding' as string]: '0',
-            ['--highlight-invert-hover-bg' as string]: isLimeAccent ? 'var(--color-dark-void)' : 'transparent',
-            ['--highlight-invert-hover-fg' as string]: isLimeAccent ? ACCENT.lime : 'var(--accent-highlight-fg)',
-          }}
-        >
-          <ScrollToTop />
-          <a
-            href="#main-content"
-            className="skip-link"
+        <MediaQueueProvider>
+          <div
+            className="min-h-screen"
+            style={{
+              backgroundColor: 'var(--color-cream)',
+              color: 'var(--color-ink)',
+              ['--color-page-accent' as string]: pageAccent,
+              ['--accent-highlight-fg' as string]: isLimeAccent ? 'var(--color-dark-void)' : 'var(--color-page-accent)',
+              ['--accent-highlight-bg' as string]: isLimeAccent ? 'var(--color-page-accent)' : 'transparent',
+              ['--accent-highlight-padding' as string]: '0',
+              ['--accent-highlight-icon-padding' as string]: '0',
+              ['--highlight-invert-hover-bg' as string]: isLimeAccent ? 'var(--color-dark-void)' : 'transparent',
+              ['--highlight-invert-hover-fg' as string]: isLimeAccent ? ACCENT.lime : 'var(--accent-highlight-fg)',
+            }}
           >
-            Skip to main content
-          </a>
-          <Navigation />
-          <main id="main-content" tabIndex={-1}>
-            <Suspense
-              fallback={
-                <div className="px-6 py-16">
-                  <div className="max-w-[800px] mx-auto font-grotesk text-sm-custom" style={{ color: 'var(--color-ink-muted)' }}>
-                    Loading...
-                  </div>
-                </div>
-              }
+            <ScrollToTop />
+            <a
+              href="#main-content"
+              className="skip-link"
             >
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/work" element={<Work />} />
-                <Route path="/archive" element={<Archive />} />
-                <Route path="/notes" element={<Notes />} />
-                <Route path="/notes/:slug" element={<NoteDetail />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/imprint" element={<Imprint />} />
-                <Route path="/404.html" element={<NotFound />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
-          </main>
-          <Footer />
-        </div>
+              Skip to main content
+            </a>
+            <Navigation />
+            <main id="main-content" tabIndex={-1}>
+              <Suspense
+                fallback={
+                  <div className="px-6 py-16">
+                    <div className="max-w-[800px] mx-auto font-grotesk text-sm-custom" style={{ color: 'var(--color-ink-muted)' }}>
+                      Loading...
+                    </div>
+                  </div>
+                }
+              >
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/work" element={<Work />} />
+                  <Route path="/archive" element={<Archive />} />
+                  <Route path="/notes" element={<Notes />} />
+                  <Route path="/notes/:slug" element={<NoteDetail />} />
+                  <Route path="/about" element={<About />} />
+                  <Route path="/contact" element={<Contact />} />
+                  <Route path="/imprint" element={<Imprint />} />
+                  <Route path="/404.html" element={<NotFound />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Suspense>
+            </main>
+            <Footer />
+            <DesktopMediaOverlay />
+          </div>
+        </MediaQueueProvider>
       </LanguageProvider>
     </ThemeProvider>
   );

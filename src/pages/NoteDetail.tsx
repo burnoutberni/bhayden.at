@@ -8,8 +8,11 @@ import type {
 } from 'react';
 import { Link, useParams } from 'react-router';
 import { getNoteBySlug } from '@/data/notes';
+import { getNoteMedia } from '@/data/noteMedia';
 import NewsletterSignup from '@/components/NewsletterSignup';
+import NoteMediaPlayer from '@/components/NoteMediaPlayer';
 import { useLanguage } from '@/hooks/useLanguage';
+import { useMediaQueue } from '@/hooks/useMediaQueue';
 
 const mdxComponents = {
   h1: (props: HTMLAttributes<HTMLHeadingElement>) => <h1 className="font-serif text-3xl-custom mb-4 mt-8" style={{ color: 'var(--color-ink)' }} {...props} />,
@@ -30,12 +33,19 @@ const mdxComponents = {
 
 export default function NoteDetail() {
   const { t, lang } = useLanguage();
+  const { enqueueSource } = useMediaQueue();
   const { slug } = useParams();
   const note = slug ? getNoteBySlug(slug) : undefined;
+  const mediaItems = useMemo(() => (slug ? getNoteMedia(slug) : []), [slug]);
   const [MdxContent, setMdxContent] = useState<ComponentType<{ components?: typeof mdxComponents }> | null>(null);
   const [renderError, setRenderError] = useState<string | null>(null);
 
   const content = useMemo(() => note?.body || '', [note?.body]);
+
+  useEffect(() => {
+    if (!slug || !note || !mediaItems.length) return;
+    enqueueSource(slug, note.title, mediaItems, `/notes/${slug}`);
+  }, [enqueueSource, note, mediaItems, slug]);
 
   useEffect(() => {
     let cancelled = false;
@@ -120,6 +130,7 @@ export default function NoteDetail() {
 
       <section className="px-6 py-12">
         <article className="max-w-[800px] mx-auto">
+          {mediaItems.length ? <NoteMediaPlayer mediaItems={mediaItems} noteTitle={note.title} /> : null}
           {renderError ? (
             <p className="font-grotesk text-sm-custom" style={{ color: 'var(--color-ink-muted)' }}>
               {renderError}

@@ -3,9 +3,11 @@ import { Link, useNavigate } from 'react-router';
 import { useLanguage } from '@/hooks/useLanguage';
 import { projects } from '@/data/content';
 import { notes } from '@/data/notes';
+import { getAllNoteMediaSources } from '@/data/noteMedia';
 import NewsletterSignup from '@/components/NewsletterSignup';
 import ProjectCard from '@/components/ProjectCard';
 import ExternalLinkGlyph from '@/components/ExternalLinkGlyph';
+import { useMediaQueue } from '@/hooks/useMediaQueue';
 import { getProjectCardColors } from '@/lib/projectCardColors';
 
 type EverycalEvent = {
@@ -45,8 +47,34 @@ const statusPriority: Record<string, number> = {
   archived: 2,
 };
 
+function isDateOnlyValue(value?: string | null) {
+  return Boolean(value && /^\d{4}-\d{2}-\d{2}$/.test(value));
+}
+
+function parseEventDateValue(value?: string | null, options?: { endOfDay?: boolean }) {
+  if (!value) return null;
+
+  if (isDateOnlyValue(value)) {
+    return new Date(`${value}T${options?.endOfDay ? '23:59:59.999' : '00:00:00.000'}`);
+  }
+
+  return new Date(value);
+}
+
+function getSafeExternalUrl(value?: string | null) {
+  if (!value) return null;
+
+  try {
+    const url = new URL(value);
+    return url.protocol === 'http:' || url.protocol === 'https:' ? url.toString() : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function Home() {
   const { lang, t } = useLanguage();
+  const { enqueueSource } = useMediaQueue();
   const navigate = useNavigate();
   const isPrerenderCrawl = typeof navigator !== 'undefined' && navigator.webdriver;
   const ccBySaUrl = lang === 'de'
@@ -86,6 +114,10 @@ export default function Home() {
     });
 
   const latestNotes = notes.slice(0, 3);
+  const homeMediaSources = useMemo(
+    () => getAllNoteMediaSources({ includeInDefaultQueueOnly: true }),
+    [],
+  );
 
   const getArchiveEndYear = (startYear?: number, endYear?: number) => {
     if (endYear) return endYear;
@@ -101,6 +133,12 @@ export default function Home() {
   const getProjectColors = (project: (typeof projects)[number]) => {
     return getProjectCardColors(project.type);
   };
+
+  useEffect(() => {
+    homeMediaSources.forEach((source) => {
+      enqueueSource(source.sourceKey, source.sourceTitle, source.mediaItems, source.sourceHref);
+    });
+  }, [enqueueSource, homeMediaSources]);
 
   useEffect(() => {
     if (isPrerenderCrawl) {
@@ -158,21 +196,45 @@ export default function Home() {
     return events
       .filter((event) => {
         const endValue = event.end_at_utc || event.end_date || event.start_at_utc || event.start_date;
-        return new Date(endValue).getTime() >= currentTime;
+        const endDate = parseEventDateValue(endValue, {
+          endOfDay: !event.end_at_utc && isDateOnlyValue(event.end_date || event.start_date),
+        });
+
+        return (endDate?.getTime() ?? Number.NEGATIVE_INFINITY) >= currentTime;
       })
       .slice(0, 6);
   }, [currentTime, events]);
 
   const formatEventDate = (event: EverycalEvent) => {
-    const startDate = new Date(event.start_at_utc || event.start_date);
-    const endDate = event.end_at_utc || event.end_date ? new Date(event.end_at_utc || event.end_date || event.start_date) : null;
+    const startDate = parseEventDateValue(event.start_at_utc || event.start_date);
+    const endDate = parseEventDateValue(event.end_at_utc || event.end_date, {
+      endOfDay: !event.end_at_utc && isDateOnlyValue(event.end_date),
+    });
     const locale = lang === 'de' ? 'de-AT' : 'en-US';
+
+    if (!startDate || Number.isNaN(startDate.getTime())) {
+      return '';
+    }
 
     const dateText = new Intl.DateTimeFormat(locale, {
       weekday: 'short',
       day: '2-digit',
       month: 'short',
     }).format(startDate);
+
+    if (!event.start_at_utc && isDateOnlyValue(event.start_date)) {
+      if (!endDate || Number.isNaN(endDate.getTime()) || event.end_date === event.start_date) {
+        return dateText;
+      }
+
+      const endDateText = new Intl.DateTimeFormat(locale, {
+        weekday: 'short',
+        day: '2-digit',
+        month: 'short',
+      }).format(endDate);
+
+      return `${dateText} - ${endDateText}`;
+    }
 
     const timeFormat = new Intl.DateTimeFormat(locale, {
       hour: '2-digit',
@@ -407,7 +469,8 @@ export default function Home() {
             {!eventsLoading && !eventsError && upcomingEvents.length > 0 && (
               <div className="events-grid">
                 {upcomingEvents.map((event) => {
-                  const eventHref = `https://events.bhayden.at/@${event.account_username}/${event.slug}`;
+                  const eventHref = `https://events.bhayden.at/@${encodeURIComponent(event.account_username)}/${encodeURIComponent(event.slug)}`;
+                  const venueHref = getSafeExternalUrl(event.location_url);
 
                   return (
                     <article
@@ -434,9 +497,9 @@ export default function Home() {
                           <div className="events-card-location-wrap">
                             {event.location_name && <p className="events-card-location">{event.location_name}</p>}
                             {event.location_address && <p className="events-card-location-detail">{event.location_address}</p>}
-                            {event.location_url && (
+                            {venueHref && (
                               <a
-                                href={event.location_url}
+                                href={venueHref}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="events-card-location-link"
@@ -455,7 +518,7 @@ export default function Home() {
                             className="project-card-link project-card-secondary-link font-grotesk text-xs-custom uppercase tracking-widest hover:underline"
                             onClick={(e) => e.stopPropagation()}
                             style={{
-                              color: 'var(--color-accent-cyan)',
+                              color: 'var(--events-card-accent-text)',
                               textUnderlineOffset: '3px',
                             }}
                           >
@@ -572,10 +635,9 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             {latestNotes.map((note) => {
               return (
-                <Link
+                <article
                   key={note.id}
-                  to={`/notes/${note.slug}`}
-                  className="block p-6 transition-all duration-300 hover:-translate-y-1"
+                  className="p-6 transition-all duration-300 hover:-translate-y-1"
                   style={{
                     backgroundColor: 'var(--color-editor-bg)',
                     border: '2px solid var(--color-accent-coral)',
@@ -585,32 +647,25 @@ export default function Home() {
                   <p className="font-mono text-xs-custom mb-2" style={{ color: 'var(--color-ink-muted)' }}>
                     {note.date}
                   </p>
-                  <h3 className="font-serif text-xl-custom mb-2 leading-tight" style={{ color: 'var(--color-ink)' }}>
-                    {note.title}
-                  </h3>
+                  <Link to={`/notes/${note.slug}`} className="inline-block" style={{ color: 'var(--color-ink)' }}>
+                    <h3 className="font-serif text-xl-custom mb-2 leading-tight underline-offset-4 hover:underline focus-visible:underline" style={{ color: 'var(--color-ink)' }}>
+                      {note.title}
+                    </h3>
+                  </Link>
                   <p className="font-grotesk text-sm-custom line-clamp-2 mb-3" style={{ color: 'var(--color-ink-muted)' }}>
                     {note.summary}
                   </p>
                   <div className="flex flex-wrap gap-1.5">
                     {note.topics.slice(0, 3).map((tag) => (
-                      <span
+                      <button
+                        type="button"
                         key={tag}
                         className="pill-badge pill-badge-contextual home-notes-topic-pill"
-                        role="button"
-                        tabIndex={0}
                         aria-label={`${lang === 'de' ? 'Nach Thema filtern' : 'Filter by topic'}: ${tag}`}
-                        onClick={(e) => {
-                          e.preventDefault();
+                        onClick={() => {
                           navigateToNotes(`topic=${encodeURIComponent(tag)}`);
                         }}
-                        onKeyDown={(eventKey) => {
-                          if (eventKey.key === 'Enter' || eventKey.key === ' ') {
-                            eventKey.preventDefault();
-                            navigateToNotes(`topic=${encodeURIComponent(tag)}`);
-                          }
-                        }}
                         style={{
-                          cursor: 'pointer',
                           ['--badge-base-border' as string]: 'var(--color-accent-coral)',
                           ['--badge-base-fg' as string]: 'var(--color-accent-coral)',
                           ['--badge-hover-bg' as string]: 'var(--color-accent-coral)',
@@ -618,10 +673,10 @@ export default function Home() {
                         }}
                       >
                         {tag}
-                      </span>
+                      </button>
                     ))}
                   </div>
-                </Link>
+                </article>
               );
             })}
           </div>
