@@ -125,6 +125,7 @@ export default function MobileMediaOverlay() {
   const sheetDragOffsetRef = useRef(0);
   const sheetPointerIdRef = useRef<number | null>(null);
   const sheetDragStartYRef = useRef<number | null>(null);
+  const previousPathnameRef = useRef(pathname);
   const { isMediaPlaying, videoRef, progress, setProgress } = useMobileMediaPlayback({
     activeItem,
     activeIndex,
@@ -148,6 +149,14 @@ export default function MobileMediaOverlay() {
 
   useEffect(() => {
     if (!isMobile) {
+      previousPathnameRef.current = pathname;
+      return;
+    }
+
+    const didPathChange = previousPathnameRef.current !== pathname;
+    previousPathnameRef.current = pathname;
+
+    if (!didPathChange) {
       return;
     }
 
