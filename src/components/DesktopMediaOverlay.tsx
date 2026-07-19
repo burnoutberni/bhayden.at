@@ -946,13 +946,14 @@ function DesktopExpandedView({
 
 function DesktopLauncherView({
   activeItem,
+  isMediaPlaying,
   handleLauncherRangeChange,
+  handleLauncherRangeCommit,
   handlePointerDown,
   handlePointerMove,
   handlePointerUp,
   hoveredScrubSegment,
   isLauncherReadMoreAbove,
-  isPlaying,
   isQueueComplete,
   onOpen,
   playFromLauncher,
@@ -964,13 +965,14 @@ function DesktopLauncherView({
   waveform,
 }: {
   activeItem: ActiveItem;
+  isMediaPlaying: boolean;
   handleLauncherRangeChange: (event: ChangeEvent<HTMLInputElement>) => void;
+  handleLauncherRangeCommit: () => void;
   handlePointerDown: (event: ReactPointerEvent<HTMLElement>) => void;
   handlePointerMove: (event: ReactPointerEvent<HTMLElement>) => void;
   handlePointerUp: (event: ReactPointerEvent<HTMLElement>) => void;
   hoveredScrubSegment: number | null;
   isLauncherReadMoreAbove: boolean;
-  isPlaying: boolean;
   isQueueComplete: boolean;
   onOpen: () => void;
   playFromLauncher: () => void;
@@ -993,9 +995,9 @@ function DesktopLauncherView({
         type="button"
         className="note-media-launcher-play"
         onClick={playFromLauncher}
-        aria-label={isPlaying ? t.mediaPlayer.pause : t.mediaPlayer.playWithSound}
+        aria-label={isMediaPlaying ? t.mediaPlayer.pause : t.mediaPlayer.playWithSound}
       >
-        {isPlaying ? <Pause aria-hidden="true" className="note-media-icon-svg" strokeWidth={1.9} /> : <Play aria-hidden="true" className="note-media-icon-svg" strokeWidth={1.9} />}
+        {isMediaPlaying ? <Pause aria-hidden="true" className="note-media-icon-svg" strokeWidth={1.9} /> : <Play aria-hidden="true" className="note-media-icon-svg" strokeWidth={1.9} />}
       </button>
 
       <div
@@ -1011,6 +1013,14 @@ function DesktopLauncherView({
           step={1}
           value={Math.round(progress * 100)}
           onChange={handleLauncherRangeChange}
+          onPointerUp={handleLauncherRangeCommit}
+          onMouseUp={handleLauncherRangeCommit}
+          onTouchEnd={handleLauncherRangeCommit}
+          onKeyUp={(event) => {
+            if (event.key.startsWith('Arrow') || event.key === 'Home' || event.key === 'End' || event.key === 'PageUp' || event.key === 'PageDown') {
+              handleLauncherRangeCommit();
+            }
+          }}
           className="note-media-launcher-range"
           aria-label={`${activeItem.sourceTitle} ${t.mediaPlayer.playbackPosition}`}
           data-no-drag="true"
@@ -1020,7 +1030,7 @@ function DesktopLauncherView({
             waveform={waveform}
             progress={progress}
             hoveredScrubSegment={hoveredScrubSegment}
-            isPlaying={isPlaying}
+            isPlaying={isMediaPlaying}
             isQueueComplete={isQueueComplete}
           />
         </span>
@@ -1090,7 +1100,7 @@ export default function DesktopMediaOverlay() {
     queueLength: queue.length,
     skipAutoClampForTransitionRef,
   });
-  const { videoRef, progress, setProgress, livePlaybackTimesRef } = useDesktopMediaPlayback({
+  const { isMediaPlaying, videoRef, progress, setProgress, livePlaybackTimesRef } = useDesktopMediaPlayback({
     activeItem,
     activeIndex,
     isActiveSurface: !isMobile,
@@ -1121,7 +1131,8 @@ export default function DesktopMediaOverlay() {
     position,
     setPosition,
   });
-  const isQueueComplete = activeIndex === queue.length - 1 && !isPlaying && progress >= 1;
+  const isQueueComplete = activeIndex === queue.length - 1 && !isMediaPlaying && progress >= 0.999;
+  const scrubCommitTimeoutRef = useRef<number | null>(null);
 
   useLayoutEffect(() => {
     const overlay = overlayRef.current;
@@ -1258,7 +1269,7 @@ export default function DesktopMediaOverlay() {
       return;
     }
 
-    if (!isPlaying) {
+    if (!isMediaPlaying) {
       setIsMuted(false);
       setIsPlaying(true);
       flashFeedback('play');
@@ -1283,19 +1294,14 @@ export default function DesktopMediaOverlay() {
       return;
     }
 
-    const ratio = Math.min(Math.max(nextProgress, 0), 1);
-    const nextTime = ratio >= 1 ? Math.max(video.duration - 0.05, 0) : video.duration * ratio;
+    const ratio = Math.min(Math.max(nextProgress, 0), 0.999);
+    const nextTime = video.duration * ratio;
 
     video.currentTime = nextTime;
     livePlaybackTimesRef.current[activeItem.id] = nextTime;
     setPlaybackTime(activeItem.id, nextTime);
     setProgress(ratio);
 
-    if (!isPlaying || isMuted) {
-      setIsMuted(false);
-      setIsPlaying(true);
-      flashFeedback('play');
-    }
   };
 
   const handleLauncherRangeChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -1304,6 +1310,32 @@ export default function DesktopMediaOverlay() {
     }
 
     seekLauncherProgress(Number(event.target.value) / 100);
+  };
+
+  const handleLauncherRangeCommit = () => {
+    if (scrubCommitTimeoutRef.current !== null) {
+      window.clearTimeout(scrubCommitTimeoutRef.current);
+    }
+
+    scrubCommitTimeoutRef.current = window.setTimeout(() => {
+      scrubCommitTimeoutRef.current = null;
+      const video = videoRef.current;
+      if (!video || !video.duration || Number.isNaN(video.duration)) {
+        return;
+      }
+
+      if (video.currentTime >= video.duration) {
+        video.currentTime = Math.max(video.duration - 0.05, 0);
+      }
+
+      if (!isMediaPlaying) {
+        setIsPlaying(true);
+        const playPromise = video.play();
+        if (playPromise) {
+          playPromise.then(() => flashFeedback('play')).catch(() => setIsPlaying(false));
+        }
+      }
+    }, 0);
   };
 
   const updateHoveredScrubSegment = (element: HTMLElement, clientX: number) => {
@@ -1323,7 +1355,7 @@ export default function DesktopMediaOverlay() {
       return;
     }
 
-    if (!isPlaying) {
+    if (!isMediaPlaying) {
       const playPromise = video.play();
       if (playPromise) {
         playPromise.then(() => flashFeedback('play')).catch(() => setIsPlaying(false));
@@ -1405,13 +1437,14 @@ export default function DesktopMediaOverlay() {
       {isDismissed ? (
         <DesktopLauncherView
           activeItem={activeItem}
+          isMediaPlaying={isMediaPlaying}
           handleLauncherRangeChange={handleLauncherRangeChange}
+          handleLauncherRangeCommit={handleLauncherRangeCommit}
           handlePointerDown={handlePointerDown}
           handlePointerMove={handlePointerMove}
           handlePointerUp={handlePointerUp}
           hoveredScrubSegment={hoveredScrubSegment}
           isLauncherReadMoreAbove={isLauncherReadMoreAbove}
-          isPlaying={isPlaying}
           isQueueComplete={isQueueComplete}
           onOpen={openFromLauncher}
           playFromLauncher={playFromLauncher}

@@ -36,6 +36,7 @@ export function useOverlayMediaPlayback({
   const animationFrameRef = useRef<number | null>(null);
   const livePlaybackTimesRef = useRef<Record<string, number>>({});
   const isActiveSurfaceRef = useRef(isActiveSurface);
+  const [isMediaPlaying, setIsMediaPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
@@ -65,10 +66,21 @@ export function useOverlayMediaPlayback({
       playPromise.catch(() => {
         if (isActiveSurfaceRef.current) {
           setIsPlaying(false);
+          setIsMediaPlaying(false);
         }
       });
     }
   }, [activeIndex, activeItem?.id, isActiveSurface, isMuted, isPlaying, setIsPlaying]);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !isActiveSurface) {
+      setIsMediaPlaying(false);
+      return;
+    }
+
+    setIsMediaPlaying(!video.paused && !video.ended);
+  }, [activeItem?.id, isActiveSurface]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -125,6 +137,7 @@ export function useOverlayMediaPlayback({
     };
 
     const handlePlay = () => {
+      setIsMediaPlaying(true);
       if (isActiveSurfaceRef.current) {
         setIsPlaying(true);
       }
@@ -135,6 +148,7 @@ export function useOverlayMediaPlayback({
     };
     const handlePause = () => {
       stopProgressLoop();
+      setIsMediaPlaying(false);
       livePlaybackTimesRef.current[activeItemId] = video.currentTime;
       setPlaybackTime(activeItemId, video.currentTime);
 
@@ -145,12 +159,14 @@ export function useOverlayMediaPlayback({
     const handleLoadedMetadata = () => updateProgress();
     const handleError = () => {
       stopProgressLoop();
+      setIsMediaPlaying(false);
       if (isActiveSurfaceRef.current) {
         setIsPlaying(false);
       }
     };
     const handleEnded = () => {
       stopProgressLoop();
+      setIsMediaPlaying(false);
       video.currentTime = 0;
       livePlaybackTimesRef.current[activeItemId] = 0;
       setPlaybackTime(activeItemId, 0);
@@ -284,6 +300,7 @@ export function useOverlayMediaPlayback({
   }, [isActiveSurface, setIsPlaying]);
 
   return {
+    isMediaPlaying,
     videoRef,
     progress,
     setProgress,

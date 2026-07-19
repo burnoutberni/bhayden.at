@@ -125,7 +125,7 @@ export default function MobileMediaOverlay() {
   const sheetDragOffsetRef = useRef(0);
   const sheetPointerIdRef = useRef<number | null>(null);
   const sheetDragStartYRef = useRef<number | null>(null);
-  const { videoRef, progress, setProgress } = useMobileMediaPlayback({
+  const { isMediaPlaying, videoRef, progress, setProgress } = useMobileMediaPlayback({
     activeItem,
     activeIndex,
     isActiveSurface: isMobile,
@@ -143,7 +143,7 @@ export default function MobileMediaOverlay() {
     isActiveSurface: isMobile,
     isPlaybackActive: isPlaying,
   });
-  const isQueueComplete = activeItem ? activeIndex === queue.length - 1 && !isPlaying && progress >= 1 : false;
+  const isQueueComplete = activeItem ? activeIndex === queue.length - 1 && !isMediaPlaying && progress >= 0.999 : false;
   const isExpanded = !isDismissed;
 
   useEffect(() => {
@@ -232,7 +232,7 @@ export default function MobileMediaOverlay() {
       return;
     }
 
-    if (!isPlaying) {
+    if (!isMediaPlaying) {
       const playPromise = video.play();
       if (playPromise) {
         playPromise
@@ -420,7 +420,7 @@ export default function MobileMediaOverlay() {
                   type="button"
                   className={centerHitAreaClassName}
                   onClick={isQueueComplete ? replayQueue : togglePlayback}
-                  aria-label={isQueueComplete ? t.mediaPlayer.replay : isPlaying ? t.mediaPlayer.pause : t.mediaPlayer.play}
+                  aria-label={isQueueComplete ? t.mediaPlayer.replay : isMediaPlaying ? t.mediaPlayer.pause : t.mediaPlayer.play}
                 />
 
                 {showNext ? (
@@ -479,8 +479,8 @@ export default function MobileMediaOverlay() {
               </button>
             ) : null}
 
-            <button type="button" className="mobile-media-control mobile-media-control-primary" onClick={togglePlayback} aria-label={isPlaying ? t.mediaPlayer.pause : t.mediaPlayer.playWithSound}>
-              {isPlaying ? <Pause aria-hidden="true" className="note-media-icon-svg" strokeWidth={1.9} /> : <Play aria-hidden="true" className="note-media-icon-svg" strokeWidth={1.9} />}
+            <button type="button" className="mobile-media-control mobile-media-control-primary" onClick={togglePlayback} aria-label={isMediaPlaying ? t.mediaPlayer.pause : t.mediaPlayer.playWithSound}>
+              {isMediaPlaying ? <Pause aria-hidden="true" className="note-media-icon-svg" strokeWidth={1.9} /> : <Play aria-hidden="true" className="note-media-icon-svg" strokeWidth={1.9} />}
             </button>
 
             {showNext ? (
