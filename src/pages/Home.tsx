@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { useLanguage } from '@/hooks/useLanguage';
 import { projects } from '@/data/content';
@@ -30,6 +30,8 @@ type EverycalEvent = {
 type EverycalResponse = {
   events: EverycalEvent[];
 };
+
+const EVENTS_FETCH_TIMEOUT_MS = 10000;
 
 const typeLabels: Record<string, { en: string; de: string }> = {
   project: { en: 'Project', de: 'Projekt' },
@@ -84,6 +86,7 @@ export default function Home() {
   const [eventsLoading, setEventsLoading] = useState(true);
   const [eventsError, setEventsError] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
+  const eventsRef = useRef<EverycalEvent[]>([]);
 
   const navigateToWork = (query: string) => {
     window.scrollTo({ top: 0, behavior: 'auto' });
@@ -135,6 +138,10 @@ export default function Home() {
   };
 
   useEffect(() => {
+    eventsRef.current = events;
+  }, [events]);
+
+  useEffect(() => {
     homeMediaSources.forEach((source) => {
       enqueueSource(source.sourceKey, source.sourceTitle, source.mediaItems, source.sourceHref);
     });
@@ -146,13 +153,26 @@ export default function Home() {
     }
 
     let isMounted = true;
+    let activeController: AbortController | null = null;
 
     const fetchEvents = async () => {
+      const hadPreviousEvents = eventsRef.current.length > 0;
+      let timeoutId: number | null = null;
+
       try {
-        setEventsLoading(true);
+        if (!hadPreviousEvents) {
+          setEventsLoading(true);
+        }
         setEventsError(null);
 
-        const response = await fetch('https://events.bhayden.at/api/v1/feeds/nini.json');
+        activeController?.abort();
+        const controller = new AbortController();
+        activeController = controller;
+        timeoutId = window.setTimeout(() => controller.abort(), EVENTS_FETCH_TIMEOUT_MS);
+
+        const response = await fetch('https://events.bhayden.at/api/v1/feeds/nini.json', {
+          signal: controller.signal,
+        });
         if (!response.ok) {
           throw new Error(`Failed to load events (${response.status})`);
         }
@@ -166,11 +186,18 @@ export default function Home() {
           return dateA - dateB;
         });
 
+        eventsRef.current = sorted;
         setEvents(sorted);
       } catch {
         if (!isMounted) return;
-        setEventsError(lang === 'de' ? 'Events konnten gerade nicht geladen werden.' : 'Unable to load events right now.');
+
+        if (!hadPreviousEvents) {
+          setEventsError(lang === 'de' ? 'Events konnten gerade nicht geladen werden.' : 'Unable to load events right now.');
+        }
       } finally {
+        if (timeoutId !== null) {
+          window.clearTimeout(timeoutId);
+        }
         if (isMounted) setEventsLoading(false);
       }
     };
@@ -180,6 +207,7 @@ export default function Home() {
 
     return () => {
       isMounted = false;
+      activeController?.abort();
       window.clearInterval(intervalId);
     };
   }, [isPrerenderCrawl, lang]);

@@ -7,8 +7,8 @@ import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import DesktopMediaOverlay from '@/components/DesktopMediaOverlay';
 import MobileMediaOverlay from '@/components/MobileMediaOverlay';
+import Home from '@/pages/Home';
 
-const Home = lazy(() => import('@/pages/Home'));
 const Work = lazy(() => import('@/pages/Work'));
 const Archive = lazy(() => import('@/pages/Archive'));
 const Notes = lazy(() => import('@/pages/Notes'));

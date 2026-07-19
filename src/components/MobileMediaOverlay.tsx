@@ -4,12 +4,14 @@ import { Link, useLocation } from 'react-router';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useMediaQueue } from '@/hooks/useMediaQueue';
+import { useVideoLoadState } from '@/hooks/useVideoLoadState';
+import { useOverlayMediaPlayback } from '@/hooks/useOverlayMediaPlayback';
+import VideoStatusOverlay from '@/components/VideoStatusOverlay';
 
 type MediaQueueState = ReturnType<typeof useMediaQueue>;
 type ActiveItem = NonNullable<MediaQueueState['activeItem']>;
 type FeedbackType = 'play' | 'pause' | 'muted' | 'unmuted' | 'previous' | 'next' | null;
 
-const MEDIA_PLAYER_PLAYBACK_TIMES_KEY = 'media-player-playback-times-v1';
 const MOBILE_SHEET_CLOSE_THRESHOLD = 120;
 
 function PlayIcon() {
@@ -65,6 +67,7 @@ function ProgressBars({ queue, activeIndex, progress }: { queue: MediaQueueState
 function useMobileMediaPlayback({
   activeItem,
   activeIndex,
+  isActiveSurface,
   isMuted,
   isPlaying,
   playbackTimes,
@@ -75,6 +78,7 @@ function useMobileMediaPlayback({
 }: {
   activeItem: ActiveItem | null;
   activeIndex: number;
+  isActiveSurface: boolean;
   isMuted: boolean;
   isPlaying: boolean;
   playbackTimes: Record<string, number>;
@@ -83,231 +87,18 @@ function useMobileMediaPlayback({
   setIsPlaying: MediaQueueState['setIsPlaying'];
   setPlaybackTime: MediaQueueState['setPlaybackTime'];
 }) {
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const shouldResumeOnReturnRef = useRef(false);
-  const animationFrameRef = useRef<number | null>(null);
-  const livePlaybackTimesRef = useRef<Record<string, number>>({});
-  const [progress, setProgress] = useState(0);
-
-  useEffect(() => {
-    livePlaybackTimesRef.current = playbackTimes;
-  }, [playbackTimes]);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    const activeItemId = activeItem?.id;
-    if (!video || !activeItemId) {
-      return;
-    }
-
-    video.muted = isMuted;
-
-    if (!isPlaying) {
-      video.pause();
-      return;
-    }
-
-    const playPromise = video.play();
-    if (playPromise) {
-      playPromise.catch(() => {
-        setIsPlaying(false);
-      });
-    }
-  }, [activeIndex, activeItem?.id, isMuted, isPlaying, setIsPlaying]);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video || !activeItem) {
-      return;
-    }
-
-    const restorePlaybackTime = () => {
-      const savedTime = livePlaybackTimesRef.current[activeItem.id] || 0;
-      if (!savedTime || !video.duration || Number.isNaN(video.duration)) {
-        return;
-      }
-
-      video.currentTime = Math.min(savedTime, Math.max(video.duration - 0.05, 0));
-      setProgress(Math.min(video.currentTime / video.duration, 1));
-    };
-
-    if (video.readyState >= 1) {
-      restorePlaybackTime();
-      return;
-    }
-
-    video.addEventListener('loadedmetadata', restorePlaybackTime, { once: true });
-    return () => {
-      video.removeEventListener('loadedmetadata', restorePlaybackTime);
-    };
-  }, [activeItem]);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    const activeItemId = activeItem?.id;
-    if (!video || !activeItemId) {
-      return;
-    }
-
-    const stopProgressLoop = () => {
-      if (animationFrameRef.current !== null) {
-        window.cancelAnimationFrame(animationFrameRef.current);
-        animationFrameRef.current = null;
-      }
-    };
-
-    const updateProgress = () => {
-      if (!video.duration || Number.isNaN(video.duration)) {
-        setProgress(0);
-      } else {
-        livePlaybackTimesRef.current[activeItemId] = video.currentTime;
-        setProgress(Math.min(video.currentTime / video.duration, 1));
-      }
-
-      if (!video.paused && !video.ended) {
-        animationFrameRef.current = window.requestAnimationFrame(updateProgress);
-      }
-    };
-
-    const handlePlay = () => setIsPlaying(true);
-    const handlePlaying = () => {
-      stopProgressLoop();
-      updateProgress();
-    };
-    const handlePause = () => {
-      stopProgressLoop();
-      livePlaybackTimesRef.current[activeItemId] = video.currentTime;
-      setPlaybackTime(activeItemId, video.currentTime);
-      setIsPlaying(false);
-    };
-    const handleLoadedMetadata = () => updateProgress();
-    const handleEnded = () => {
-      stopProgressLoop();
-      video.currentTime = 0;
-      livePlaybackTimesRef.current[activeItemId] = 0;
-      setPlaybackTime(activeItemId, 0);
-      setProgress(1);
-      setActiveIndex((currentIndex) => {
-        const nextIndex = currentIndex >= queueLength - 1 ? currentIndex : currentIndex + 1;
-        const shouldStop = currentIndex >= queueLength - 1;
-
-        if (shouldStop) {
-          requestAnimationFrame(() => setIsPlaying(false));
-        } else {
-          requestAnimationFrame(() => {
-            setProgress(0);
-            setIsPlaying(true);
-          });
-        }
-
-        return nextIndex;
-      });
-    };
-
-    video.addEventListener('play', handlePlay);
-    video.addEventListener('playing', handlePlaying);
-    video.addEventListener('pause', handlePause);
-    video.addEventListener('loadedmetadata', handleLoadedMetadata);
-    video.addEventListener('ended', handleEnded);
-
-    return () => {
-      stopProgressLoop();
-      livePlaybackTimesRef.current[activeItemId] = video.currentTime;
-      setPlaybackTime(activeItemId, video.currentTime);
-      video.removeEventListener('play', handlePlay);
-      video.removeEventListener('playing', handlePlaying);
-      video.removeEventListener('pause', handlePause);
-      video.removeEventListener('loadedmetadata', handleLoadedMetadata);
-      video.removeEventListener('ended', handleEnded);
-    };
-  }, [activeItem?.id, queueLength, setActiveIndex, setIsPlaying, setPlaybackTime]);
-
-  useEffect(() => {
-    const persistBeforeUnload = () => {
-      const video = videoRef.current;
-      const activeItemId = activeItem?.id;
-      if (!video || !activeItemId) {
-        return;
-      }
-
-      const time = video.currentTime;
-      livePlaybackTimesRef.current[activeItemId] = time;
-      try {
-        window.localStorage.setItem(
-          MEDIA_PLAYER_PLAYBACK_TIMES_KEY,
-          JSON.stringify({
-            ...livePlaybackTimesRef.current,
-            [activeItemId]: time,
-          }),
-        );
-      } catch {
-        // Ignore storage errors
-      }
-      setPlaybackTime(activeItemId, time);
-    };
-
-    window.addEventListener('beforeunload', persistBeforeUnload);
-    return () => window.removeEventListener('beforeunload', persistBeforeUnload);
-  }, [activeItem?.id, setPlaybackTime]);
-
-  useEffect(() => {
-    const pausePlayback = () => {
-      const video = videoRef.current;
-      if (!video || video.paused) {
-        return;
-      }
-
-      shouldResumeOnReturnRef.current = true;
-      video.pause();
-    };
-
-    const resumePlayback = () => {
-      const video = videoRef.current;
-      if (!shouldResumeOnReturnRef.current || !video || document.hidden) {
-        return;
-      }
-
-      const playPromise = video.play();
-      if (playPromise) {
-        playPromise
-          .then(() => {
-            shouldResumeOnReturnRef.current = false;
-          })
-          .catch(() => {
-            setIsPlaying(false);
-          });
-        return;
-      }
-
-      shouldResumeOnReturnRef.current = false;
-    };
-
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        pausePlayback();
-        return;
-      }
-
-      resumePlayback();
-    };
-
-    window.addEventListener('blur', pausePlayback);
-    window.addEventListener('focus', resumePlayback);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    return () => {
-      window.removeEventListener('blur', pausePlayback);
-      window.removeEventListener('focus', resumePlayback);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [setIsPlaying]);
-
-  return {
-    videoRef,
-    progress,
-    setProgress,
-    livePlaybackTimesRef,
-  };
+  return useOverlayMediaPlayback({
+    activeItem,
+    activeIndex,
+    isActiveSurface,
+    isMuted,
+    isPlaying,
+    playbackTimes,
+    queueLength,
+    setActiveIndex,
+    setIsPlaying,
+    setPlaybackTime,
+  });
 }
 
 export default function MobileMediaOverlay() {
@@ -319,15 +110,16 @@ export default function MobileMediaOverlay() {
     activeIndex,
     activeItem,
     playbackTimes,
+    isDismissed,
     isMuted,
     isPlaying,
     setActiveIndex,
+    setIsDismissed,
     setIsMuted,
     setIsPlaying,
     setPlaybackTime,
     resetPlaybackTimes,
   } = useMediaQueue();
-  const [isExpanded, setIsExpanded] = useState(false);
   const [feedback, setFeedback] = useState<FeedbackType>(null);
   const [sheetDragOffset, setSheetDragOffset] = useState(0);
   const sheetDragOffsetRef = useRef(0);
@@ -336,6 +128,7 @@ export default function MobileMediaOverlay() {
   const { videoRef, progress, setProgress } = useMobileMediaPlayback({
     activeItem,
     activeIndex,
+    isActiveSurface: isMobile,
     isMuted,
     isPlaying,
     playbackTimes,
@@ -344,13 +137,24 @@ export default function MobileMediaOverlay() {
     setIsPlaying,
     setPlaybackTime,
   });
+  const { isVideoLoading, hasVideoError, retryVideo } = useVideoLoadState({
+    videoRef,
+    mediaKey: activeItem?.id ?? '',
+    isActiveSurface: isMobile,
+    isPlaybackActive: isPlaying,
+  });
   const isQueueComplete = activeItem ? activeIndex === queue.length - 1 && !isPlaying && progress >= 1 : false;
+  const isExpanded = !isDismissed;
 
   useEffect(() => {
-    setIsExpanded(false);
+    if (!isMobile) {
+      return;
+    }
+
+    setIsDismissed(true);
     setSheetDragOffset(0);
     sheetDragOffsetRef.current = 0;
-  }, [pathname]);
+  }, [isMobile, pathname, setIsDismissed]);
 
   useEffect(() => {
     if (!isMobile || !queue.length) {
@@ -387,12 +191,6 @@ export default function MobileMediaOverlay() {
     return () => window.clearTimeout(timeout);
   }, [feedback]);
 
-  useEffect(() => {
-    if (!isMobile && videoRef.current && !videoRef.current.paused) {
-      videoRef.current.pause();
-    }
-  }, [isMobile, videoRef]);
-
   if (!isMobile || !activeItem || !queue.length) {
     return null;
   }
@@ -412,13 +210,13 @@ export default function MobileMediaOverlay() {
   const openSheet = () => {
     sheetDragOffsetRef.current = 0;
     setSheetDragOffset(0);
-    setIsExpanded(true);
+    setIsDismissed(false);
   };
 
   const closeSheet = () => {
     sheetDragOffsetRef.current = 0;
     setSheetDragOffset(0);
-    setIsExpanded(false);
+    setIsDismissed(true);
   };
 
   const flashFeedback = (nextFeedback: FeedbackType) => {
@@ -434,7 +232,7 @@ export default function MobileMediaOverlay() {
       return;
     }
 
-    if (video.paused) {
+    if (!isPlaying) {
       const playPromise = video.play();
       if (playPromise) {
         playPromise
@@ -587,9 +385,17 @@ export default function MobileMediaOverlay() {
               preload="metadata"
               aria-label={activeItem.sourceTitle}
             />
+
+            <VideoStatusOverlay
+              hasError={hasVideoError}
+              isLoading={isVideoLoading}
+              loadingLabel={t.mediaPlayer.loading}
+              onRetry={retryVideo}
+              retryLabel={t.mediaPlayer.retry}
+            />
             {isExpanded ? <ProgressBars queue={queue} activeIndex={activeIndex} progress={progress} /> : null}
 
-            {isQueueComplete ? (
+            {isQueueComplete && !hasVideoError ? (
               <button
                 type="button"
                 className="note-media-replay-overlay"

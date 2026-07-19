@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useLanguage } from '@/hooks/useLanguage';
+import { useVideoLoadState } from '@/hooks/useVideoLoadState';
 import type { NoteMediaItem } from '@/data/noteMedia';
+import VideoStatusOverlay from '@/components/VideoStatusOverlay';
 
 interface NoteMediaPlayerProps {
   mediaItems: NoteMediaItem[];
@@ -76,6 +78,11 @@ export default function NoteMediaPlayer({ mediaItems, noteTitle }: NoteMediaPlay
 
   const activeMediaItem = mediaItems[activeIndex];
   const hasMultipleMediaItems = mediaItems.length > 1;
+  const { isVideoLoading, hasVideoError, retryVideo } = useVideoLoadState({
+    videoRef,
+    mediaKey: activeMediaItem?.src ?? '',
+    isPlaybackActive: isPlaying,
+  });
 
   useEffect(() => {
     setActiveIndex(0);
@@ -136,6 +143,10 @@ export default function NoteMediaPlayer({ mediaItems, noteTitle }: NoteMediaPlay
       setIsPlaying(false);
     };
     const handleLoadedMetadata = () => updateProgress();
+    const handleError = () => {
+      stopProgressLoop();
+      setIsPlaying(false);
+    };
     const handleEnded = () => {
       stopProgressLoop();
       setProgress(1);
@@ -160,6 +171,7 @@ export default function NoteMediaPlayer({ mediaItems, noteTitle }: NoteMediaPlay
     video.addEventListener('playing', handlePlaying);
     video.addEventListener('pause', handlePause);
     video.addEventListener('loadedmetadata', handleLoadedMetadata);
+    video.addEventListener('error', handleError);
     video.addEventListener('ended', handleEnded);
 
     return () => {
@@ -168,6 +180,7 @@ export default function NoteMediaPlayer({ mediaItems, noteTitle }: NoteMediaPlay
       video.removeEventListener('playing', handlePlaying);
       video.removeEventListener('pause', handlePause);
       video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      video.removeEventListener('error', handleError);
       video.removeEventListener('ended', handleEnded);
     };
   }, [activeMediaItem.src, mediaItems.length]);
@@ -311,7 +324,7 @@ export default function NoteMediaPlayer({ mediaItems, noteTitle }: NoteMediaPlay
     const video = videoRef.current;
     if (!video) return;
 
-    if (video.paused) {
+    if (!isPlaying) {
       const playPromise = video.play();
       if (playPromise) {
         playPromise
@@ -363,6 +376,14 @@ export default function NoteMediaPlayer({ mediaItems, noteTitle }: NoteMediaPlay
               muted={isMuted}
               preload="metadata"
               aria-label={noteTitle}
+            />
+
+            <VideoStatusOverlay
+              hasError={hasVideoError}
+              isLoading={isVideoLoading}
+              loadingLabel={t.mediaPlayer.loading}
+              onRetry={retryVideo}
+              retryLabel={t.mediaPlayer.retry}
             />
 
             <div className="note-media-progress" aria-hidden="true">

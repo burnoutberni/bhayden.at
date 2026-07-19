@@ -15,6 +15,9 @@ import { Link, useLocation } from 'react-router';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useMediaQueue } from '@/hooks/useMediaQueue';
+import { useVideoLoadState } from '@/hooks/useVideoLoadState';
+import { useOverlayMediaPlayback } from '@/hooks/useOverlayMediaPlayback';
+import VideoStatusOverlay from '@/components/VideoStatusOverlay';
 
 type FeedbackType = 'play' | 'pause' | 'muted' | 'unmuted' | null;
 type Position = { x: number; y: number };
@@ -23,12 +26,13 @@ type MediaQueueState = ReturnType<typeof useMediaQueue>;
 type ActiveItem = NonNullable<MediaQueueState['activeItem']>;
 
 const DESKTOP_MEDIA_POSITION_KEY = 'desktop-media-overlay-position-v1';
-const MEDIA_PLAYER_PLAYBACK_TIMES_KEY = 'media-player-playback-times-v1';
 const LAUNCHER_VISUALIZER_SEGMENTS = 28;
 const DRAG_VIEWPORT_MARGIN = 0;
 const DEFAULT_DESKTOP_BOTTOM_GAP = 16;
 const HOME_DESKTOP_LEFT_SHIFT = 64;
 const HOME_DESKTOP_BOTTOM_GAP = 64;
+const HOME_DESKTOP_CENTER_BREAKPOINT = 1280;
+const DESKTOP_RESIZE_SETTLE_MS = 120;
 
 function PlayIcon() {
   return (
@@ -195,13 +199,35 @@ function getDefaultDesktopPosition(width: number, height: number) {
 
 function getHomeDesktopPosition(width: number, height: number) {
   const defaultPosition = getDefaultDesktopPosition(width, height);
+  const centeredX = Math.round(Math.max(DEFAULT_DESKTOP_BOTTOM_GAP, (window.innerWidth - width) / 2));
+  const targetX = window.innerWidth <= HOME_DESKTOP_CENTER_BREAKPOINT
+    ? centeredX
+    : defaultPosition.x - HOME_DESKTOP_LEFT_SHIFT;
 
   return clampPosition(
-    defaultPosition.x - HOME_DESKTOP_LEFT_SHIFT,
+    targetX,
     window.innerHeight - height - HOME_DESKTOP_BOTTOM_GAP,
     width,
     height,
   );
+}
+
+function getPreferredDesktopPosition(pathname: string, width: number, height: number) {
+  if (pathname.startsWith('/notes/')) {
+    return getDefaultDesktopPosition(width, height);
+  }
+
+  return pathname === '/'
+    ? getHomeDesktopPosition(width, height)
+    : getDefaultDesktopPosition(width, height);
+}
+
+function positionsMatch(a: Position | null, b: Position | null) {
+  if (!a || !b) {
+    return a === b;
+  }
+
+  return Math.abs(a.x - b.x) < 1 && Math.abs(a.y - b.y) < 1;
 }
 
 function getWaveform(activeItem: ActiveItem) {
@@ -318,8 +344,14 @@ function useDesktopOverlayPosition({
   skipAutoClampForTransitionRef: MutableRefObject<boolean>;
 }) {
   const previousPathnameRef = useRef(pathname);
+  const previousIsMobileRef = useRef(isMobile);
+  const previousViewportWidthRef = useRef(typeof window === 'undefined' ? 0 : window.innerWidth);
+  const resizeFrameRef = useRef<number | null>(null);
+  const resizeSettleTimeoutRef = useRef<number | null>(null);
+  const visibleSizeRef = useRef<{ width: number; height: number } | null>(null);
   const [position, setPosition] = useState<Position | null>(null);
   const [isReady, setIsReady] = useState(false);
+  const [isResizing, setIsResizing] = useState(false);
   const [isLauncherReadMoreAbove, setIsLauncherReadMoreAbove] = useState(false);
 
   useEffect(() => {
@@ -333,12 +365,7 @@ function useDesktopOverlayPosition({
     }
 
     const { visibleRect } = getVisibleOverlayMetrics(overlay, isDismissed, true);
-
-    if (pathname.startsWith('/notes/')) {
-      setPosition(getDefaultDesktopPosition(visibleRect.width, visibleRect.height));
-      setIsReady(true);
-      return;
-    }
+    visibleSizeRef.current = { width: visibleRect.width, height: visibleRect.height };
 
     try {
       const saved = window.localStorage.getItem(DESKTOP_MEDIA_POSITION_KEY);
@@ -361,13 +388,41 @@ function useDesktopOverlayPosition({
       // Ignore storage errors
     }
 
-    setPosition(
-      pathname === '/'
-        ? getHomeDesktopPosition(visibleRect.width, visibleRect.height)
-        : getDefaultDesktopPosition(visibleRect.width, visibleRect.height),
-    );
+    setPosition(getPreferredDesktopPosition(pathname, visibleRect.width, visibleRect.height));
     setIsReady(true);
   }, [isDismissed, isMobile, overlayRef, pathname, position, queueLength]);
+
+  useEffect(() => {
+    if (!queueLength) {
+      previousIsMobileRef.current = isMobile;
+      return;
+    }
+
+    const wasMobile = previousIsMobileRef.current;
+    previousIsMobileRef.current = isMobile;
+
+    if (isMobile || !wasMobile) {
+      return;
+    }
+
+    const overlay = overlayRef.current;
+    if (!overlay) {
+      return;
+    }
+
+    const { visibleRect } = getVisibleOverlayMetrics(overlay, isDismissed, true);
+    visibleSizeRef.current = { width: visibleRect.width, height: visibleRect.height };
+    const fallbackPosition = getPreferredDesktopPosition(pathname, visibleRect.width, visibleRect.height);
+
+    setPosition((current) => {
+      const nextPosition = current
+        ? clampVisiblePosition(current.x, current.y, visibleRect.width, visibleRect.height)
+        : fallbackPosition;
+
+      return positionsMatch(current, nextPosition) ? current : nextPosition;
+    });
+    setIsReady(true);
+  }, [isDismissed, isMobile, overlayRef, pathname, queueLength]);
 
   useEffect(() => {
     if (isMobile || !isDismissed) {
@@ -414,7 +469,9 @@ function useDesktopOverlayPosition({
     }
 
     const { visibleRect } = getVisibleOverlayMetrics(overlay, isDismissed, true);
-    setPosition(getDefaultDesktopPosition(visibleRect.width, visibleRect.height));
+    visibleSizeRef.current = { width: visibleRect.width, height: visibleRect.height };
+    const nextPosition = getDefaultDesktopPosition(visibleRect.width, visibleRect.height);
+    setPosition((current) => positionsMatch(current, nextPosition) ? current : nextPosition);
   }, [isDismissed, isMobile, overlayRef, pathname, position, queueLength]);
 
   useEffect(() => {
@@ -430,29 +487,69 @@ function useDesktopOverlayPosition({
   }, [position]);
 
   useEffect(() => {
-    if (!queueLength) {
+    if (!queueLength || isMobile) {
       return;
     }
 
-    const handleResize = () => {
+    const flushResize = () => {
+      resizeFrameRef.current = null;
+
       const overlay = overlayRef.current;
       if (!overlay) {
         return;
       }
 
+      previousViewportWidthRef.current = window.innerWidth;
       const { visibleRect } = getVisibleOverlayMetrics(overlay, isDismissed, true);
+      visibleSizeRef.current = { width: visibleRect.width, height: visibleRect.height };
+
       setPosition((current) => {
         if (!current) {
           return current;
         }
 
-        return clampVisiblePosition(current.x, current.y, visibleRect.width, visibleRect.height);
+        const nextPosition = clampVisiblePosition(current.x, current.y, visibleRect.width, visibleRect.height);
+        return positionsMatch(current, nextPosition) ? current : nextPosition;
       });
     };
 
+    const handleResize = () => {
+      if (!isResizing) {
+        setIsResizing(true);
+      }
+
+      if (resizeSettleTimeoutRef.current !== null) {
+        window.clearTimeout(resizeSettleTimeoutRef.current);
+      }
+      resizeSettleTimeoutRef.current = window.setTimeout(() => {
+        resizeSettleTimeoutRef.current = null;
+        setIsResizing(false);
+      }, DESKTOP_RESIZE_SETTLE_MS);
+
+      if (resizeFrameRef.current !== null) {
+        return;
+      }
+
+      resizeFrameRef.current = window.requestAnimationFrame(flushResize);
+    };
+
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [isDismissed, overlayRef, queueLength]);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+
+      if (resizeFrameRef.current !== null) {
+        window.cancelAnimationFrame(resizeFrameRef.current);
+        resizeFrameRef.current = null;
+      }
+
+      if (resizeSettleTimeoutRef.current !== null) {
+        window.clearTimeout(resizeSettleTimeoutRef.current);
+        resizeSettleTimeoutRef.current = null;
+      }
+
+      setIsResizing(false);
+    };
+  }, [isDismissed, isMobile, isResizing, overlayRef, queueLength]);
 
   useEffect(() => {
     if (!queueLength || !position) {
@@ -471,10 +568,17 @@ function useDesktopOverlayPosition({
       return;
     }
 
-    const { visibleRect } = getVisibleOverlayMetrics(overlay, isDismissed, true);
-    const clamped = clampVisiblePosition(position.x, position.y, visibleRect.width, visibleRect.height);
+    const visibleSize = visibleSizeRef.current
+      ?? (() => {
+        const { visibleRect } = getVisibleOverlayMetrics(overlay, isDismissed, true);
+        const nextSize = { width: visibleRect.width, height: visibleRect.height };
+        visibleSizeRef.current = nextSize;
+        return nextSize;
+      })();
 
-    if (clamped.x !== position.x || clamped.y !== position.y) {
+    const clamped = clampVisiblePosition(position.x, position.y, visibleSize.width, visibleSize.height);
+
+    if (!positionsMatch(position, clamped)) {
       setPosition(clamped);
     }
   }, [isDismissed, overlayRef, position, queueLength, skipAutoClampForTransitionRef]);
@@ -483,6 +587,7 @@ function useDesktopOverlayPosition({
     position,
     setPosition,
     isReady,
+    isResizing,
     isLauncherReadMoreAbove,
   };
 }
@@ -490,6 +595,7 @@ function useDesktopOverlayPosition({
 function useDesktopMediaPlayback({
   activeItem,
   activeIndex,
+  isActiveSurface,
   isMuted,
   isPlaying,
   playbackTimes,
@@ -500,6 +606,7 @@ function useDesktopMediaPlayback({
 }: {
   activeItem: ActiveItem | null;
   activeIndex: number;
+  isActiveSurface: boolean;
   isMuted: boolean;
   isPlaying: boolean;
   playbackTimes: Record<string, number>;
@@ -508,231 +615,18 @@ function useDesktopMediaPlayback({
   setIsPlaying: MediaQueueState['setIsPlaying'];
   setPlaybackTime: MediaQueueState['setPlaybackTime'];
 }) {
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const shouldResumeOnReturnRef = useRef(false);
-  const animationFrameRef = useRef<number | null>(null);
-  const livePlaybackTimesRef = useRef<Record<string, number>>({});
-  const [progress, setProgress] = useState(0);
-
-  useEffect(() => {
-    livePlaybackTimesRef.current = playbackTimes;
-  }, [playbackTimes]);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    const activeItemId = activeItem?.id;
-    if (!video || !activeItemId) {
-      return;
-    }
-
-    video.muted = isMuted;
-
-    if (!isPlaying) {
-      video.pause();
-      return;
-    }
-
-    const playPromise = video.play();
-    if (playPromise) {
-      playPromise.catch(() => {
-        setIsPlaying(false);
-      });
-    }
-  }, [activeIndex, activeItem?.id, isMuted, isPlaying, setIsPlaying]);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video || !activeItem) {
-      return;
-    }
-
-    const restorePlaybackTime = () => {
-      const savedTime = livePlaybackTimesRef.current[activeItem.id] || 0;
-      if (!savedTime || !video.duration || Number.isNaN(video.duration)) {
-        return;
-      }
-
-      video.currentTime = Math.min(savedTime, Math.max(video.duration - 0.05, 0));
-      setProgress(Math.min(video.currentTime / video.duration, 1));
-    };
-
-    if (video.readyState >= 1) {
-      restorePlaybackTime();
-      return;
-    }
-
-    video.addEventListener('loadedmetadata', restorePlaybackTime, { once: true });
-    return () => {
-      video.removeEventListener('loadedmetadata', restorePlaybackTime);
-    };
-  }, [activeItem]);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    const activeItemId = activeItem?.id;
-    if (!video || !activeItemId) {
-      return;
-    }
-
-    const stopProgressLoop = () => {
-      if (animationFrameRef.current !== null) {
-        window.cancelAnimationFrame(animationFrameRef.current);
-        animationFrameRef.current = null;
-      }
-    };
-
-    const updateProgress = () => {
-      if (!video.duration || Number.isNaN(video.duration)) {
-        setProgress(0);
-      } else {
-        livePlaybackTimesRef.current[activeItemId] = video.currentTime;
-        setProgress(Math.min(video.currentTime / video.duration, 1));
-      }
-
-      if (!video.paused && !video.ended) {
-        animationFrameRef.current = window.requestAnimationFrame(updateProgress);
-      }
-    };
-
-    const handlePlay = () => setIsPlaying(true);
-    const handlePlaying = () => {
-      stopProgressLoop();
-      updateProgress();
-    };
-    const handlePause = () => {
-      stopProgressLoop();
-      livePlaybackTimesRef.current[activeItemId] = video.currentTime;
-      setPlaybackTime(activeItemId, video.currentTime);
-      setIsPlaying(false);
-    };
-    const handleLoadedMetadata = () => updateProgress();
-    const handleEnded = () => {
-      stopProgressLoop();
-      video.currentTime = 0;
-      livePlaybackTimesRef.current[activeItemId] = 0;
-      setPlaybackTime(activeItemId, 0);
-      setProgress(1);
-      setActiveIndex((currentIndex) => {
-        const nextIndex = currentIndex >= queueLength - 1 ? currentIndex : currentIndex + 1;
-        const shouldStop = currentIndex >= queueLength - 1;
-
-        if (shouldStop) {
-          requestAnimationFrame(() => setIsPlaying(false));
-        } else {
-          requestAnimationFrame(() => {
-            setProgress(0);
-            setIsPlaying(true);
-          });
-        }
-
-        return nextIndex;
-      });
-    };
-
-    video.addEventListener('play', handlePlay);
-    video.addEventListener('playing', handlePlaying);
-    video.addEventListener('pause', handlePause);
-    video.addEventListener('loadedmetadata', handleLoadedMetadata);
-    video.addEventListener('ended', handleEnded);
-
-    return () => {
-      stopProgressLoop();
-      livePlaybackTimesRef.current[activeItemId] = video.currentTime;
-      setPlaybackTime(activeItemId, video.currentTime);
-      video.removeEventListener('play', handlePlay);
-      video.removeEventListener('playing', handlePlaying);
-      video.removeEventListener('pause', handlePause);
-      video.removeEventListener('loadedmetadata', handleLoadedMetadata);
-      video.removeEventListener('ended', handleEnded);
-    };
-  }, [activeItem?.id, queueLength, setActiveIndex, setIsPlaying, setPlaybackTime]);
-
-  useEffect(() => {
-    const persistBeforeUnload = () => {
-      const video = videoRef.current;
-      const activeItemId = activeItem?.id;
-      if (!video || !activeItemId) {
-        return;
-      }
-
-      const time = video.currentTime;
-      livePlaybackTimesRef.current[activeItemId] = time;
-      try {
-        window.localStorage.setItem(
-          MEDIA_PLAYER_PLAYBACK_TIMES_KEY,
-          JSON.stringify({
-            ...livePlaybackTimesRef.current,
-            [activeItemId]: time,
-          }),
-        );
-      } catch {
-        // Ignore storage errors
-      }
-      setPlaybackTime(activeItemId, time);
-    };
-
-    window.addEventListener('beforeunload', persistBeforeUnload);
-    return () => window.removeEventListener('beforeunload', persistBeforeUnload);
-  }, [activeItem?.id, setPlaybackTime]);
-
-  useEffect(() => {
-    const pausePlayback = () => {
-      const video = videoRef.current;
-      if (!video || video.paused) {
-        return;
-      }
-
-      shouldResumeOnReturnRef.current = true;
-      video.pause();
-    };
-
-    const resumePlayback = () => {
-      const video = videoRef.current;
-      if (!shouldResumeOnReturnRef.current || !video || document.hidden) {
-        return;
-      }
-
-      const playPromise = video.play();
-      if (playPromise) {
-        playPromise
-          .then(() => {
-            shouldResumeOnReturnRef.current = false;
-          })
-          .catch(() => {
-            setIsPlaying(false);
-          });
-        return;
-      }
-
-      shouldResumeOnReturnRef.current = false;
-    };
-
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        pausePlayback();
-        return;
-      }
-
-      resumePlayback();
-    };
-
-    window.addEventListener('blur', pausePlayback);
-    window.addEventListener('focus', resumePlayback);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    return () => {
-      window.removeEventListener('blur', pausePlayback);
-      window.removeEventListener('focus', resumePlayback);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [setIsPlaying]);
-
-  return {
-    videoRef,
-    progress,
-    setProgress,
-    livePlaybackTimesRef,
-  };
+  return useOverlayMediaPlayback({
+    activeItem,
+    activeIndex,
+    isActiveSurface,
+    isMuted,
+    isPlaying,
+    playbackTimes,
+    queueLength,
+    setActiveIndex,
+    setIsPlaying,
+    setPlaybackTime,
+  });
 }
 
 function useOverlayDrag({
@@ -895,6 +789,9 @@ function DesktopExpandedView({
   progress,
   queue,
   replayQueue,
+  retryVideo,
+  hasVideoError,
+  isVideoLoading,
   shouldShowSourceLink,
   t,
   toggleMuted,
@@ -919,6 +816,9 @@ function DesktopExpandedView({
   progress: number;
   queue: MediaQueueState['queue'];
   replayQueue: () => void;
+  retryVideo: () => void;
+  hasVideoError: boolean;
+  isVideoLoading: boolean;
   shouldShowSourceLink: boolean;
   t: ReturnType<typeof useLanguage>['t'];
   toggleMuted: () => void;
@@ -946,6 +846,14 @@ function DesktopExpandedView({
           muted={isMuted}
           preload="metadata"
           aria-label={activeItem.sourceTitle}
+        />
+
+        <VideoStatusOverlay
+          hasError={hasVideoError}
+          isLoading={isVideoLoading}
+          loadingLabel={t.mediaPlayer.loading}
+          onRetry={retryVideo}
+          retryLabel={t.mediaPlayer.retry}
         />
 
         <ProgressBars queue={queue} activeIndex={activeIndex} progress={progress} />
@@ -997,7 +905,7 @@ function DesktopExpandedView({
           {feedback === 'unmuted' ? <VolumeOnIcon /> : null}
         </div>
 
-        {isQueueComplete ? (
+        {isQueueComplete && !hasVideoError ? (
           <button
             type="button"
             className="note-media-replay-overlay"
@@ -1060,7 +968,6 @@ function DesktopLauncherView({
   t,
   updateHoveredScrubSegment,
   waveform,
-  isMuted,
 }: {
   activeItem: ActiveItem;
   handleLauncherRangeChange: (event: ChangeEvent<HTMLInputElement>) => void;
@@ -1079,7 +986,6 @@ function DesktopLauncherView({
   t: ReturnType<typeof useLanguage>['t'];
   updateHoveredScrubSegment: (element: HTMLElement, clientX: number) => void;
   waveform: number[];
-  isMuted: boolean;
 }) {
   return (
     <div
@@ -1093,7 +999,7 @@ function DesktopLauncherView({
         type="button"
         className="note-media-launcher-play"
         onClick={playFromLauncher}
-        aria-label={isMuted || !isPlaying ? t.mediaPlayer.playWithSound : t.mediaPlayer.pause}
+        aria-label={isPlaying ? t.mediaPlayer.pause : t.mediaPlayer.playWithSound}
       >
         {isPlaying ? <Pause aria-hidden="true" className="note-media-icon-svg" strokeWidth={1.9} /> : <Play aria-hidden="true" className="note-media-icon-svg" strokeWidth={1.9} />}
       </button>
@@ -1181,6 +1087,7 @@ export default function DesktopMediaOverlay() {
     position,
     setPosition,
     isReady,
+    isResizing,
     isLauncherReadMoreAbove,
   } = useDesktopOverlayPosition({
     overlayRef,
@@ -1193,6 +1100,7 @@ export default function DesktopMediaOverlay() {
   const { videoRef, progress, setProgress, livePlaybackTimesRef } = useDesktopMediaPlayback({
     activeItem,
     activeIndex,
+    isActiveSurface: !isMobile,
     isMuted,
     isPlaying,
     playbackTimes,
@@ -1200,6 +1108,12 @@ export default function DesktopMediaOverlay() {
     setActiveIndex,
     setIsPlaying,
     setPlaybackTime,
+  });
+  const { isVideoLoading, hasVideoError, retryVideo } = useVideoLoadState({
+    videoRef,
+    mediaKey: activeItem?.id ?? '',
+    isActiveSurface: !isMobile,
+    isPlaybackActive: isPlaying,
   });
   const {
     isDragging,
@@ -1252,12 +1166,6 @@ export default function DesktopMediaOverlay() {
     const timeout = window.setTimeout(() => setFeedback(null), 560);
     return () => window.clearTimeout(timeout);
   }, [feedback]);
-
-  useEffect(() => {
-    if (isMobile && videoRef.current && !videoRef.current.paused) {
-      videoRef.current.pause();
-    }
-  }, [isMobile, videoRef]);
 
   useEffect(() => {
     if (isDragging) {
@@ -1364,7 +1272,7 @@ export default function DesktopMediaOverlay() {
       return;
     }
 
-    if (isMuted || !isPlaying) {
+    if (!isPlaying) {
       setIsMuted(false);
       setIsPlaying(true);
       flashFeedback('play');
@@ -1429,7 +1337,7 @@ export default function DesktopMediaOverlay() {
       return;
     }
 
-    if (video.paused) {
+    if (!isPlaying) {
       const playPromise = video.play();
       if (playPromise) {
         playPromise.then(() => flashFeedback('play')).catch(() => setIsPlaying(false));
@@ -1473,7 +1381,7 @@ export default function DesktopMediaOverlay() {
   return (
     <aside
       ref={overlayRef}
-      className={`note-media-player note-media-player-desktop${isDismissed ? ' is-dismissed' : ''}${isDragging ? ' is-dragging' : ''}${isLauncherHoverArmed ? ' is-hover-armed' : ''}`}
+      className={`note-media-player note-media-player-desktop${isDismissed ? ' is-dismissed' : ''}${isDragging ? ' is-dragging' : ''}${isLauncherHoverArmed ? ' is-hover-armed' : ''}${isResizing ? ' is-resizing' : ''}`}
       style={desktopStyle}
       aria-label={`${activeItem.sourceTitle} ${t.mediaPlayer.media}`}
       data-ready={isReady ? 'true' : 'false'}
@@ -1498,6 +1406,9 @@ export default function DesktopMediaOverlay() {
         progress={progress}
         queue={queue}
         replayQueue={replayQueue}
+        retryVideo={retryVideo}
+        hasVideoError={hasVideoError}
+        isVideoLoading={isVideoLoading}
         shouldShowSourceLink={shouldShowSourceLink}
         t={t}
         toggleMuted={toggleMuted}
@@ -1514,7 +1425,6 @@ export default function DesktopMediaOverlay() {
           handlePointerUp={handlePointerUp}
           hoveredScrubSegment={hoveredScrubSegment}
           isLauncherReadMoreAbove={isLauncherReadMoreAbove}
-          isMuted={isMuted}
           isPlaying={isPlaying}
           isQueueComplete={isQueueComplete}
           onOpen={openFromLauncher}

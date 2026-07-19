@@ -1423,6 +1423,12 @@
     }
   }
 
+  @keyframes note-media-spinner-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
   /* Note image system */
   .note-img {
     width: 100%;
@@ -1500,6 +1506,13 @@
 
   .note-media-player-desktop.is-dismissed {
     pointer-events: none;
+  }
+
+  .note-media-player-desktop.is-resizing .note-media-shell,
+  .note-media-player-desktop.is-resizing .note-media-launcher,
+  .note-media-player-desktop.is-resizing .note-media-launcher-readmore,
+  .note-media-player-desktop.is-resizing .note-media-dismiss {
+    transition: none !important;
   }
 
   .note-media-player-inline,
@@ -1789,6 +1802,28 @@
     opacity: 0;
     pointer-events: none;
     transition: opacity 220ms ease;
+  }
+
+  .note-media-loading-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    background: rgb(17 17 17 / 0.24);
+    color: white;
+    pointer-events: none;
+    backdrop-filter: blur(6px);
+  }
+
+  .note-media-loading-spinner {
+    width: 3.1rem;
+    height: 3.1rem;
+    border: 2px solid rgb(255 255 255 / 0.22);
+    border-top-color: white;
+    border-radius: 999px;
+    animation: note-media-spinner-spin 0.8s linear infinite;
+    box-shadow: 0 0 0 0.75rem rgb(17 17 17 / 0.2);
   }
 
   .note-media-feedback::before {
@@ -2333,6 +2368,12 @@
       left: 0.5rem;
       z-index: 3;
       pointer-events: none;
+    }
+
+    .mobile-media-sheet.is-expanded .note-media-progress {
+      top: 0.8rem;
+      right: 0.8rem;
+      left: 0.8rem;
     }
 
     .mobile-media-sheet .note-media-progress-fill {
