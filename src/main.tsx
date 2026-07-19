@@ -67,7 +67,7 @@ const app = (
   </StrictMode>
 );
 
-if (rootElement.hasChildNodes()) {
+if (rootElement.getAttribute('data-prerendered') === 'true') {
   hydrateRoot(rootElement, app);
 } else {
   createRoot(rootElement).render(app);

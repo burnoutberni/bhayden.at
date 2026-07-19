@@ -562,6 +562,9 @@ function useDesktopOverlayPosition({
       return;
     }
 
+    // Refresh visible size when isDismissed changes to avoid using stale metrics
+    visibleSizeRef.current = null;
+
     const visibleSize = visibleSizeRef.current
       ?? (() => {
         const { visibleRect } = getVisibleOverlayMetrics(overlay, isDismissed, true);

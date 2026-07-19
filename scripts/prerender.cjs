@@ -106,7 +106,14 @@ async function main() {
         await new Promise((resolve) => setTimeout(resolve, waitFor));
       }
 
-      const html = await page.content();
+      let html = await page.content();
+
+      // Add data-prerendered="true" attribute to #root element
+      html = html.replace(
+        /<div id="root"([^>]*)>/,
+        '<div id="root"$1 data-prerendered="true">'
+      );
+
       const outputPath =
         routePath === "/"
           ? path.join(sourceDir, "index.html")
