@@ -153,13 +153,7 @@ export default function MobileMediaOverlay() {
       return;
     }
 
-    const didPathChange = previousPathnameRef.current !== pathname;
     previousPathnameRef.current = pathname;
-
-    if (!didPathChange) {
-      return;
-    }
-
     setIsDismissed(true);
     setSheetDragOffset(0);
     sheetDragOffsetRef.current = 0;
