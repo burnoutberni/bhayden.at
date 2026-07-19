@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type RefObject } from 'react';
+import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
 
 type UseVideoLoadStateOptions = {
   videoRef: RefObject<HTMLVideoElement | null>;
@@ -27,7 +27,7 @@ export function useVideoLoadState({
     isPlaybackActiveRef.current = isPlaybackActive;
   }, [isPlaybackActive]);
 
-  const syncFromVideoElement = () => {
+  const syncFromVideoElement = useCallback(() => {
     const video = videoRef.current;
     if (!video) {
       return false;
@@ -52,7 +52,7 @@ export function useVideoLoadState({
     }
 
     return false;
-  };
+  }, [videoRef]);
 
   useEffect(() => {
     setHasVideoError(false);
@@ -60,7 +60,7 @@ export function useVideoLoadState({
     if (!syncFromVideoElement()) {
       setIsVideoLoading(isActiveSurface && isPlaybackActive);
     }
-  }, [isActiveSurface, isPlaybackActive, mediaKey]);
+  }, [isActiveSurface, isPlaybackActive, mediaKey, syncFromVideoElement]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -123,7 +123,7 @@ export function useVideoLoadState({
       video.removeEventListener('pause', handlePause);
       video.removeEventListener('error', handleError);
     };
-  }, [mediaKey, videoRef]);
+  }, [mediaKey, syncFromVideoElement, videoRef]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -134,7 +134,7 @@ export function useVideoLoadState({
     }
 
     setIsVideoLoading(!hasStartedPlaybackRef.current);
-  }, [isActiveSurface, isPlaybackActive, mediaKey, videoRef]);
+  }, [isActiveSurface, isPlaybackActive, mediaKey, syncFromVideoElement, videoRef]);
 
   const retryVideo = () => {
     const video = videoRef.current;

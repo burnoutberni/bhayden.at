@@ -172,21 +172,11 @@ function getRectForOverlayState(overlay: HTMLElement, isDismissed: boolean, useF
   return getElementRect(shell, useFinalRect);
 }
 
-function getVisibleOverlayElement(overlay: HTMLElement, isDismissed: boolean) {
-  return isDismissed
-    ? overlay.querySelector<HTMLElement>('.note-media-launcher')
-    : overlay.querySelector<HTMLElement>('.note-media-shell:not(.is-parked)')
-      ?? overlay.querySelector<HTMLElement>('.note-media-shell');
-}
-
 function getVisibleOverlayMetrics(overlay: HTMLElement, isDismissed: boolean, useFinalRect = false) {
-  const visibleElement = getVisibleOverlayElement(overlay, isDismissed);
   const visibleRect = getRectForOverlayState(overlay, isDismissed, useFinalRect);
 
   return {
     visibleRect,
-    offsetX: visibleElement?.offsetLeft ?? 0,
-    offsetY: visibleElement?.offsetTop ?? 0,
   };
 }
 
@@ -1086,7 +1076,6 @@ export default function DesktopMediaOverlay() {
   const [hoveredScrubSegment, setHoveredScrubSegment] = useState<number | null>(null);
   const [isLauncherHoverArmed, setIsLauncherHoverArmed] = useState(true);
   const previousIsDraggingRef = useRef(false);
-  const [visibleOffset, setVisibleOffset] = useState<Position>({ x: 0, y: 0 });
   const {
     position,
     setPosition,
@@ -1140,14 +1129,7 @@ export default function DesktopMediaOverlay() {
       return;
     }
 
-    const { visibleRect, offsetX, offsetY } = getVisibleOverlayMetrics(overlay, isDismissed, true);
-    setVisibleOffset((current) => {
-      if (current.x === offsetX && current.y === offsetY) {
-        return current;
-      }
-
-      return { x: offsetX, y: offsetY };
-    });
+    const { visibleRect } = getVisibleOverlayMetrics(overlay, isDismissed, true);
 
     const pendingTransition = pendingDismissTransitionRef.current;
     if (!pendingTransition || pendingTransition.nextDismissed !== isDismissed) {
@@ -1367,8 +1349,8 @@ export default function DesktopMediaOverlay() {
 
   const desktopStyle = position
     ? {
-        left: `${position.x - visibleOffset.x}px`,
-        top: `${position.y - visibleOffset.y}px`,
+        left: `${position.x}px`,
+        top: `${position.y}px`,
         right: 'auto',
         bottom: 'auto',
       }
