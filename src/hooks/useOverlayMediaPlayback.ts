@@ -38,7 +38,9 @@ export function useOverlayMediaPlayback({
   const isActiveSurfaceRef = useRef(isActiveSurface);
   const [progress, setProgress] = useState(0);
 
-  isActiveSurfaceRef.current = isActiveSurface;
+  useEffect(() => {
+    isActiveSurfaceRef.current = isActiveSurface;
+  }, [isActiveSurface]);
 
   useEffect(() => {
     livePlaybackTimesRef.current = playbackTimes;

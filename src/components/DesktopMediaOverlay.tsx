@@ -349,6 +349,7 @@ function useDesktopOverlayPosition({
   const resizeFrameRef = useRef<number | null>(null);
   const resizeSettleTimeoutRef = useRef<number | null>(null);
   const visibleSizeRef = useRef<{ width: number; height: number } | null>(null);
+  const isResizingRef = useRef(false);
   const [position, setPosition] = useState<Position | null>(null);
   const [isReady, setIsReady] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
@@ -514,7 +515,8 @@ function useDesktopOverlayPosition({
     };
 
     const handleResize = () => {
-      if (!isResizing) {
+      if (!isResizingRef.current) {
+        isResizingRef.current = true;
         setIsResizing(true);
       }
 
@@ -523,6 +525,7 @@ function useDesktopOverlayPosition({
       }
       resizeSettleTimeoutRef.current = window.setTimeout(() => {
         resizeSettleTimeoutRef.current = null;
+        isResizingRef.current = false;
         setIsResizing(false);
       }, DESKTOP_RESIZE_SETTLE_MS);
 
@@ -547,9 +550,10 @@ function useDesktopOverlayPosition({
         resizeSettleTimeoutRef.current = null;
       }
 
+      isResizingRef.current = false;
       setIsResizing(false);
     };
-  }, [isDismissed, isMobile, isResizing, overlayRef, queueLength]);
+  }, [isDismissed, isMobile, overlayRef, queueLength]);
 
   useEffect(() => {
     if (!queueLength || !position) {
