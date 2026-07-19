@@ -176,7 +176,7 @@ export default function MobileMediaOverlay() {
   }, [isMobile, queue.length]);
 
   useEffect(() => {
-    if (!isExpanded) {
+    if (!isMobile || !isExpanded) {
       return;
     }
 
@@ -189,7 +189,7 @@ export default function MobileMediaOverlay() {
       document.body.style.overflow = previousOverflow;
       document.body.style.touchAction = previousTouchAction;
     };
-  }, [isExpanded]);
+  }, [isExpanded, isMobile]);
 
   useEffect(() => {
     if (!feedback) {

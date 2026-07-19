@@ -158,6 +158,9 @@ export default function Home() {
     const fetchEvents = async () => {
       const hadPreviousEvents = eventsRef.current.length > 0;
       let timeoutId: number | null = null;
+      let controller: AbortController | null = null;
+
+      const isCurrentRequest = () => isMounted && activeController === controller;
 
       try {
         if (!hadPreviousEvents) {
@@ -166,19 +169,20 @@ export default function Home() {
         setEventsError(null);
 
         activeController?.abort();
-        const controller = new AbortController();
+        const nextController = new AbortController();
+        controller = nextController;
         activeController = controller;
-        timeoutId = window.setTimeout(() => controller.abort(), EVENTS_FETCH_TIMEOUT_MS);
+        timeoutId = window.setTimeout(() => nextController.abort(), EVENTS_FETCH_TIMEOUT_MS);
 
         const response = await fetch('https://events.bhayden.at/api/v1/feeds/nini.json', {
-          signal: controller.signal,
+          signal: nextController.signal,
         });
         if (!response.ok) {
           throw new Error(`Failed to load events (${response.status})`);
         }
 
         const data = (await response.json()) as EverycalResponse;
-        if (!isMounted) return;
+        if (!isCurrentRequest()) return;
 
         const sorted = (data.events || []).slice().sort((a, b) => {
           const dateA = new Date(a.start_at_utc || a.start_date).getTime();
@@ -189,7 +193,7 @@ export default function Home() {
         eventsRef.current = sorted;
         setEvents(sorted);
       } catch {
-        if (!isMounted) return;
+        if (!isCurrentRequest()) return;
 
         if (!hadPreviousEvents) {
           setEventsError(lang === 'de' ? 'Events konnten gerade nicht geladen werden.' : 'Unable to load events right now.');
@@ -198,7 +202,10 @@ export default function Home() {
         if (timeoutId !== null) {
           window.clearTimeout(timeoutId);
         }
-        if (isMounted) setEventsLoading(false);
+
+        if (isCurrentRequest()) {
+          setEventsLoading(false);
+        }
       }
     };
 
