@@ -5,6 +5,7 @@ node_modules/
 dist/
 build/
 coverage/
+public/rss.xml
 
 # Environment files
 .env
