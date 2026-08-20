@@ -1491,6 +1491,12 @@
     font-family: var(--font-grotesk);
   }
 
+  body.is-dragging-media-player,
+  body.is-dragging-media-player * {
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
   .note-media-player-desktop {
     --note-media-player-width: 13.5rem;
     --note-media-corner-control-size: 2rem;

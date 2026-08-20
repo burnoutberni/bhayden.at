@@ -33,6 +33,7 @@ const HOME_DESKTOP_LEFT_SHIFT = 64;
 const HOME_DESKTOP_BOTTOM_GAP = 64;
 const HOME_DESKTOP_CENTER_BREAKPOINT = 1280;
 const DESKTOP_RESIZE_SETTLE_MS = 120;
+const MEDIA_PLAYER_DRAGGING_CLASS = 'is-dragging-media-player';
 
 function PlayIcon() {
   return (
@@ -646,6 +647,7 @@ function useOverlayDrag({
   useEffect(() => {
     return () => {
       dragCleanupRef.current?.();
+      document.body.classList.remove(MEDIA_PLAYER_DRAGGING_CLASS);
     };
   }, []);
 
@@ -691,6 +693,7 @@ function useOverlayDrag({
       }
 
       didDragRef.current = true;
+      document.body.classList.add(MEDIA_PLAYER_DRAGGING_CLASS);
       setIsDragging(true);
       const { visibleRect } = getVisibleOverlayMetrics(overlay, isDismissed, true);
       setPosition(clampVisiblePosition(dragStartRef.current.x + dx, dragStartRef.current.y + dy, visibleRect.width, visibleRect.height));
@@ -705,6 +708,7 @@ function useOverlayDrag({
       window.removeEventListener('pointerup', handleWindowPointerUp);
       window.removeEventListener('pointercancel', handleWindowPointerCancel);
       dragCleanupRef.current = null;
+      document.body.classList.remove(MEDIA_PLAYER_DRAGGING_CLASS);
 
       window.setTimeout(() => {
         dragStartRef.current = null;
