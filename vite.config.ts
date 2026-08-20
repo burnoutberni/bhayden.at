@@ -4,7 +4,7 @@ import { defineConfig } from "vite"
 
 const manualChunkGroups: Record<string, string[]> = {
   react: ["react", "react-dom"],
-  router: ["react-router", "react-router-dom"],
+  router: ["react-router"],
   radix: [
     "@radix-ui/react-accordion",
     "@radix-ui/react-alert-dialog",
@@ -63,7 +63,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
+      "@": path.resolve(import.meta.dirname, "./src"),
     },
   },
 })

@@ -7,15 +7,15 @@ The build includes static pre-rendering for main routes, producing HTML files pe
 ## Run locally
 
 ```bash
-npm install
-npm run dev
+pnpm install
+pnpm run dev
 ```
 
 ## Build
 
 ```bash
-npm run build
-npm run preview
+pnpm run build
+pnpm run preview
 ```
 
 This creates a production build in `dist/`.
@@ -26,7 +26,7 @@ Deploy the contents of `dist/` to any static hosting provider (for example: Netl
 
 This repository deploys from GitHub Actions on push to `main`:
 
-1. CI runs `npm ci` and `npm run build` (including static pre-rendering).
+1. CI runs `pnpm install --frozen-lockfile` and `pnpm run build` (including static pre-rendering).
 2. CI uploads the generated `dist/` files to the remote path in `DEPLOY_DIST_PATH` over SSH.
 
 Required GitHub secrets for deploy:
@@ -41,8 +41,8 @@ If you want newsletter signup and Plausible analytics to work in production, def
 
 Manual flow:
 
-1. Run `npm ci`.
-2. Run `npm run build`.
+1. Run `pnpm install --frozen-lockfile`.
+2. Run `pnpm run build`.
 3. Publish `dist/`.
 
 ## Caddy
